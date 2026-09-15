@@ -34,15 +34,15 @@ export default function StationTable({ stations }) {
           <tr>
             <th>Step</th>
             <th>Station</th>
-            <th>T0 (K)</th>
-            <th>p0 (kPa)</th>
-            <th>T (K)</th>
-            <th>p (kPa)</th>
-            <th>M</th>
-            <th>V (m/s)</th>
-            <th>ρ (kg/m³)</th>
-            <th>h (kJ/kg)</th>
-            <th>h0 (kJ/kg)</th>
+            <th title="Stagnation temperature — carried directly from the upstream component's own cycle/stage equation (e.g. the compressor or turbine energy balance, §4/§6), not re-derived here.">T0 (K)</th>
+            <th title="Stagnation pressure — carried directly from the upstream component's own pressure relation (isentropic stage relation, or a stated loss such as the combustor's Δp or the nozzle's real total-pressure drop).">p0 (kPa)</th>
+            <th title="Static temperature: T = T0 − V²/(2·Cp) (Ref §2.1 step 2), from this station's T0 and its local through-flow velocity V.">T (K)</th>
+            <th title="Static pressure: p = p0 / [1 + ((γ−1)/2)·M²]^(γ/(γ−1)) (Ref §2.1 step 4).">p (kPa)</th>
+            <th title="Mach number: M = V / sqrt(γ·R·T) (Ref §2, §2.1 step 3), from this station's local velocity and static temperature.">M</th>
+            <th title="Local through-flow velocity — an input to the station-state recipe (axial Vz held through a stage, a velocity-triangle resultant, or a continuity value), not itself derived from T0/p0.">V (m/s)</th>
+            <th title="Density: ρ = p / (R·T) (Ref §2.1 step 5), ideal gas law on this station's static state.">ρ (kg/m³)</th>
+            <th title="Static enthalpy: h = Cp·T (Ref §2.1 step 6).">h (kJ/kg)</th>
+            <th title="Stagnation enthalpy: h0 = Cp·T0 (Ref §2.1 step 6).">h0 (kJ/kg)</th>
           </tr>
         </thead>
         <tbody>
