@@ -56,13 +56,18 @@ export default function PerformanceSummary({ performance, nozzle }) {
   return (
     <div className="performance-summary">
       <div className="perf-card">
-        <span className="perf-label">Thrust</span>
+        <span
+          className="perf-label"
+          title="T = mdot_a·[(1+f)·V_exit − V_flight] + (p_exit − p_a)·A_exit (Ref §8/§9). The pressure term is zero except when the nozzle is choked (or, for a C-D nozzle, off-design)."
+        >
+          Thrust
+        </span>
         <Stat value={performance.thrust} digits={1} unit="N" />
       </div>
       <div className="perf-card">
         <span
           className="perf-label"
-          title="Thrust per unit air mass flow rate — by definition independent of mdot_a. Change mdot_a on the left and plain Thrust scales with it; this and TSFC don't, on purpose."
+          title="T/mdot_a = [(1+f)·V_exit − V_flight] + (A_exit/mdot_a)·(p_exit − p_a) (Ref §9) — thrust per unit air mass flow rate, independent of mdot_a by definition. Change mdot_a on the left and plain Thrust scales with it; this and TSFC don't, on purpose."
         >
           Specific thrust
         </span>
@@ -71,26 +76,46 @@ export default function PerformanceSummary({ performance, nozzle }) {
       <div className="perf-card">
         <span
           className="perf-label"
-          title="Fuel consumption per unit thrust — also independent of mdot_a by definition, same reason as specific thrust."
+          title="TSFC = f / (T/mdot_a) (Ref §9) — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
         >
           TSFC
         </span>
         <Stat value={tsfcHr} digits={3} unit="kg/(N·h)" />
       </div>
       <div className="perf-card">
-        <span className="perf-label">Fuel-air ratio f</span>
+        <span
+          className="perf-label"
+          title="Combustor energy balance solved for f (Ref §5): f = [(Cp_h/Cp_c)(T04/T03) − 1] / [(η_b·Q_R)/(Cp_c·T03) − (Cp_h/Cp_c)(T04/T03)]"
+        >
+          Fuel-air ratio f
+        </span>
         <Stat value={performance.f} digits={4} />
       </div>
       <div className="perf-card">
-        <span className="perf-label">Thermal efficiency</span>
+        <span
+          className="perf-label"
+          title="η_th = [(1+f)·V_exit²/2 − V_flight²/2] / (f·Q_R) (Ref §9) — propulsive-jet kinetic energy gained per unit fuel energy released."
+        >
+          Thermal efficiency
+        </span>
         <PctStat value={performance.eta_thermal} />
       </div>
       <div className="perf-card">
-        <span className="perf-label">Propulsive efficiency</span>
+        <span
+          className="perf-label"
+          title="η_p = 2·(V_flight/V_exit) / (1 + V_flight/V_exit) (Ref §9) — how much of the jet's kinetic energy converts to useful propulsive work. η_p → 1 as V_flight → V_exit, but thrust → 0 there too."
+        >
+          Propulsive efficiency
+        </span>
         <PctStat value={performance.eta_propulsive} />
       </div>
       <div className="perf-card">
-        <span className="perf-label">Overall efficiency</span>
+        <span
+          className="perf-label"
+          title="η_0 = η_th · η_p (Ref §9), cross-checked internally against the direct definition η_0 = T·V_flight / (mdot_f·Q_R) — both should agree."
+        >
+          Overall efficiency
+        </span>
         <PctStat value={performance.eta_overall} />
       </div>
       <div className="perf-card">
