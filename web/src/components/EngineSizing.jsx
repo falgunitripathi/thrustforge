@@ -51,23 +51,33 @@ export default function EngineSizing({ config, result }) {
       ) : (
         <div className="performance-summary">
           <div className="perf-card">
-            <span className="perf-label">Scale factor</span>
+            <span className="perf-label" title="scale = target thrust / current thrust — the single factor every mdot_a-proportional quantity below is scaled by.">
+              Scale factor
+            </span>
             <span className="perf-value">{fmt(scale, 3)}×</span>
           </div>
           <div className="perf-card">
-            <span className="perf-label">Required air mass flow</span>
+            <span className="perf-label" title="required mdot_a = (current mdot_a) × scale — thrust is linear in mdot_a with everything else on the left held fixed, so this is the only re-solve needed.">
+              Required air mass flow
+            </span>
             <span className="perf-value">{fmt(requiredMdotA, 3)} <small>kg/s</small></span>
           </div>
           <div className="perf-card">
-            <span className="perf-label">Required nozzle exit area</span>
+            <span className="perf-label" title="required A_exit = (current nozzle exit area) × scale — exit area scales with mass flow to keep the same exit Mach/velocity and all other cycle numbers unchanged.">
+              Required nozzle exit area
+            </span>
             <span className="perf-value">{fmt(requiredAExit, 4)} <small>m²</small></span>
           </div>
           <div className="perf-card">
-            <span className="perf-label">Required fuel flow</span>
+            <span className="perf-label" title="required mdot_f = f × required mdot_a — the fuel-air ratio f is independent of scale, so fuel flow scales with air mass flow exactly like thrust does.">
+              Required fuel flow
+            </span>
             <span className="perf-value">{fmt(requiredMdotF, 4)} <small>kg/s</small></span>
           </div>
           <div className="perf-card">
-            <span className="perf-label">Required fuel flow</span>
+            <span className="perf-label" title="Same required fuel flow as above, × 3600 s/h.">
+              Required fuel flow
+            </span>
             <span className="perf-value">{fmt(requiredMdotF * 3600, 1)} <small>kg/h</small></span>
           </div>
           <div className="perf-card">
