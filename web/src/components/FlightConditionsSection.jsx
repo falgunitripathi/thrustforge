@@ -31,7 +31,7 @@ export default function FlightConditionsSection({ config, onChange }) {
             min={0}
             max={11000}
             step={100}
-            hint="m, ISA troposphere (0-11,000 m)"
+            hint="m, ISA troposphere"
           />
           <NumberField
             label="Flight Mach number"
@@ -40,7 +40,7 @@ export default function FlightConditionsSection({ config, onChange }) {
             min={0}
             max={5.0}
             step={0.05}
-            hint="M∞ (0-5)"
+            hint="M∞"
           />
         </>
       )}
