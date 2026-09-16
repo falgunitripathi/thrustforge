@@ -61,7 +61,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
     <div className="results-panel">
       <section>
         <h2>Overall performance</h2>
-        <PerformanceSummary performance={performance} nozzle={nozzle} />
+        <PerformanceSummary performance={performance} nozzle={nozzle} ambientPressure={stations.a.p} />
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight

@@ -1,5 +1,6 @@
-import { fmt, tsfcPerHour } from "../utils/format.js";
+import { fmt, fmtKPa, tsfcPerHour } from "../utils/format.js";
 import { useAnimatedNumber } from "../hooks/useAnimatedNumber.js";
+import FormulaLabel from "./FormulaLabel.jsx";
 
 /** A headline number that glides to its new value instead of jumping. */
 function Stat({ value, digits = 2, unit }) {
@@ -44,11 +45,29 @@ function PctStat({ value }) {
 }
 
 /**
+ * The nozzle's choked/unchoked explanation is only meaningful with the
+ * actual numbers behind the yes/no comparison (Ref §8: choked iff
+ * p_c >= p_a) — a generic "here's the choking rule" wouldn't tell you why
+ * *this* configuration landed on one side of it, so it's built fresh from
+ * this result's own p_c and ambient pressure rather than a static string.
+ */
+function nozzleExplanation(nozzle, ambientPressure) {
+  const pc = fmtKPa(nozzle.p_c, 1);
+  const pa = fmtKPa(ambientPressure, 1);
+  if (nozzle.choked) {
+    return `Choked: the nozzle's critical (throat) pressure p_c = ${pc} kPa is at or above ambient p_a = ${pa} kPa — p_c ≥ p_a (Ref §8) — so the flow is already sonic (M=1) at the throat and can't be pulled any faster by the ambient pressure drop alone. Exit temperature/velocity come from the choked-flow relations (T_exit = T0/[(γ_h+1)/2], V_exit = √(γ_h·R_h·T_exit)), and the exit stays above ambient pressure, which is why Thrust above includes a nonzero (p_exit−p_a)·A_exit term.`;
+  }
+  return `Unchoked (fully expanded): the nozzle's critical (throat) pressure p_c = ${pc} kPa is below ambient p_a = ${pa} kPa — p_c < p_a (Ref §8) — so the flow never reaches sonic (M=1); it expands all the way down to ambient pressure instead, p_exit = p_a by construction. That's why Thrust above has no pressure term for this configuration — only the momentum term contributes.`;
+}
+
+/**
  * Headline overall-performance numbers — Ref §9 (Overall Performance).
  * `performance` is `EngineResult.performance` (thrust, specific_thrust,
- * tsfc, eta_thermal, eta_propulsive, eta_overall, f).
+ * tsfc, eta_thermal, eta_propulsive, eta_overall, f). `ambientPressure` is
+ * this result's station-a static pressure (p_a), needed only to explain
+ * the nozzle's choked/unchoked verdict in plain numbers.
  */
-export default function PerformanceSummary({ performance, nozzle }) {
+export default function PerformanceSummary({ performance, nozzle, ambientPressure }) {
   const tsfcHr = tsfcPerHour(performance.tsfc);
   const anyFlagged = [performance.eta_thermal, performance.eta_propulsive, performance.eta_overall].some(
     (v) => v !== null && v !== undefined && (v < 0 || v > 1)
@@ -56,70 +75,67 @@ export default function PerformanceSummary({ performance, nozzle }) {
   return (
     <div className="performance-summary">
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="T = mdot_a·[(1+f)·V_exit − V_flight] + (p_exit − p_a)·A_exit (Ref §8/§9). The pressure term is zero except when the nozzle is choked (or, for a C-D nozzle, off-design)."
-        >
-          Thrust
-        </span>
+          label="Thrust"
+          formula="T = mdot_a·[(1+f)·V_exit − V_flight] + (p_exit − p_a)·A_exit (Ref §8/§9). The pressure term is zero except when the nozzle is choked (or, for a C-D nozzle, off-design)."
+        />
         <Stat value={performance.thrust} digits={1} unit="N" />
       </div>
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="T/mdot_a = [(1+f)·V_exit − V_flight] + (A_exit/mdot_a)·(p_exit − p_a) (Ref §9) — thrust per unit air mass flow rate, independent of mdot_a by definition. Change mdot_a on the left and plain Thrust scales with it; this and TSFC don't, on purpose."
-        >
-          Specific thrust
-        </span>
+          label="Specific thrust"
+          formula="T/mdot_a = [(1+f)·V_exit − V_flight] + (A_exit/mdot_a)·(p_exit − p_a) (Ref §9) — thrust per unit air mass flow rate, independent of mdot_a by definition. Change mdot_a on the left and plain Thrust scales with it; this and TSFC don't, on purpose."
+        />
         <Stat value={performance.specific_thrust} digits={2} unit="N·s/kg" />
       </div>
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="TSFC = f / (T/mdot_a) (Ref §9) — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
-        >
-          TSFC
-        </span>
+          label="TSFC"
+          formula="TSFC = f / (T/mdot_a) (Ref §9) — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
+        />
         <Stat value={tsfcHr} digits={3} unit="kg/(N·h)" />
       </div>
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="Combustor energy balance solved for f (Ref §5): f = [(Cp_h/Cp_c)(T04/T03) − 1] / [(η_b·Q_R)/(Cp_c·T03) − (Cp_h/Cp_c)(T04/T03)]"
-        >
-          Fuel-air ratio f
-        </span>
+          label="Fuel-air ratio f"
+          formula="Combustor energy balance solved for f (Ref §5): f = [(Cp_h/Cp_c)(T04/T03) − 1] / [(η_b·Q_R)/(Cp_c·T03) − (Cp_h/Cp_c)(T04/T03)]"
+        />
         <Stat value={performance.f} digits={4} />
       </div>
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="η_th = [(1+f)·V_exit²/2 − V_flight²/2] / (f·Q_R) (Ref §9) — propulsive-jet kinetic energy gained per unit fuel energy released."
-        >
-          Thermal efficiency
-        </span>
+          label="Thermal efficiency"
+          formula="η_th = [(1+f)·V_exit²/2 − V_flight²/2] / (f·Q_R) (Ref §9) — propulsive-jet kinetic energy gained per unit fuel energy released."
+        />
         <PctStat value={performance.eta_thermal} />
       </div>
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="η_p = 2·(V_flight/V_exit) / (1 + V_flight/V_exit) (Ref §9) — how much of the jet's kinetic energy converts to useful propulsive work. η_p → 1 as V_flight → V_exit, but thrust → 0 there too."
-        >
-          Propulsive efficiency
-        </span>
+          label="Propulsive efficiency"
+          formula="η_p = 2·(V_flight/V_exit) / (1 + V_flight/V_exit) (Ref §9) — how much of the jet's kinetic energy converts to useful propulsive work. η_p → 1 as V_flight → V_exit, but thrust → 0 there too."
+        />
         <PctStat value={performance.eta_propulsive} />
       </div>
       <div className="perf-card">
-        <span
+        <FormulaLabel
           className="perf-label"
-          title="η_0 = η_th · η_p (Ref §9), cross-checked internally against the direct definition η_0 = T·V_flight / (mdot_f·Q_R) — both should agree."
-        >
-          Overall efficiency
-        </span>
+          label="Overall efficiency"
+          formula="η_0 = η_th · η_p (Ref §9), cross-checked internally against the direct definition η_0 = T·V_flight / (mdot_f·Q_R) — both should agree."
+        />
         <PctStat value={performance.eta_overall} />
       </div>
       <div className="perf-card">
-        <span className="perf-label">Nozzle</span>
+        <FormulaLabel
+          className="perf-label"
+          label="Nozzle"
+          formula={nozzleExplanation(nozzle, ambientPressure)}
+        />
         <span className="perf-value">{nozzle.choked ? "Choked" : "Unchoked (fully expanded)"}</span>
       </div>
       {anyFlagged && (

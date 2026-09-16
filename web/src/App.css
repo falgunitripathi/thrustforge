@@ -371,6 +371,86 @@
   margin: 2px 0 0;
 }
 
+/* Click-to-reveal formula labels — used wherever a result (a perf-card
+   label or a station-table column header) needs "click it to see the
+   formula behind this number". A `title` attribute alone never fires on
+   a touchscreen, so this makes it an actual tap/click interaction, with
+   the formula appearing in-flow right under the label rather than in a
+   hover-only tooltip. */
+.formula-label {
+  display: inline-flex;
+  position: relative;
+}
+
+.formula-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.formula-trigger:hover,
+.formula-trigger:focus-visible {
+  color: var(--accent);
+}
+
+.formula-icon {
+  font-size: 10px;
+  opacity: 0.65;
+}
+
+.formula-popover {
+  display: block;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  font-family: var(--sans);
+  white-space: normal;
+}
+
+.th-formula-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.th-formula-trigger:hover,
+.th-formula-trigger:focus-visible {
+  color: var(--accent);
+}
+
+.formula-readout-row th {
+  background: var(--code-bg);
+}
+
+.formula-readout-cell {
+  text-align: left !important;
+  white-space: normal !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 12.5px !important;
+  color: var(--text) !important;
+  padding: 10px 12px !important;
+}
+
 .atmosphere-readout {
   margin-top: 10px;
 }

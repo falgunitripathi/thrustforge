@@ -32,6 +32,7 @@ export default function CompressorSection({ config, onChange }) {
             min={1}
             max={20}
             step={1}
+            hint="splits the target π_c across this many stages via the stage-stacking procedure, each stage's own π_i = (1+η_c·ΔT0/T01)^(γ_c/(γ_c−1)) (§4.2)"
           />
           {isAxial ? (
             <NumberField

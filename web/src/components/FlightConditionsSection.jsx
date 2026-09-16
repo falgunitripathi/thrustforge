@@ -31,7 +31,7 @@ export default function FlightConditionsSection({ config, onChange }) {
             min={0}
             max={11000}
             step={100}
-            hint="m, ISA troposphere"
+            hint="m — T_a = 288 − 0.0065·z, ISA troposphere curve-fit (§1). Above 11 km isn't modeled (no sourced stratosphere constants)."
           />
           <NumberField
             label="Flight Mach number"
@@ -40,7 +40,7 @@ export default function FlightConditionsSection({ config, onChange }) {
             min={0}
             max={5.0}
             step={0.05}
-            hint="M∞"
+            hint="M∞ — sets freestream stagnation state T0a = T_a·[1+(γ_c−1)/2·M²], p0a = p_a·[…]^(γ_c/(γ_c−1)) (§1)"
           />
         </>
       )}
