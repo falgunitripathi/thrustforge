@@ -4,3 +4,7 @@ __pycache__/
 .pytest_cache/
 web/node_modules/
 web/dist/
+
+# Raw full-text dumps of copyrighted source books — never committed, kept
+# local only as working material for compiling the formula reference.
+reference_extraction/

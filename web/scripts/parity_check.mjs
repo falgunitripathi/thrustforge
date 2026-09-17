@@ -34,6 +34,8 @@ const PY_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_engine_result.py");
 const JS_SCRIPT = path.join(__dirname, "dump_engine_result.mjs");
 const PY_OFFDESIGN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_off_design_result.py");
 const JS_OFFDESIGN_SCRIPT = path.join(__dirname, "dump_off_design_result.mjs");
+const PY_RAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_ramjet_result.py");
+const JS_RAMJET_SCRIPT = path.join(__dirname, "dump_ramjet_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -134,6 +136,18 @@ const OFF_DESIGN_SCENARIOS = [
     args: { config_overrides: {}, altitude_m: 0.0, mach_flight: 0.0, T04_target: 2200.0 },
     expectError: true,
   },
+];
+
+// ---------------------------------------------------------------------------
+// Ramjet scenario battery — covers the two nozzle regimes (choked at high
+// Mach, and the M=0 case that should raise in BOTH implementations, per
+// reference/ramjet.md §1's "zero static thrust / cannot self-start" note).
+// ---------------------------------------------------------------------------
+const RAMJET_SCENARIOS = [
+  { name: "ramjet: cruise Mach 2.5, 11 km", overrides: { altitude_m: 11000, mach_flight: 2.5, T04: 1800, mdot_a: 10.0 } },
+  { name: "ramjet: high Mach 3.0, high T04, 11 km", overrides: { altitude_m: 11000, mach_flight: 3.0, T04: 2000, mdot_a: 10.0 } },
+  { name: "ramjet: low supersonic Mach 1.5, sea level", overrides: { altitude_m: 0, mach_flight: 1.5, T04: 1500, mdot_a: 5.0 } },
+  { name: "ramjet: static (M=0) — expected non-physical in both", overrides: { altitude_m: 0, mach_flight: 0.0, T04: 1800 }, expectError: true },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -266,6 +280,59 @@ function main() {
     }
     if (pyIsError || jsIsError) {
       console.log("FAIL (unexpected OffDesignError)");
+      if (pyIsError) console.error(`  python: ${pyResult.message}`);
+      if (jsIsError) console.error(`  js: ${jsResult.message}`);
+      anyFailed = true;
+      continue;
+    }
+
+    const mismatches = diff("result", pyResult, jsResult);
+    if (mismatches.length === 0) {
+      console.log("OK");
+    } else {
+      console.log(`FAIL (${mismatches.length} mismatch(es))`);
+      for (const m of mismatches) {
+        console.error(`  ${m}`);
+      }
+      anyFailed = true;
+    }
+  }
+
+  for (const scenario of RAMJET_SCENARIOS) {
+    totalScenarios += 1;
+    process.stdout.write(`Scenario: ${scenario.name} ... `);
+    let pyResult, jsResult;
+    try {
+      pyResult = runPython(PY_RAMJET_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (python error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+    try {
+      jsResult = runJs(JS_RAMJET_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (js error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+
+    const pyIsError = pyResult && pyResult.error === "ValueError";
+    const jsIsError = jsResult && jsResult.error === "ValueError";
+    if (scenario.expectError) {
+      if (pyIsError && jsIsError) {
+        console.log("OK (both raised, as expected)");
+      } else {
+        console.log("FAIL (expected both sides to raise)");
+        console.error(`  python raised: ${pyIsError}, js raised: ${jsIsError}`);
+        anyFailed = true;
+      }
+      continue;
+    }
+    if (pyIsError || jsIsError) {
+      console.log("FAIL (unexpected error)");
       if (pyIsError) console.error(`  python: ${pyResult.message}`);
       if (jsIsError) console.error(`  js: ${jsResult.message}`);
       anyFailed = true;

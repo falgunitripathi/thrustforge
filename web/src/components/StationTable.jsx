@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { fmt, fmtKPa } from "../utils/format.js";
 
-const STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
-const STATION_LABELS = {
+const DEFAULT_STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
+const DEFAULT_STATION_LABELS = {
   a: "a — freestream",
   "2": "2 — compressor inlet",
   "3": "3 — compressor exit",
@@ -43,8 +43,14 @@ const COLUMNS = [
  * `title` tooltip never fires on a touchscreen): tap/click a column name
  * to open its formula in a full-width row right below the header, tap
  * again (or a different column) to change it.
+ *
+ * `stationOrder`/`stationLabels` default to the turbojet's six stations
+ * (a,2,3,4,5,9) but are overridable — e.g. the ramjet has no compressor
+ * or turbine, so it only ever has stations a,2,4,9 (see RamjetResultsPanel).
  */
-export default function StationTable({ stations }) {
+export default function StationTable({
+  stations, stationOrder = DEFAULT_STATION_ORDER, stationLabels = DEFAULT_STATION_LABELS,
+}) {
   const [activeCol, setActiveCol] = useState(null);
   const active = COLUMNS.find((c) => c.key === activeCol);
   return (
@@ -76,13 +82,13 @@ export default function StationTable({ stations }) {
           )}
         </thead>
         <tbody>
-          {STATION_ORDER.map((key, i) => {
+          {stationOrder.map((key, i) => {
             const st = stations[key];
             if (!st) return null;
             return (
               <tr key={key}>
                 <td>{i + 1}</td>
-                <td className="station-name">{STATION_LABELS[key] || key}</td>
+                <td className="station-name">{stationLabels[key] || key}</td>
                 <td>{fmt(st.T0, 1)}</td>
                 <td>{fmtKPa(st.p0, 1)}</td>
                 <td>{fmt(st.T, 1)}</td>

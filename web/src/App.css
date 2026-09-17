@@ -24,6 +24,33 @@
   line-height: 1.55;
 }
 
+.engine-type-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.engine-type-tab {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.engine-type-tab:hover {
+  color: var(--text-h);
+}
+
+.engine-type-tab-active {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
 /* Config sidebar (left) + results column (right) — always two columns,
    at every viewport width. Below the old 900px breakpoint this used to
    collapse to a single stacked column; that made the results accordion
