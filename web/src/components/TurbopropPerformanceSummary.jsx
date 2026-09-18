@@ -91,11 +91,11 @@ export default function TurbopropPerformanceSummary({ performance, propeller }) 
       <div className="perf-card">
         <FormulaLabel
           className="perf-label"
-          label="Power split α (configured vs. optimal)"
+          label="Power split α"
           formula="alpha_opt = 1 − [U²/(2Δh)]·[η_N/(η_Pr²·η_g²·η_mt²·η_t²)] (§2.2) — the split that would maximize total thrust at THIS flight condition. This solver never auto-selects it; compare against the α you've set in the Propeller section."
         />
-        <span className="perf-value">
-          {fmt(performance.alpha, 3)} <small>vs. {fmt(performance.alpha_opt, 3)} optimal</small>
+        <span className="perf-value perf-value-compact">
+          {fmt(performance.alpha, 3)} <small>(optimal {fmt(performance.alpha_opt, 3)})</small>
         </span>
       </div>
     </div>

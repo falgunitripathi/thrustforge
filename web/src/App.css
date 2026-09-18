@@ -384,6 +384,18 @@
   color: var(--text-muted);
 }
 
+/* Used where a card's value is a longer phrase (e.g. "0.850 (optimal
+   0.966)") rather than a single number — shrinks it enough to read as
+   one line instead of wrapping across two inside the card's fixed width. */
+.perf-value-compact {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.perf-value-compact small {
+  font-size: 11px;
+}
+
 .perf-value-flagged {
   color: var(--warn, #c8791a);
 }
