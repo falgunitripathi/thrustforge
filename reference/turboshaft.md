@@ -53,6 +53,27 @@ compressor and load, full expansion assumed in the turbine):
 ratio, b: bleed ratio, eta_mt: turbine mechanical efficiency, eta_mc:
 compressor mechanical efficiency. Ref: NPTEL p.358.
 
+**`Wt` itself is not spelled out as its own formula in this lecture** —
+the source only says "assuming full expansion in the turbine" (p.358)
+before writing `Wshaft` directly in terms of it. Cross-referencing
+against this project's own turboprop implementation (aeropropsim/
+turboprop.py), a single-spool turboshaft is exactly the turboprop's
+single-spool alpha-split model with **alpha = 1.0** (ALL of the ideal
+enthalpy drop from p04 to ambient goes to the shaft; none held back for
+a nozzle, since a turboshaft has no separate jet thrust at all):
+
+    Wt_ideal = Cp_h * T04 * [1 - (pa/p04)^((gamma_h-1)/gamma_h)]
+    Wt       = eta_t * Wt_ideal
+
+This is an inference from this project's own prior work, not a
+literally-transcribed source formula — flag it as such in code (same
+spirit as this project's other documented, reasoned extrapolations, e.g.
+the turbojet's `matching.py` judgment calls). Implementation implication
+for tomorrow: `solve_turboshaft` (single-spool) can reuse almost all of
+`solve_turboprop`'s structure directly, just with alpha hardcoded to 1.0,
+no propeller/gearbox/nozzle-thrust terms, and `Wload = eta_m * Wshaft`
+(§2.1 below) replacing the propeller-thrust step entirely.
+
 Power delivered to the load, after mechanical losses in the connecting
 shaft/drivetrain (e.g. rotor friction losses cited by the source):
 
