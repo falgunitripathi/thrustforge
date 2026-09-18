@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { defaultEngineConfig, solveEngine } from "./physics/engine.js";
+import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
+import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
+import TurbopropResultsPanel from "./components/TurbopropResultsPanel.jsx";
 import "./App.css";
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
+
+const ENGINE_TYPES = [
+  { value: "turbojet", label: "Turbojet" },
+  { value: "turboprop", label: "Turboprop" },
+];
 
 // A link opens the app at exactly the configuration it was built from:
 // any recognized query param overrides that one field of the default
@@ -40,7 +48,12 @@ function loadSavedConfigs() {
  * not the project's name.)
  */
 function App() {
+  // Which engine's cycle is being configured — each engine type keeps its
+  // own independent config, so switching back and forth never loses what
+  // was dialed in on the other one.
+  const [engineType, setEngineType] = useState("turbojet");
   const [config, setConfig] = useState(initialConfig);
+  const [turbopropConfig, setTurbopropConfig] = useState(defaultTurbopropConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -49,13 +62,20 @@ function App() {
 
   const patchConfig = (patch) => setConfig((prev) => ({ ...prev, ...patch }));
   const resetConfig = () => setConfig(defaultEngineConfig());
+  const patchTurbopropConfig = (patch) => setTurbopropConfig((prev) => ({ ...prev, ...patch }));
+  const resetTurbopropConfig = () => setTurbopropConfig(defaultTurbopropConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
-  // configuration — replaceState (not pushState) so tweaking a slider
-  // doesn't spam the browser's back-button history.
+  // turbojet configuration — replaceState (not pushState) so tweaking a
+  // slider doesn't spam the browser's back-button history. Shareable
+  // links aren't wired up for the turboprop config yet (Phase 3's
+  // shareLink util is keyed to EngineConfig's own field set) — the
+  // turboprop form has no "Copy shareable link" button, so nothing
+  // implies it works.
   useEffect(() => {
+    if (engineType !== "turbojet") return;
     window.history.replaceState(null, "", buildShareUrl(config));
-  }, [config]);
+  }, [config, engineType]);
 
   // Persist saved configurations across reloads. Every save/remove writes
   // straight through, so a refresh (or a link opened later) sees exactly
@@ -71,17 +91,20 @@ function App() {
 
   const { result, error } = useMemo(() => {
     try {
-      return { result: solveEngine(config), error: null };
+      const solved = engineType === "turboprop" ? solveTurboprop(turbopropConfig) : solveEngine(config);
+      return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [config]);
+  }, [engineType, config, turbopropConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
-  // config never retroactively change a saved comparison row.
+  // config never retroactively change a saved comparison row. Turbojet
+  // only for now — ConfigCompare's columns are built around EngineConfig's
+  // own fields, which don't apply to a turboprop.
   const saveConfig = (name) => {
-    if (!result) return;
+    if (!result || engineType !== "turbojet") return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     setSavedConfigs((prev) => [...prev, { id, name, config, result }]);
   };
@@ -98,16 +121,39 @@ function App() {
           left — altitude, pressure ratio, turbine type — and watch the
           whole engine cycle re-solve instantly, right here in your browser.
         </p>
+        <div className="engine-type-tabs" role="tablist" aria-label="Engine type">
+          {ENGINE_TYPES.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              role="tab"
+              aria-selected={engineType === t.value}
+              className={`engine-type-tab${engineType === t.value ? " engine-type-tab-active" : ""}`}
+              onClick={() => setEngineType(t.value)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className={`app-main${sidebarOpen ? "" : " app-main-sidebar-collapsed"}`}>
         {sidebarOpen ? (
-          <ConfigForm
-            config={config}
-            onChange={patchConfig}
-            onReset={resetConfig}
-            onCollapse={() => setSidebarOpen(false)}
-          />
+          engineType === "turboprop" ? (
+            <TurbopropConfigForm
+              config={turbopropConfig}
+              onChange={patchTurbopropConfig}
+              onReset={resetTurbopropConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
+          ) : (
+            <ConfigForm
+              config={config}
+              onChange={patchConfig}
+              onReset={resetConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
+          )
         ) : (
           <button
             type="button"
@@ -136,6 +182,8 @@ function App() {
                 </p>
               </div>
             </div>
+          ) : engineType === "turboprop" ? (
+            <TurbopropResultsPanel result={result} config={turbopropConfig} />
           ) : (
             <ResultsPanel
               result={result}

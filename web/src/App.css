@@ -24,6 +24,33 @@
   line-height: 1.55;
 }
 
+.engine-type-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.engine-type-tab {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.engine-type-tab:hover {
+  color: var(--text-h);
+}
+
+.engine-type-tab-active {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
 /* Config sidebar (left) + results column (right) — always two columns,
    at every viewport width. Below the old 900px breakpoint this used to
    collapse to a single stacked column; that made the results accordion
@@ -699,6 +726,30 @@
   fill: rgba(255, 255, 255, 0.6);
   stroke: rgba(60, 40, 90, 0.18);
   stroke-width: 0.5;
+}
+
+.ed-propeller {
+  fill: var(--ed-compressor);
+  stroke: var(--ed-casing-line);
+  stroke-width: 0.75;
+}
+
+.ed-propeller-spinner {
+  fill: var(--ed-casing-line);
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+
+.ed-gearbox {
+  fill: var(--ed-casing);
+  stroke: var(--ed-casing-line);
+  stroke-width: 1.5;
+}
+
+.ed-shaft {
+  stroke: var(--ed-casing-line);
+  stroke-width: 6;
+  stroke-linecap: round;
 }
 
 .ed-clickable {

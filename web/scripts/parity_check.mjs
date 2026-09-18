@@ -34,6 +34,8 @@ const PY_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_engine_result.py");
 const JS_SCRIPT = path.join(__dirname, "dump_engine_result.mjs");
 const PY_OFFDESIGN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_off_design_result.py");
 const JS_OFFDESIGN_SCRIPT = path.join(__dirname, "dump_off_design_result.mjs");
+const PY_TURBOPROP_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turboprop_result.py");
+const JS_TURBOPROP_SCRIPT = path.join(__dirname, "dump_turboprop_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -134,6 +136,20 @@ const OFF_DESIGN_SCENARIOS = [
     args: { config_overrides: {}, altitude_m: 0.0, mach_flight: 0.0, T04_target: 2200.0 },
     expectError: true,
   },
+];
+
+// ---------------------------------------------------------------------------
+// Turboprop scenario battery — covers axial/centrifugal compressor,
+// axial/radial turbine, a range of alpha splits, and the M=0 case that
+// should raise in both implementations (reference/turboprop.md §2.2:
+// propeller thrust divides by flight speed).
+// ---------------------------------------------------------------------------
+const TURBOPROP_SCENARIOS = [
+  { name: "turboprop: default cruise", overrides: { altitude_m: 6000, mach_flight: 0.5, pi_c: 10.0, T04: 1400.0, alpha: 0.85, mdot_a: 10.0 } },
+  { name: "turboprop: low-alpha, high pi_c", overrides: { altitude_m: 3000, mach_flight: 0.3, pi_c: 14.0, T04: 1300.0, alpha: 0.75, n_compressor_stages: 10, mdot_a: 8.0 } },
+  { name: "turboprop: high-alpha, hot cycle", overrides: { altitude_m: 7000, mach_flight: 0.6, pi_c: 8.0, T04: 1500.0, alpha: 0.92, mdot_a: 12.0 } },
+  { name: "turboprop: centrifugal compressor, radial turbine", overrides: { altitude_m: 3000, mach_flight: 0.35, compressor_type: "centrifugal", n_compressor_stages: 1, centrifugal_U2: 420.0, T04: 1200.0, turbine_type: "radial", n_turbine_stages: 1, alpha: 0.85, mdot_a: 6.0 } },
+  { name: "turboprop: static (M=0) — expected error in both", overrides: { altitude_m: 0, mach_flight: 0.0 }, expectError: true },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -266,6 +282,59 @@ function main() {
     }
     if (pyIsError || jsIsError) {
       console.log("FAIL (unexpected OffDesignError)");
+      if (pyIsError) console.error(`  python: ${pyResult.message}`);
+      if (jsIsError) console.error(`  js: ${jsResult.message}`);
+      anyFailed = true;
+      continue;
+    }
+
+    const mismatches = diff("result", pyResult, jsResult);
+    if (mismatches.length === 0) {
+      console.log("OK");
+    } else {
+      console.log(`FAIL (${mismatches.length} mismatch(es))`);
+      for (const m of mismatches) {
+        console.error(`  ${m}`);
+      }
+      anyFailed = true;
+    }
+  }
+
+  for (const scenario of TURBOPROP_SCENARIOS) {
+    totalScenarios += 1;
+    process.stdout.write(`Scenario: ${scenario.name} ... `);
+    let pyResult, jsResult;
+    try {
+      pyResult = runPython(PY_TURBOPROP_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (python error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+    try {
+      jsResult = runJs(JS_TURBOPROP_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (js error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+
+    const pyIsError = pyResult && pyResult.error === "ValueError";
+    const jsIsError = jsResult && jsResult.error === "ValueError";
+    if (scenario.expectError) {
+      if (pyIsError && jsIsError) {
+        console.log("OK (both raised, as expected)");
+      } else {
+        console.log("FAIL (expected both sides to raise)");
+        console.error(`  python raised: ${pyIsError}, js raised: ${jsIsError}`);
+        anyFailed = true;
+      }
+      continue;
+    }
+    if (pyIsError || jsIsError) {
+      console.log("FAIL (unexpected error)");
       if (pyIsError) console.error(`  python: ${pyResult.message}`);
       if (jsIsError) console.error(`  js: ${jsResult.message}`);
       anyFailed = true;
