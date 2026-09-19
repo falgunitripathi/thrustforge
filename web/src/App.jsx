@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { defaultEngineConfig, solveEngine } from "./physics/engine.js";
 import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
+import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
 import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
 import TurbopropResultsPanel from "./components/TurbopropResultsPanel.jsx";
+import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
+import TurboshaftResultsPanel from "./components/TurboshaftResultsPanel.jsx";
 import "./App.css";
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -13,6 +16,7 @@ const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
 const ENGINE_TYPES = [
   { value: "turbojet", label: "Turbojet" },
   { value: "turboprop", label: "Turboprop" },
+  { value: "turboshaft", label: "Turboshaft" },
 ];
 
 // A link opens the app at exactly the configuration it was built from:
@@ -54,6 +58,7 @@ function App() {
   const [engineType, setEngineType] = useState("turbojet");
   const [config, setConfig] = useState(initialConfig);
   const [turbopropConfig, setTurbopropConfig] = useState(defaultTurbopropConfig);
+  const [turboshaftConfig, setTurboshaftConfig] = useState(defaultTurboshaftConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -64,6 +69,8 @@ function App() {
   const resetConfig = () => setConfig(defaultEngineConfig());
   const patchTurbopropConfig = (patch) => setTurbopropConfig((prev) => ({ ...prev, ...patch }));
   const resetTurbopropConfig = () => setTurbopropConfig(defaultTurbopropConfig());
+  const patchTurboshaftConfig = (patch) => setTurboshaftConfig((prev) => ({ ...prev, ...patch }));
+  const resetTurboshaftConfig = () => setTurboshaftConfig(defaultTurboshaftConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
   // turbojet configuration — replaceState (not pushState) so tweaking a
@@ -91,12 +98,15 @@ function App() {
 
   const { result, error } = useMemo(() => {
     try {
-      const solved = engineType === "turboprop" ? solveTurboprop(turbopropConfig) : solveEngine(config);
+      const solved =
+        engineType === "turboprop" ? solveTurboprop(turbopropConfig)
+        : engineType === "turboshaft" ? solveTurboshaft(turboshaftConfig)
+        : solveEngine(config);
       return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [engineType, config, turbopropConfig]);
+  }, [engineType, config, turbopropConfig, turboshaftConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
@@ -146,6 +156,13 @@ function App() {
               onReset={resetTurbopropConfig}
               onCollapse={() => setSidebarOpen(false)}
             />
+          ) : engineType === "turboshaft" ? (
+            <TurboshaftConfigForm
+              config={turboshaftConfig}
+              onChange={patchTurboshaftConfig}
+              onReset={resetTurboshaftConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
           ) : (
             <ConfigForm
               config={config}
@@ -184,6 +201,8 @@ function App() {
             </div>
           ) : engineType === "turboprop" ? (
             <TurbopropResultsPanel result={result} config={turbopropConfig} />
+          ) : engineType === "turboshaft" ? (
+            <TurboshaftResultsPanel result={result} config={turboshaftConfig} />
           ) : (
             <ResultsPanel
               result={result}
