@@ -3,7 +3,7 @@ import { fmt, fmtKPa } from "../utils/format.js";
 import { stationHeatColor } from "../utils/heatColor.js";
 import {
   StageBars, RadialWheel, FanBlades, PropellerBlades, FlowStreak, FlowMarquee,
-  HousingFlange, InspectToolbar, Clickable, StationReadout, PartCard, StationTrendChart,
+  HousingFlange, InspectToolbar, Clickable, StationReadout, PartStepReadout, PartCard, StationTrendChart,
 } from "./engineDiagramParts.jsx";
 
 /**
@@ -35,14 +35,20 @@ const SECTION = {
   nozzle: { x0: 712, x1: 860 },
 };
 
+// Step 1 is the propeller itself (rendered separately below, as a
+// PartStepReadout rather than a flow-station StationReadout, since it
+// has no T0/p0 — it moves a separate air stream, not this duct's flow).
+// Every flow station's own seq is shifted +1 to make room for it.
+const PROPELLER_SEQ = 1;
 const STATIONS = [
-  { key: "a", x: SECTION.intake.x0 - 10, name: "Freestream", seq: 1 },
-  { key: "2", x: SECTION.intake.x1, name: "Intake exit", seq: 2 },
-  { key: "3", x: SECTION.compressor.x1, name: "Compressor exit", seq: 3 },
-  { key: "4", x: SECTION.combustor.x1, name: "Combustor exit", seq: 4 },
-  { key: "5", x: SECTION.turbine.x1, name: "Turbine exit", seq: 5 },
-  { key: "9", x: SECTION.nozzle.x1, name: "Nozzle exit", seq: 6 },
+  { key: "a", x: SECTION.intake.x0 - 10, name: "Freestream", seq: 2 },
+  { key: "2", x: SECTION.intake.x1, name: "Intake exit", seq: 3 },
+  { key: "3", x: SECTION.compressor.x1, name: "Compressor exit", seq: 4 },
+  { key: "4", x: SECTION.combustor.x1, name: "Combustor exit", seq: 5 },
+  { key: "5", x: SECTION.turbine.x1, name: "Turbine exit", seq: 6 },
+  { key: "9", x: SECTION.nozzle.x1, name: "Nozzle exit", seq: 7 },
 ];
+const TOTAL_STEPS = STATIONS.length + 1;
 
 // Same casing silhouette as the turbojet's EngineDiagram, shifted right to
 // clear the propeller/gearbox added ahead of the intake.
@@ -157,7 +163,7 @@ function partDetails(kind, result, config) {
 /** Plain-English value list for a clicked station marker — the full row, spelled out. */
 function stationDetails(key, name, seq, st) {
   return {
-    title: `Step ${seq} of ${STATIONS.length} — Station ${key} — ${name}`,
+    title: `Step ${seq} of ${TOTAL_STEPS} — Station ${key} — ${name}`,
     rows: [
       ["Stagnation temperature", `${fmt(st.T0, 1)} K`],
       ["Stagnation pressure", `${fmtKPa(st.p0, 1)} kPa`],
@@ -173,7 +179,7 @@ function stationDetails(key, name, seq, st) {
 }
 
 function Diagram({ config, result, idSuffix }) {
-  const { stations, compressor, turbine } = result;
+  const { stations, compressor, turbine, propeller } = result;
   const [selected, setSelected] = useState(null);
 
   const isAxialCompressor = config.compressor_type === "axial";
@@ -354,12 +360,23 @@ function Diagram({ config, result, idSuffix }) {
       </svg>
 
       <div className="station-readouts">
+        <PartStepReadout
+          name="Propeller"
+          seq={PROPELLER_SEQ}
+          seqTotal={TOTAL_STEPS}
+          value1={propeller.shaft_power_W / 1000}
+          unit1="kW shaft power"
+          value2={propeller.Tpr}
+          unit2="N thrust"
+          leftPct={((propellerMid + MARGIN) / TOTAL_W) * 100}
+          onSelect={() => selectPartByKind("propeller")}
+        />
         {STATIONS.map((s) => (
           <StationReadout
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={STATIONS.length}
+            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
@@ -382,11 +399,13 @@ function Diagram({ config, result, idSuffix }) {
         Compressor: {compressor.type}. Turbine: {turbine.type}.
       </p>
       <p className="section-note">
-        Each station marker shows &ldquo;Step 1 of 6&rdquo; through
-        &ldquo;Step 6 of 6&rdquo; in simple flow order — the same six
-        stations (a, 2, 3, 4, 5, 9) as the turbojet, since the intake,
-        compressor, and combustor are physically identical; only what
-        happens to the turbine's energy afterward differs.
+        Each marker shows &ldquo;Step 1 of {TOTAL_STEPS}&rdquo; through
+        &ldquo;Step {TOTAL_STEPS} of {TOTAL_STEPS}&rdquo; in simple flow
+        order — Step 1 is the propeller itself (no T0/p0, since it moves
+        a separate air stream), then the same six flow stations (a, 2,
+        3, 4, 5, 9) as the turbojet, since the intake, compressor, and
+        combustor are physically identical; only what happens to the
+        turbine's energy afterward differs.
       </p>
       </div>
     </div>

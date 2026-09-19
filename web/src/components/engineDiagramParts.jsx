@@ -227,6 +227,43 @@ export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, 
   );
 }
 
+/**
+ * Same visual language as StationReadout, for a numbered step that isn't
+ * one of the gas-path flow stations (T0/p0 don't apply) — the
+ * turboprop's propeller (a separate air stream, not part of the ducted
+ * flow) or the turboshaft's load (mechanical output, not a flow state).
+ * Takes two already-formatted value/unit pairs instead of T0/p0.
+ */
+export function PartStepReadout({
+  name, seq, seqTotal, value1, unit1, value2, unit2, leftPct, onSelect,
+}) {
+  const anim1 = useAnimatedNumber(value1);
+  const anim2 = useAnimatedNumber(value2);
+  return (
+    <div
+      className="station-readout"
+      style={{ left: `${leftPct}%` }}
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+    >
+      <span className="station-dot" aria-hidden="true" />
+      <div className="station-card">
+        <span className="station-tag">Step {seq} of {seqTotal}</span>
+        <span className="station-name">{name}</span>
+        <span className="station-num">{fmt(anim1, 1)} {unit1}</span>
+        {unit2 && <span className="station-num station-num-muted">{fmt(anim2, 1)} {unit2}</span>}
+      </div>
+    </div>
+  );
+}
+
 /** A small floating card of plain-English values, anchored above the part that was clicked. */
 export function PartCard({ details, leftPct, onClose }) {
   if (!details) return null;

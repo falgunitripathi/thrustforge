@@ -3,7 +3,7 @@ import { fmt, fmtKPa } from "../utils/format.js";
 import { stationHeatColor } from "../utils/heatColor.js";
 import {
   StageBars, RadialWheel, FanBlades, FlowStreak, FlowMarquee,
-  HousingFlange, InspectToolbar, Clickable, StationReadout, PartCard, StationTrendChart,
+  HousingFlange, InspectToolbar, Clickable, StationReadout, PartStepReadout, PartCard, StationTrendChart,
 } from "./engineDiagramParts.jsx";
 
 /**
@@ -37,6 +37,11 @@ const STATIONS = [
   { key: "4", x: SECTION.combustor.x1, name: "Combustor exit", seq: 4 },
   { key: "5", x: SECTION.turbine.x1, name: "Turbine exit (= exhaust, fully expanded)", seq: 5 },
 ];
+// The Load is the final step (rendered separately below, as a
+// PartStepReadout rather than a flow-station StationReadout, since it
+// has no T0/p0 — it's a mechanical output, not part of the gas path).
+const LOAD_SEQ = STATIONS.length + 1;
+const TOTAL_STEPS = LOAD_SEQ;
 
 const CASING_TOP = [
   [4, -14], [40, -44], [160, -50], [220, -64], [300, -72], [350, -58],
@@ -132,7 +137,7 @@ function partDetails(kind, result, config) {
 
 function stationDetails(key, name, seq, st) {
   return {
-    title: `Step ${seq} of ${STATIONS.length} — Station ${key} — ${name}`,
+    title: `Step ${seq} of ${TOTAL_STEPS} — Station ${key} — ${name}`,
     rows: [
       ["Stagnation temperature", `${fmt(st.T0, 1)} K`],
       ["Stagnation pressure", `${fmtKPa(st.p0, 1)} kPa`],
@@ -148,7 +153,7 @@ function stationDetails(key, name, seq, st) {
 }
 
 function Diagram({ config, result, idSuffix }) {
-  const { stations, compressor, turbine } = result;
+  const { stations, compressor, turbine, shaft } = result;
   const [selected, setSelected] = useState(null);
 
   const isAxialCompressor = config.compressor_type === "axial";
@@ -310,7 +315,7 @@ function Diagram({ config, result, idSuffix }) {
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={STATIONS.length}
+            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
@@ -318,6 +323,15 @@ function Diagram({ config, result, idSuffix }) {
             onSelect={() => selectStation(s)}
           />
         ))}
+        <PartStepReadout
+          name="Load"
+          seq={LOAD_SEQ}
+          seqTotal={TOTAL_STEPS}
+          value1={shaft.Pload_W / 1000}
+          unit1="kW delivered"
+          leftPct={((loadMid + MARGIN) / TOTAL_W) * 100}
+          onSelect={() => selectPartByKind("load")}
+        />
       </div>
 
       <PartCard details={selected?.details} leftPct={selected?.leftPct ?? 50} onClose={() => setSelected(null)} />
@@ -331,10 +345,12 @@ function Diagram({ config, result, idSuffix }) {
         Turbine: {turbine.type}.
       </p>
       <p className="section-note">
-        Each station marker shows &ldquo;Step 1 of 5&rdquo; through
-        &ldquo;Step 5 of 5&rdquo; in simple flow order — only five
-        stations here (a, 2, 3, 4, 5), one fewer than the turbojet's six,
-        since there's no station 9 without a nozzle.
+        Each marker shows &ldquo;Step 1 of {TOTAL_STEPS}&rdquo; through
+        &ldquo;Step {TOTAL_STEPS} of {TOTAL_STEPS}&rdquo; in simple flow
+        order — five flow stations (a, 2, 3, 4, 5, one fewer than the
+        turbojet's six since there's no nozzle/station 9), then the Load
+        itself as the final step (no T0/p0, since it's a mechanical
+        output, not part of the gas path).
       </p>
       </div>
     </div>
