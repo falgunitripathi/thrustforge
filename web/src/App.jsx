@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { defaultEngineConfig, solveEngine } from "./physics/engine.js";
 import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
 import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.js";
+import { defaultTurbofanConfig, solveTurbofan } from "./physics/turbofan.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
@@ -9,6 +10,8 @@ import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
 import TurbopropResultsPanel from "./components/TurbopropResultsPanel.jsx";
 import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
 import TurboshaftResultsPanel from "./components/TurboshaftResultsPanel.jsx";
+import TurbofanConfigForm from "./components/TurbofanConfigForm.jsx";
+import TurbofanResultsPanel from "./components/TurbofanResultsPanel.jsx";
 import "./App.css";
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -17,6 +20,7 @@ const ENGINE_TYPES = [
   { value: "turbojet", label: "Turbojet" },
   { value: "turboprop", label: "Turboprop" },
   { value: "turboshaft", label: "Turboshaft" },
+  { value: "turbofan", label: "Turbofan" },
 ];
 
 // A link opens the app at exactly the configuration it was built from:
@@ -59,6 +63,7 @@ function App() {
   const [config, setConfig] = useState(initialConfig);
   const [turbopropConfig, setTurbopropConfig] = useState(defaultTurbopropConfig);
   const [turboshaftConfig, setTurboshaftConfig] = useState(defaultTurboshaftConfig);
+  const [turbofanConfig, setTurbofanConfig] = useState(defaultTurbofanConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -71,6 +76,8 @@ function App() {
   const resetTurbopropConfig = () => setTurbopropConfig(defaultTurbopropConfig());
   const patchTurboshaftConfig = (patch) => setTurboshaftConfig((prev) => ({ ...prev, ...patch }));
   const resetTurboshaftConfig = () => setTurboshaftConfig(defaultTurboshaftConfig());
+  const patchTurbofanConfig = (patch) => setTurbofanConfig((prev) => ({ ...prev, ...patch }));
+  const resetTurbofanConfig = () => setTurbofanConfig(defaultTurbofanConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
   // turbojet configuration — replaceState (not pushState) so tweaking a
@@ -101,12 +108,13 @@ function App() {
       const solved =
         engineType === "turboprop" ? solveTurboprop(turbopropConfig)
         : engineType === "turboshaft" ? solveTurboshaft(turboshaftConfig)
+        : engineType === "turbofan" ? solveTurbofan(turbofanConfig)
         : solveEngine(config);
       return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [engineType, config, turbopropConfig, turboshaftConfig]);
+  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
@@ -163,6 +171,13 @@ function App() {
               onReset={resetTurboshaftConfig}
               onCollapse={() => setSidebarOpen(false)}
             />
+          ) : engineType === "turbofan" ? (
+            <TurbofanConfigForm
+              config={turbofanConfig}
+              onChange={patchTurbofanConfig}
+              onReset={resetTurbofanConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
           ) : (
             <ConfigForm
               config={config}
@@ -203,6 +218,8 @@ function App() {
             <TurbopropResultsPanel result={result} config={turbopropConfig} />
           ) : engineType === "turboshaft" ? (
             <TurboshaftResultsPanel result={result} config={turboshaftConfig} />
+          ) : engineType === "turbofan" ? (
+            <TurbofanResultsPanel result={result} config={turbofanConfig} />
           ) : (
             <ResultsPanel
               result={result}

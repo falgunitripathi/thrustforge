@@ -38,6 +38,8 @@ const PY_TURBOPROP_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turboprop_resu
 const JS_TURBOPROP_SCRIPT = path.join(__dirname, "dump_turboprop_result.mjs");
 const PY_TURBOSHAFT_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turboshaft_result.py");
 const JS_TURBOSHAFT_SCRIPT = path.join(__dirname, "dump_turboshaft_result.mjs");
+const PY_TURBOFAN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turbofan_result.py");
+const JS_TURBOFAN_SCRIPT = path.join(__dirname, "dump_turbofan_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -165,6 +167,16 @@ const TURBOSHAFT_SCENARIOS = [
   { name: "turboshaft: altitude, low pi_c", overrides: { altitude_m: 3000, mach_flight: 0.0, pi_c: 8.0, T04: 1300.0, n_compressor_stages: 6, mdot_a: 2.0 } },
   { name: "turboshaft: forward flight, hot cycle", overrides: { altitude_m: 6000, mach_flight: 0.3, pi_c: 14.0, T04: 1500.0, mdot_a: 3.0 } },
   { name: "turboshaft: centrifugal compressor, radial turbine", overrides: { altitude_m: 0, mach_flight: 0.0, compressor_type: "centrifugal", n_compressor_stages: 1, centrifugal_U2: 420.0, T04: 1200.0, turbine_type: "radial", n_turbine_stages: 1, mdot_a: 1.5 } },
+];
+
+// ---------------------------------------------------------------------------
+// Turbofan scenario battery — two-spool unmixed baseline, covering a
+// cruise point, a low-bypass/high-FPR point, and a static (M=0) point.
+// ---------------------------------------------------------------------------
+const TURBOFAN_SCENARIOS = [
+  { name: "turbofan: cruise, medium bypass", overrides: { altitude_m: 10000, mach_flight: 0.8, beta: 5.0, pi_f: 1.65, pi_LPC: 1.5, pi_HPC: 12.0, T05: 1500.0, mdot_a: 50.0 } },
+  { name: "turbofan: low bypass, high fan PR", overrides: { altitude_m: 3000, mach_flight: 0.3, beta: 1.5, pi_f: 2.2, pi_LPC: 1.8, pi_HPC: 10.0, T05: 1600.0, mdot_a: 30.0 } },
+  { name: "turbofan: static (M=0), high bypass", overrides: { altitude_m: 0, mach_flight: 0.0, beta: 8.0, pi_f: 1.5, pi_LPC: 1.3, pi_HPC: 14.0, T05: 1450.0, mdot_a: 80.0 } },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -401,6 +413,49 @@ function main() {
       }
       continue;
     }
+    if (pyIsError || jsIsError) {
+      console.log("FAIL (unexpected error)");
+      if (pyIsError) console.error(`  python: ${pyResult.message}`);
+      if (jsIsError) console.error(`  js: ${jsResult.message}`);
+      anyFailed = true;
+      continue;
+    }
+
+    const mismatches = diff("result", pyResult, jsResult);
+    if (mismatches.length === 0) {
+      console.log("OK");
+    } else {
+      console.log(`FAIL (${mismatches.length} mismatch(es))`);
+      for (const m of mismatches) {
+        console.error(`  ${m}`);
+      }
+      anyFailed = true;
+    }
+  }
+
+  for (const scenario of TURBOFAN_SCENARIOS) {
+    totalScenarios += 1;
+    process.stdout.write(`Scenario: ${scenario.name} ... `);
+    let pyResult, jsResult;
+    try {
+      pyResult = runPython(PY_TURBOFAN_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (python error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+    try {
+      jsResult = runJs(JS_TURBOFAN_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (js error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+
+    const pyIsError = pyResult && pyResult.error === "ValueError";
+    const jsIsError = jsResult && jsResult.error === "ValueError";
     if (pyIsError || jsIsError) {
       console.log("FAIL (unexpected error)");
       if (pyIsError) console.error(`  python: ${pyResult.message}`);
