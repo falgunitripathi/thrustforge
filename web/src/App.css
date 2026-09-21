@@ -248,6 +248,21 @@
   font-weight: 500;
 }
 
+button.field-label.formula-trigger {
+  width: 100%;
+  color: var(--text-h);
+}
+
+button.field-label.formula-trigger:hover,
+button.field-label.formula-trigger:focus-visible {
+  color: var(--accent);
+}
+
+.field .formula-label {
+  display: flex;
+  width: 100%;
+}
+
 .field-hint {
   color: var(--text-muted);
   font-size: 11.5px;
@@ -579,6 +594,27 @@
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--text-muted);
+}
+
+/* InfoModal — same "paper" card as FormulaModal, but for a config
+   field's plain-English explanation (typical values, valid range,
+   source citation) rather than a typeset equation. */
+.info-modal-paper {
+  display: block;
+  text-align: left;
+}
+
+.info-modal-text {
+  margin: 0;
+  font-family: "Georgia", "Cambria", var(--display), serif;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: #2a2620;
+}
+
+.info-modal-text sub,
+.info-modal-text sup {
+  font-size: 0.68em;
 }
 
 .atmosphere-readout {
