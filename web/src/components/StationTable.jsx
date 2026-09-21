@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { fmt, fmtKPa } from "../utils/format.js";
+import FormulaModal from "./FormulaModal.jsx";
 
-const STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
-const STATION_LABELS = {
+const DEFAULT_STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
+const DEFAULT_STATION_LABELS = {
   a: "a — freestream",
   "2": "2 — compressor inlet",
   "3": "3 — compressor exit",
@@ -28,23 +29,28 @@ const COLUMNS = [
  * rho, h, h0) row, from `EngineResult.stations` (Ref §2.1 station-state
  * recipe, §11 solve order for which stations are tabulated).
  *
- * Station 9's p0 will read lower than station 5's p0 — that's the
- * nozzle's real total-pressure loss made visible (see
- * `Station.fromStatic`'s docstring in gasstate.js); its T0 should equal
- * station 5's T0 (adiabatic nozzle) as a running self-consistency check.
+ * `stationOrder`/`stationLabels` default to the turbojet's six stations
+ * (a,2,3,4,5,9) but are overridable — the turboprop reuses the same six,
+ * the turboshaft has only five (no nozzle/station 9), and the turbofan
+ * has ten of its own (a,2,10,3,4,5,6,7,9,11) — see each engine's own
+ * ResultsPanel for the props it passes.
  *
- * The leading "Step" column numbers these 1-6 in simple flow order, since
- * the traditional station numbers themselves (a, 2, 3, 4, 5, 9) jump from
- * 5 to 9 — that's the standard gas-turbine convention (stations 6-8 are
- * reserved for an afterburner/reheat section this model doesn't include),
- * not a typo, but it reads oddly without a plain sequence alongside it.
+ * The leading "Step" column numbers these in simple flow order, since
+ * the traditional station numbers themselves often skip around (e.g.
+ * the turbojet's a,2,3,4,5,9 jumps from 5 to 9 — stations 6-8 are
+ * reserved for an afterburner/reheat section this model doesn't
+ * include) — not a typo, but it reads oddly without a plain sequence
+ * alongside it.
  *
  * Every property column header is clickable (not just hoverable — a
- * `title` tooltip never fires on a touchscreen): tap/click a column name
- * to open its formula in a full-width row right below the header, tap
- * again (or a different column) to change it.
+ * `title` tooltip never fires on a touchscreen): tap/click a column
+ * name to open its formula in a centered, closeable modal (see
+ * FormulaModal.jsx) — the same interaction used everywhere else a
+ * result or parameter has a formula behind it.
  */
-export default function StationTable({ stations }) {
+export default function StationTable({
+  stations, stationOrder = DEFAULT_STATION_ORDER, stationLabels = DEFAULT_STATION_LABELS,
+}) {
   const [activeCol, setActiveCol] = useState(null);
   const active = COLUMNS.find((c) => c.key === activeCol);
   return (
@@ -60,29 +66,22 @@ export default function StationTable({ stations }) {
                   type="button"
                   className="th-formula-trigger"
                   aria-expanded={activeCol === col.key}
-                  onClick={() => setActiveCol(activeCol === col.key ? null : col.key)}
+                  onClick={() => setActiveCol(col.key)}
                 >
                   {col.label}
                 </button>
               </th>
             ))}
           </tr>
-          {active && (
-            <tr className="formula-readout-row">
-              <th colSpan={COLUMNS.length + 2} className="formula-readout-cell">
-                <strong>{active.label}:</strong> {active.formula}
-              </th>
-            </tr>
-          )}
         </thead>
         <tbody>
-          {STATION_ORDER.map((key, i) => {
+          {stationOrder.map((key, i) => {
             const st = stations[key];
             if (!st) return null;
             return (
               <tr key={key}>
                 <td>{i + 1}</td>
-                <td className="station-name">{STATION_LABELS[key] || key}</td>
+                <td className="station-name">{stationLabels[key] || key}</td>
                 <td>{fmt(st.T0, 1)}</td>
                 <td>{fmtKPa(st.p0, 1)}</td>
                 <td>{fmt(st.T, 1)}</td>
@@ -97,6 +96,9 @@ export default function StationTable({ stations }) {
           })}
         </tbody>
       </table>
+      {active && (
+        <FormulaModal label={active.label} formula={active.formula} onClose={() => setActiveCol(null)} />
+      )}
     </div>
   );
 }

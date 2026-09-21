@@ -209,6 +209,7 @@ function Diagram({ config, result, idSuffix }) {
       <svg
         viewBox={`${-MARGIN} 0 ${TOTAL_W} ${VBOX_H}`}
         className="engine-diagram-svg"
+        style={{ width: TOTAL_W }}
         role="img"
         aria-label="Half-cutaway schematic of the configured turboshaft, showing the gas path from intake to turbine exit, and the output shaft driving a load. Click any part for its values."
       >
@@ -309,7 +310,7 @@ function Diagram({ config, result, idSuffix }) {
         ))}
       </svg>
 
-      <div className="station-readouts">
+      <div className="station-readouts" style={{ width: TOTAL_W }}>
         {STATIONS.map((s) => (
           <StationReadout
             key={s.key}

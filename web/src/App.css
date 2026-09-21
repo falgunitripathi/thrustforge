@@ -413,9 +413,9 @@
 /* Click-to-reveal formula labels — used wherever a result (a perf-card
    label or a station-table column header) needs "click it to see the
    formula behind this number". A `title` attribute alone never fires on
-   a touchscreen, so this makes it an actual tap/click interaction, with
-   the formula appearing in-flow right under the label rather than in a
-   hover-only tooltip. */
+   a touchscreen, so this makes it an actual tap/click interaction; the
+   formula itself opens in a centered FormulaModal (see below), not an
+   inline dropdown, so it has room to be typeset clearly. */
 .formula-label {
   display: inline-flex;
   position: relative;
@@ -445,21 +445,6 @@
   opacity: 0.65;
 }
 
-.formula-popover {
-  display: block;
-  margin-top: 4px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 12px;
-  line-height: 1.5;
-  font-weight: 400;
-  font-family: var(--sans);
-  white-space: normal;
-}
-
 .th-formula-trigger {
   background: none;
   border: none;
@@ -475,19 +460,125 @@
   color: var(--accent);
 }
 
-.formula-readout-row th {
+/* FormulaModal — a centered, closeable overlay showing one formula the
+   way it reads on a printed page: large serif type on a plain light
+   "paper" card (deliberately light even in dark theme — that's the
+   convention here, evoking a page rather than a code snippet), real
+   sub/superscripts and Greek letters (see utils/formulaText.jsx), and
+   the plain-English explanation underneath in ordinary small type. */
+.formula-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 16, 30, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.formula-modal-content {
+  position: relative;
+  background: var(--bg-panel);
+  border-radius: 18px;
+  padding: 28px 28px 22px;
+  width: min(640px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  box-shadow: rgba(20, 16, 30, 0.4) 0 24px 70px -20px;
+  animation: formula-modal-pop-in 160ms ease-out;
+}
+
+@keyframes formula-modal-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .formula-modal-content {
+    animation: none;
+  }
+}
+
+.formula-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.formula-modal-close:hover,
+.formula-modal-close:focus-visible {
+  color: var(--text-h);
   background: var(--code-bg);
 }
 
-.formula-readout-cell {
-  text-align: left !important;
-  white-space: normal !important;
-  font-weight: 400 !important;
-  text-transform: none !important;
-  letter-spacing: normal !important;
-  font-size: 12.5px !important;
-  color: var(--text) !important;
-  padding: 10px 12px !important;
+.formula-modal-label {
+  margin: 0 32px 14px 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.formula-modal-paper {
+  background: #fbfaf7;
+  border: 1px solid #e4e0d6;
+  border-radius: 10px;
+  padding: 28px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.formula-modal-formula {
+  margin: 0;
+  font-family: "Georgia", "Cambria", var(--display), serif;
+  font-size: 22px;
+  line-height: 1.7;
+  color: #2a2620;
+  letter-spacing: 0.01em;
+}
+
+.formula-modal-formula sub {
+  font-size: 0.62em;
+}
+
+.formula-modal-formula sup {
+  font-size: 0.62em;
+}
+
+.formula-modal-citation {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: var(--sans);
+}
+
+.formula-modal-explanation {
+  margin: 16px 2px 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
 }
 
 .atmosphere-readout {
@@ -915,32 +1006,33 @@
   inset: 0;
   background: rgba(36, 31, 48, 0.45);
   display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-  padding: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   z-index: 1000;
 }
 
 .ed-modal-content {
   position: relative;
   background: var(--bg-panel);
-  border-radius: 18px 0 0 18px;
+  border-radius: 18px;
   padding: 22px 24px 18px;
-  width: min(760px, 94vw);
+  width: min(1000px, 94vw);
   max-width: none;
-  height: 100%;
-  max-height: 100vh;
+  max-height: min(900px, 92vh);
   overflow: auto;
-  box-shadow: rgba(30, 20, 50, 0.3) -18px 0 50px -14px;
-  animation: ed-panel-slide-in 200ms ease-out;
+  box-shadow: rgba(30, 20, 50, 0.35) 0 24px 70px -20px;
+  animation: ed-panel-pop-in 180ms ease-out;
 }
 
-@keyframes ed-panel-slide-in {
+@keyframes ed-panel-pop-in {
   from {
-    transform: translateX(100%);
+    opacity: 0;
+    transform: scale(0.97);
   }
   to {
-    transform: translateX(0);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -951,8 +1043,13 @@
 }
 
 @media (max-width: 720px) {
+  .ed-modal-overlay {
+    padding: 0;
+  }
   .ed-modal-content {
     width: 100vw;
+    max-height: 100vh;
+    height: 100%;
     border-radius: 0;
   }
 }
@@ -1104,7 +1201,11 @@
   position: relative;
   width: 100%;
   min-width: 720px;
-  height: 78px;
+  /* Tall enough for two staggered rows — some diagrams alternate each
+     station's vertical offset (see the `top` prop on StationReadout/
+     PartStepReadout) so closely-spaced labels don't collide when a lot
+     of stations share the same width (e.g. the turbofan's ten). */
+  height: 140px;
   margin-top: 4px;
 }
 

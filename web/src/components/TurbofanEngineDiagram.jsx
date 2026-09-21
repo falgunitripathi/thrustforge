@@ -17,7 +17,7 @@ import {
  * streams never rejoin.
  */
 
-const VBOX_W = 960;
+const VBOX_W = 1000;
 const VBOX_H = 260;
 const CORE_Y = 150;
 const BYPASS_Y = 55;
@@ -26,16 +26,21 @@ const TOTAL_W = VBOX_W + MARGIN * 2;
 const CORE_FLOW_Y = CORE_Y + 14;
 const BYPASS_FLOW_Y = BYPASS_Y;
 
+// The fan is widened relative to the other components (a real turbofan's
+// fan disc is visibly the largest-diameter rotating part) — this also
+// buys the fan-exit station (10) more horizontal room away from the
+// fan/LPC-inlet station (2) right next to it, so their labels don't
+// crowd each other.
 const SECTION = {
   intake: { x0: 40, x1: 150 },
-  fan: { x0: 162, x1: 220 },
-  lpc: { x0: 232, x1: 310 },
-  hpc: { x0: 322, x1: 420 },
-  combustor: { x0: 432, x1: 510 },
-  hpt: { x0: 522, x1: 580 },
-  lpt: { x0: 592, x1: 650 },
-  hotNozzle: { x0: 662, x1: 800 },
-  coldNozzle: { x0: 662, x1: 800 },
+  fan: { x0: 162, x1: 262 },
+  lpc: { x0: 274, x1: 352 },
+  hpc: { x0: 364, x1: 462 },
+  combustor: { x0: 474, x1: 552 },
+  hpt: { x0: 564, x1: 622 },
+  lpt: { x0: 634, x1: 692 },
+  hotNozzle: { x0: 704, x1: 840 },
+  coldNozzle: { x0: 704, x1: 840 },
 };
 
 const CORE_STATIONS = [
@@ -49,16 +54,25 @@ const CORE_STATIONS = [
   { key: "9", x: SECTION.hotNozzle.x1, name: "Hot nozzle exit", seq: 9 },
 ];
 const BYPASS_STATIONS = [
-  { key: "10", x: SECTION.fan.x1, name: "Fan exit (cold stream)", seq: 3 },
-  { key: "11", x: SECTION.coldNozzle.x1, name: "Cold nozzle exit", seq: 10 },
+  { key: "10", x: SECTION.fan.x1, name: "Fan exit", seq: 3 },
+  // Offset left of the hot nozzle's own marker (SECTION.hotNozzle.x1) —
+  // the cold and hot nozzles share the same x-range in this simplified
+  // side view (drawn at different heights), so using the same marker
+  // x for both would stack their readout cards exactly on top of each
+  // other, making both unreadable.
+  // Placed past the hot nozzle's own marker rather than before it — the
+  // gap between the LPT (station 7) and the hot nozzle (station 9) is
+  // too tight for a third label to fit there without colliding with one
+  // side or the other.
+  { key: "11", x: SECTION.coldNozzle.x1 + 70, name: "Cold nozzle exit", seq: 10 },
 ];
 const ALL_STATIONS = [...CORE_STATIONS, ...BYPASS_STATIONS].sort((a, b) => a.seq - b.seq);
 const TOTAL_STEPS = ALL_STATIONS.length;
 
 const CASING_TOP = [
-  [4, -30], [40, -70], [150, -78], [220, -95], [310, -100], [350, -80],
-  [420, -75], [460, -92], [510, -80], [560, -75], [620, -95], [650, -70],
-  [700, -64], [800, -58],
+  [4, -30], [40, -70], [150, -78], [262, -95], [352, -100], [392, -80],
+  [462, -75], [502, -92], [552, -80], [602, -75], [662, -95], [692, -70],
+  [742, -64], [900, -50],
 ];
 const CASING_PATH = [
   `M ${CASING_TOP[0][0]} ${CORE_Y + CASING_TOP[0][1]}`,
@@ -235,6 +249,7 @@ function Diagram({ config, result, idSuffix }) {
       <svg
         viewBox={`${-MARGIN} 0 ${TOTAL_W} ${VBOX_H}`}
         className="engine-diagram-svg"
+        style={{ width: TOTAL_W }}
         role="img"
         aria-label="Half-cutaway schematic of the configured turbofan, showing the core (hot) stream through the compressors, combustor, turbines and hot nozzle, and the bypass (cold) duct from the fan straight to its own cold nozzle. Click any part for its values."
       >
@@ -262,7 +277,7 @@ function Diagram({ config, result, idSuffix }) {
           <circle key={i} cx={x} cy={CORE_Y + dy * 0.6} r="1.7" className="ed-rivet" />
         ))}
 
-        <line x1="4" y1={CORE_Y} x2={SECTION.hotNozzle.x1 + 20} y2={CORE_Y} className="ed-axis" />
+        <line x1="4" y1={CORE_Y} x2={SECTION.hotNozzle.x1 + 90} y2={CORE_Y} className="ed-axis" />
 
         <g clipPath={`url(#ed-lower-half-${idSuffix})`}>
           <Clickable onSelect={() => selectPart("intake", intakeMid)} label="Intake — click for values">
@@ -362,8 +377,8 @@ function Diagram({ config, result, idSuffix }) {
         })}
       </svg>
 
-      <div className="station-readouts">
-        {ALL_STATIONS.map((s) => (
+      <div className="station-readouts" style={{ width: TOTAL_W }}>
+        {ALL_STATIONS.map((s, i) => (
           <StationReadout
             key={s.key}
             station={s.key}
@@ -373,6 +388,12 @@ function Diagram({ config, result, idSuffix }) {
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
             leftPct={((s.x + MARGIN) / TOTAL_W) * 100}
+            // Ten stations sharing this diagram's width means several
+            // sit close enough together that their labels would collide
+            // on one row — alternating each one's vertical offset (the
+            // same fix a crowded chart axis would use) keeps every
+            // label readable without needing more horizontal room.
+            top={i % 2 === 1 ? 62 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}

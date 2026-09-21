@@ -199,13 +199,13 @@ export function Clickable({ onSelect, label, children }) {
   );
 }
 
-export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, onSelect }) {
+export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, top = 0, onSelect }) {
   const animT = useAnimatedNumber(T0);
   const animP = useAnimatedNumber(p0 / 1000);
   return (
     <div
       className="station-readout"
-      style={{ left: `${leftPct}%` }}
+      style={{ left: `${leftPct}%`, top }}
       role="button"
       tabIndex={0}
       onClick={onSelect}
@@ -235,14 +235,14 @@ export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, 
  * Takes two already-formatted value/unit pairs instead of T0/p0.
  */
 export function PartStepReadout({
-  name, seq, seqTotal, value1, unit1, value2, unit2, leftPct, onSelect,
+  name, seq, seqTotal, value1, unit1, value2, unit2, leftPct, top = 0, onSelect,
 }) {
   const anim1 = useAnimatedNumber(value1);
   const anim2 = useAnimatedNumber(value2);
   return (
     <div
       className="station-readout"
-      style={{ left: `${leftPct}%` }}
+      style={{ left: `${leftPct}%`, top }}
       role="button"
       tabIndex={0}
       onClick={onSelect}
