@@ -491,7 +491,7 @@ button.field-label.formula-trigger:focus-visible {
 .formula-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(20, 16, 30, 0.55);
+  background: rgba(12, 10, 18, 0.94);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1047,7 +1047,7 @@ button.field-label.formula-trigger:focus-visible {
 .ed-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(36, 31, 48, 0.45);
+  background: rgba(12, 10, 18, 0.94);
   display: flex;
   align-items: center;
   justify-content: center;
