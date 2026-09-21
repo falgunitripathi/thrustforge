@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { fmt, fmtKPa } from "../utils/format.js";
 import { stationHeatColor } from "../utils/heatColor.js";
 import {
@@ -551,7 +552,10 @@ export default function EngineDiagram({ config, result }) {
         <Diagram config={config} result={result} idSuffix="inline" />
       </div>
 
-      {expanded && (
+      {expanded && createPortal(
+        // Portaled to <body> — see InfoModal.jsx for why an in-place
+        // "full-viewport" overlay isn't safe from a stacking-context
+        // ancestor trapping it behind a later sibling.
         <div
           className="ed-modal-overlay"
           onClick={(e) => {
@@ -594,7 +598,8 @@ export default function EngineDiagram({ config, result }) {
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { splitFormula, renderFormulaText } from "../utils/formulaText.jsx";
 
 /**
@@ -31,7 +32,11 @@ export default function FormulaModal({ label, formula, onClose }) {
 
   const { equation, citation, explanation } = splitFormula(formula);
 
-  return (
+  // Portaled to <body> so a stacking context created by some ancestor
+  // (e.g. a sticky sidebar column) can never trap this "full-viewport"
+  // overlay behind a later, unrelated sibling — see InfoModal.jsx for
+  // the concrete case this fixes.
+  return createPortal(
     <div
       className="formula-modal-overlay"
       onClick={(e) => {
@@ -55,6 +60,7 @@ export default function FormulaModal({ label, formula, onClose }) {
         {citation && <span className="formula-modal-citation">{citation}</span>}
         {explanation && <p className="formula-modal-explanation">{explanation}</p>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

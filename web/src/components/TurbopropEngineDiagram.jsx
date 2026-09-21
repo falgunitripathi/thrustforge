@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { fmt, fmtKPa } from "../utils/format.js";
 import { stationHeatColor } from "../utils/heatColor.js";
 import {
@@ -459,7 +460,7 @@ export default function TurbopropEngineDiagram({ config, result }) {
         <Diagram config={config} result={result} idSuffix="tp-inline" />
       </div>
 
-      {expanded && (
+      {expanded && createPortal(
         <div className="ed-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
           <div className="ed-modal-content" role="dialog" aria-modal="true" aria-labelledby={titleId}>
             <button type="button" ref={closeButtonRef} className="ed-modal-close" onClick={closeModal} aria-label="Close expanded diagram">
@@ -491,7 +492,8 @@ export default function TurbopropEngineDiagram({ config, result }) {
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Click-to-open wrapper for heavier analysis sections (Station analysis,
@@ -54,7 +55,11 @@ export default function ExpandableSection({ title, summary, children }) {
         <span className="results-section-title">{title}</span>
       </button>
 
-      {open && (
+      {open && createPortal(
+        // Portaled to <body> — a sticky/otherwise stacking-context
+        // ancestor (e.g. the config sidebar) would otherwise trap this
+        // "full-viewport" overlay behind a later sibling. See
+        // InfoModal.jsx for the concrete bug this avoids.
         <div
           className="ed-modal-overlay"
           onClick={(e) => {
@@ -75,7 +80,8 @@ export default function ExpandableSection({ title, summary, children }) {
             {summary && <p className="section-note expandable-section-summary">{summary}</p>}
             {children}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   );

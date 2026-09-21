@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { renderFormulaText } from "../utils/formulaText.jsx";
 
 /**
@@ -28,7 +29,13 @@ export default function InfoModal({ label, text, onClose }) {
     };
   }, [onClose]);
 
-  return (
+  // Portaled straight to <body>: a field's own ancestors (e.g. the
+  // sticky config-form column) create their own stacking context, which
+  // traps a plain in-place `position: fixed` overlay behind later
+  // siblings like the engine diagram — even though it's still full-
+  // viewport-sized. Rendering at the document root sidesteps that
+  // entirely, the same fix applied to FormulaModal.
+  return createPortal(
     <div
       className="formula-modal-overlay"
       onClick={(e) => {
@@ -50,6 +57,7 @@ export default function InfoModal({ label, text, onClose }) {
           <p className="info-modal-text">{renderFormulaText(text)}</p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
