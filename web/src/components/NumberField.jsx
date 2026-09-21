@@ -22,9 +22,22 @@ export default function NumberField({
     ? `valid range ${formatBound(min)}–${formatBound(max)}`
     : null;
   const combinedHint = hint && rangeText ? `${hint} · ${rangeText}` : (hint || rangeText);
+  // A bare unit ("N", "kg/s", "J/(kg·K)") has no space and nothing to
+  // explain, so it stays a plain always-visible suffix next to the
+  // label — only a real explanation (which always contains a space,
+  // whether from prose or an appended "· valid range ...") is worth a
+  // click-to-reveal modal.
+  const isExplanatory = combinedHint && combinedHint.includes(" ");
   return (
     <label className="field">
-      <FieldInfoLabel label={label} hint={combinedHint} />
+      {isExplanatory ? (
+        <FieldInfoLabel label={label} hint={combinedHint} />
+      ) : (
+        <span className="field-label">
+          {label}
+          {combinedHint && <span className="field-unit">{combinedHint}</span>}
+        </span>
+      )}
       <input
         type="number"
         value={Number.isFinite(value) ? value : ""}
