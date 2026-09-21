@@ -1152,6 +1152,16 @@
   margin: 0 0 14px;
 }
 
+.results-section-modal-title {
+  margin: 0 32px 4px 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-h);
+}
+
 /* --- Glossary (collapsible plain-English legend) --- */
 
 .glossary {

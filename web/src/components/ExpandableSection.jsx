@@ -1,50 +1,80 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 /**
- * Generic click-to-expand wrapper for heavier analysis sections. Deliberately
- * mirrors ConfigForm's own disclosure pattern (see CompressorSection.jsx and
- * friends: a <fieldset className="config-section"> with a chevron + label
- * legend button that reveals its fields in place) rather than popping
- * content into a separate overlay — every results section (Station
- * analysis, Compressor & turbine stages, Cycle diagrams, Parameter sweep,
- * and the rest) lives as one row in the same results panel, right next to
- * the engine configuration panel, so both sides of the app read as one
- * consistent kind of thing: a panel full of named, click-to-open sections.
- *
- * Collapsed, a section shows only its heading (nothing else) — same as a
- * collapsed config-section — so stacking many of these doesn't turn the
- * page into a wall of text to scroll past. Expanding one reveals its
- * one-line summary and its full content directly underneath, in the normal
- * page flow: nothing is hidden behind an overlay, nothing else on the page
- * moves or gets covered, and multiple sections can be open at once.
- *
- * Accessibility: the heading is a real <button> with aria-expanded, and its
- * revealed body is connected back to it via aria-controls/id, so a
- * screen-reader user gets the same disclosure semantics as ConfigForm's
- * fieldsets.
+ * Click-to-open wrapper for heavier analysis sections (Station analysis,
+ * Compressor & turbine stages, Cycle diagrams, Parameter sweep, and the
+ * rest) — clicking the title opens its content in a centered, closeable
+ * overlay (the same modal convention as the engine diagram's own
+ * "Expand" view and every formula card — see FormulaModal.jsx), rather
+ * than expanding in place. Used identically across every engine's
+ * ResultsPanel.
  */
-export default function ExpandableSection({ title, summary, defaultExpanded = false, children }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const bodyId = useId();
+export default function ExpandableSection({ title, summary, children }) {
+  const [open, setOpen] = useState(false);
+  const titleId = useId();
+  const closeButtonRef = useRef(null);
+  const triggerRef = useRef(null);
+  const previouslyFocused = useRef(null);
+
+  function openModal() {
+    previouslyFocused.current = document.activeElement;
+    setOpen(true);
+  }
+  function closeModal() {
+    setOpen(false);
+    (previouslyFocused.current || triggerRef.current)?.focus?.();
+  }
+
+  useEffect(() => {
+    if (!open) return undefined;
+    closeButtonRef.current?.focus();
+    function onKeyDown(e) {
+      if (e.key === "Escape") closeModal();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   return (
     <section className="results-section">
       <button
         type="button"
+        ref={triggerRef}
         className="results-section-header"
-        aria-expanded={expanded}
-        aria-controls={bodyId}
-        onClick={() => setExpanded((e) => !e)}
+        aria-haspopup="dialog"
+        onClick={openModal}
       >
-        <span className="results-section-chevron" aria-hidden="true">
-          {expanded ? "▾" : "▸"}
-        </span>
+        <span className="results-section-chevron" aria-hidden="true">▸</span>
         <span className="results-section-title">{title}</span>
       </button>
-      {expanded && (
-        <div id={bodyId} className="results-section-body">
-          {summary && <p className="section-note expandable-section-summary">{summary}</p>}
-          {children}
+
+      {open && (
+        <div
+          className="ed-modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
+          }}
+        >
+          <div className="ed-modal-content" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+            <button
+              type="button"
+              ref={closeButtonRef}
+              className="ed-modal-close"
+              onClick={closeModal}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h2 className="results-section-modal-title" id={titleId}>{title}</h2>
+            {summary && <p className="section-note expandable-section-summary">{summary}</p>}
+            {children}
+          </div>
         </div>
       )}
     </section>
