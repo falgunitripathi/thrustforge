@@ -37,6 +37,19 @@ produces the majority of the thrust; three-spool unducted layouts are
 also described, and it is the three-spool layout for which the source
 works through a full, explicit cycle analysis.
 
+The source illustrates the concept with several historical example
+engines/aircraft (context only, not design constants): the GE36 "UDF"
+(Unducted Fan), an aft-mounted pusher with two rows of counter-rotating
+composite fan blades driven off a core derived from the GE F404
+military turbofan, exhausting through a multi-stage LP turbine wired so
+one turbine rotor row drives one propeller row and the other propeller
+row is connected to the turbine's stator (an unducted-fan demonstrator
+of this type was flight-tested on an MD-80); the Pratt & Whitney
+578-DX, using a conventional reduction gearbox between the LP turbine
+and the propeller blades; and the Soviet D-27, a conventional
+tractor-layout (blades forward) propfan used on the Antonov An-70.
+Ref: NPTEL p.360-362.
+
 Relative to the turbojet already modelled in this codebase, the
 additional physics needed is essentially the same class of split (some
 of the turbine's energy goes to a fan rather than a jet) as the
@@ -195,6 +208,11 @@ see judgment-call note #2.)
 - Contra-rotating tractor example blade counts: forward rotor 8 blades,
   rear rotor 6 blades (specific historical example, not a general design
   rule). Ref: NPTEL p.362.
+- Relative to a turbofan of comparable thrust class, the source's
+  comparison table also states (qualitatively, no numbers): smaller
+  diameter, larger power, swept blade type, and thinner maximum blade
+  thickness — in addition to the blade-count and propulsive-efficiency
+  comparisons already listed above. Ref: NPTEL p.363.
 - Technology-improvement rate context (not propfan-specific physics, but
   given as a benchmark): conventional turbofans were noted as improving
   roughly 1%/year on average, i.e. ~11% more efficient over a decade —
@@ -204,17 +222,22 @@ see judgment-call note #2.)
 ## 4. Judgment calls / ambiguities to resolve before implementation
 
 1. **Inconsistent `(1+f-b)` vs. `(1+f)` mass-flow-ratio factor across
-   the propfan cycle.** The HPT balance uses `(1+f-b)`, the IPT balance
-   and the fan energy balance both use `(1+f)` (dropping the bleed
-   term), and the nozzle-thrust formula also uses `(1+f)`. This is
-   either an intentional simplification once past the HPT (e.g. treating
-   bleed as fully extracted upstream of the IPT) or, more likely given
-   how consistently `(1+f-b)` is used everywhere else in this same
-   lecture series (turboprop, turboshaft), an inconsistent transcription.
-   Recommend using `(1+f-b)` uniformly for implementation, consistent
-   with the rest of this project's turbojet/turboprop/turboshaft
-   treatment, and flagging the source's own inconsistency in code
-   comments rather than silently picking one without a note.
+   the propfan cycle.** The HPT balance uses `(1+f-b)`; the IPT balance,
+   the nozzle-thrust formula, and the fan/free-turbine energy balance all
+   use `(1+f)` (dropping the bleed term) — checked directly against the
+   raw source transcript (`reference_extraction/nptel_turboprop_turboshaft_propfan.txt`),
+   and this is not an isolated slip: the source applies `(1+f)`
+   consistently in all three places after the HPT. That makes it a
+   stronger, systemic break from the `(1+f-b)` convention used
+   everywhere else in this same lecture series (turboprop, turboshaft),
+   rather than a one-off transcription error — it could be intentional
+   (e.g. treating bleed as fully accounted for once past the HPT) or a
+   consistent error carried through the rest of the section; the source
+   never states which. Recommend still using `(1+f-b)` uniformly for
+   implementation, consistent with the rest of this project's
+   turbojet/turboprop/turboshaft treatment, and flagging the source's
+   own (consistent) departure from that convention in code comments
+   rather than silently picking one without a note.
 2. **Propulsive-efficiency formula's `T` is ambiguous.** §2.5's `eta_P`
    formula uses bare `T`, immediately after `T_total` was defined in the
    preceding paragraph — almost certainly intended to be `T_total`, but
