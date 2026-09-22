@@ -898,6 +898,22 @@ button.field-label.formula-trigger:focus-visible {
   stroke-linecap: round;
 }
 
+/* Propfan's unducted fan — an open framework (ring + struts), NOT a
+   solid housing like .ed-housing, so it reads visually as unshrouded. */
+.ed-fan-open-ring {
+  fill: none;
+  stroke: var(--ed-casing-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+
+.ed-fan-open-strut {
+  stroke: var(--ed-casing-line);
+  stroke-width: 1.25;
+  opacity: 0.5;
+}
+
 .ed-clickable {
   cursor: pointer;
 }

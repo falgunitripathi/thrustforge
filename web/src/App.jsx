@@ -3,6 +3,7 @@ import { defaultEngineConfig, solveEngine } from "./physics/engine.js";
 import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
 import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.js";
 import { defaultTurbofanConfig, solveTurbofan } from "./physics/turbofan.js";
+import { defaultPropfanConfig, solvePropfan } from "./physics/propfan.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
@@ -12,6 +13,8 @@ import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
 import TurboshaftResultsPanel from "./components/TurboshaftResultsPanel.jsx";
 import TurbofanConfigForm from "./components/TurbofanConfigForm.jsx";
 import TurbofanResultsPanel from "./components/TurbofanResultsPanel.jsx";
+import PropfanConfigForm from "./components/PropfanConfigForm.jsx";
+import PropfanResultsPanel from "./components/PropfanResultsPanel.jsx";
 import "./App.css";
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -21,6 +24,7 @@ const ENGINE_TYPES = [
   { value: "turboprop", label: "Turboprop" },
   { value: "turboshaft", label: "Turboshaft" },
   { value: "turbofan", label: "Turbofan" },
+  { value: "propfan", label: "Propfan" },
 ];
 
 // A link opens the app at exactly the configuration it was built from:
@@ -64,6 +68,7 @@ function App() {
   const [turbopropConfig, setTurbopropConfig] = useState(defaultTurbopropConfig);
   const [turboshaftConfig, setTurboshaftConfig] = useState(defaultTurboshaftConfig);
   const [turbofanConfig, setTurbofanConfig] = useState(defaultTurbofanConfig);
+  const [propfanConfig, setPropfanConfig] = useState(defaultPropfanConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -78,6 +83,8 @@ function App() {
   const resetTurboshaftConfig = () => setTurboshaftConfig(defaultTurboshaftConfig());
   const patchTurbofanConfig = (patch) => setTurbofanConfig((prev) => ({ ...prev, ...patch }));
   const resetTurbofanConfig = () => setTurbofanConfig(defaultTurbofanConfig());
+  const patchPropfanConfig = (patch) => setPropfanConfig((prev) => ({ ...prev, ...patch }));
+  const resetPropfanConfig = () => setPropfanConfig(defaultPropfanConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
   // turbojet configuration — replaceState (not pushState) so tweaking a
@@ -109,12 +116,13 @@ function App() {
         engineType === "turboprop" ? solveTurboprop(turbopropConfig)
         : engineType === "turboshaft" ? solveTurboshaft(turboshaftConfig)
         : engineType === "turbofan" ? solveTurbofan(turbofanConfig)
+        : engineType === "propfan" ? solvePropfan(propfanConfig)
         : solveEngine(config);
       return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig]);
+  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
@@ -178,6 +186,13 @@ function App() {
               onReset={resetTurbofanConfig}
               onCollapse={() => setSidebarOpen(false)}
             />
+          ) : engineType === "propfan" ? (
+            <PropfanConfigForm
+              config={propfanConfig}
+              onChange={patchPropfanConfig}
+              onReset={resetPropfanConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
           ) : (
             <ConfigForm
               config={config}
@@ -220,6 +235,8 @@ function App() {
             <TurboshaftResultsPanel result={result} config={turboshaftConfig} />
           ) : engineType === "turbofan" ? (
             <TurbofanResultsPanel result={result} config={turbofanConfig} />
+          ) : engineType === "propfan" ? (
+            <PropfanResultsPanel result={result} config={propfanConfig} />
           ) : (
             <ResultsPanel
               result={result}

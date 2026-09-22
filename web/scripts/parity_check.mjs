@@ -40,6 +40,8 @@ const PY_TURBOSHAFT_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turboshaft_re
 const JS_TURBOSHAFT_SCRIPT = path.join(__dirname, "dump_turboshaft_result.mjs");
 const PY_TURBOFAN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turbofan_result.py");
 const JS_TURBOFAN_SCRIPT = path.join(__dirname, "dump_turbofan_result.mjs");
+const PY_PROPFAN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_propfan_result.py");
+const JS_PROPFAN_SCRIPT = path.join(__dirname, "dump_propfan_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -177,6 +179,18 @@ const TURBOFAN_SCENARIOS = [
   { name: "turbofan: cruise, medium bypass", overrides: { altitude_m: 10000, mach_flight: 0.8, beta: 5.0, pi_f: 1.65, pi_LPC: 1.5, pi_HPC: 12.0, T05: 1500.0, mdot_a: 50.0 } },
   { name: "turbofan: low bypass, high fan PR", overrides: { altitude_m: 3000, mach_flight: 0.3, beta: 1.5, pi_f: 2.2, pi_LPC: 1.8, pi_HPC: 10.0, T05: 1600.0, mdot_a: 30.0 } },
   { name: "turbofan: static (M=0), high bypass", overrides: { altitude_m: 0, mach_flight: 0.0, beta: 8.0, pi_f: 1.5, pi_LPC: 1.3, pi_HPC: 14.0, T05: 1450.0, mdot_a: 80.0 } },
+];
+
+// ---------------------------------------------------------------------------
+// Propfan scenario battery — three-spool baseline, covering a cruise
+// point, a low-alpha/high-pressure-ratio point, and a high-alpha point
+// (shaft/fan-heavy split).
+// ---------------------------------------------------------------------------
+const PROPFAN_SCENARIOS = [
+  { name: "propfan: default cruise", overrides: { altitude_m: 9000, mach_flight: 0.7, pi_IPC: 2.0, pi_HPC: 6.0, T05: 1500.0, alpha: 0.85, mdot_a: 10.0 } },
+  { name: "propfan: low altitude, high pressure ratio", overrides: { altitude_m: 3000, mach_flight: 0.4, pi_IPC: 2.2, pi_HPC: 8.0, T05: 1400.0, alpha: 0.75, mdot_a: 8.0 } },
+  { name: "propfan: high alpha (fan-heavy split), hot cycle", overrides: { altitude_m: 7000, mach_flight: 0.6, pi_IPC: 1.8, pi_HPC: 5.0, T05: 1600.0, alpha: 0.95, mdot_a: 12.0 } },
+  { name: "propfan: with bleed", overrides: { altitude_m: 9000, mach_flight: 0.7, pi_IPC: 2.0, pi_HPC: 6.0, T05: 1500.0, alpha: 0.85, mdot_a: 10.0, bleed_ratio: 0.02 } },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -447,6 +461,49 @@ function main() {
     }
     try {
       jsResult = runJs(JS_TURBOFAN_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (js error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+
+    const pyIsError = pyResult && pyResult.error === "ValueError";
+    const jsIsError = jsResult && jsResult.error === "ValueError";
+    if (pyIsError || jsIsError) {
+      console.log("FAIL (unexpected error)");
+      if (pyIsError) console.error(`  python: ${pyResult.message}`);
+      if (jsIsError) console.error(`  js: ${jsResult.message}`);
+      anyFailed = true;
+      continue;
+    }
+
+    const mismatches = diff("result", pyResult, jsResult);
+    if (mismatches.length === 0) {
+      console.log("OK");
+    } else {
+      console.log(`FAIL (${mismatches.length} mismatch(es))`);
+      for (const m of mismatches) {
+        console.error(`  ${m}`);
+      }
+      anyFailed = true;
+    }
+  }
+
+  for (const scenario of PROPFAN_SCENARIOS) {
+    totalScenarios += 1;
+    process.stdout.write(`Scenario: ${scenario.name} ... `);
+    let pyResult, jsResult;
+    try {
+      pyResult = runPython(PY_PROPFAN_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (python error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+    try {
+      jsResult = runJs(JS_PROPFAN_SCRIPT, scenario.overrides);
     } catch (err) {
       console.log("FAIL (js error)");
       console.error(err.stderr ? err.stderr.toString() : err);

@@ -1,0 +1,62 @@
+import { useState } from "react";
+import NumberField from "./NumberField.jsx";
+
+/**
+ * Design-value defaults and gas properties for the propfan — same
+ * spirit as the other engines' own Advanced sections. Collapsed by
+ * default. Ref: reference/propfan.md.
+ */
+export default function PropfanAdvancedSection({ config, onChange }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <fieldset className="config-section advanced">
+      <legend>
+        <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
+          {open ? "▾" : "▸"} Advanced: design defaults &amp; gas properties
+        </button>
+      </legend>
+      {open && (
+        <div className="advanced-grid">
+          <NumberField label="Intake efficiency η_d" value={config.eta_d}
+            onChange={(v) => onChange({ eta_d: v })} min={0.5} max={1.0} step={0.01}
+            hint="same intake formula as the turbojet — CORE stream only; the fan sits directly in the freestream, ahead of any diffuser" />
+          <NumberField label="Combustor efficiency η_b" value={config.eta_b}
+            onChange={(v) => onChange({ eta_b: v })} min={0.5} max={1.0} step={0.01}
+            hint="same fuel-air-ratio energy balance as the turbojet" />
+          <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
+            onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.01}
+            hint="fraction, not %. NOT IN SOURCE (conventional placeholder)" />
+          <NumberField label="Fuel heating value Q_R" value={config.Q_R}
+            onChange={(v) => onChange({ Q_R: v })} min={3.0e7} max={5.0e7} step={1.0e5}
+            hint="J/kg. NOT IN SOURCE (standard published Jet-A LHV)" />
+          <NumberField label="HPT efficiency η_HPT" value={config.eta_HPT}
+            onChange={(v) => onChange({ eta_HPT: v })} min={0.5} max={1.0} step={0.01}
+            hint="HPT drives the HPC only, bare energy balance — no lambda/eta_m term (§2.1, module docstring: shaft/mechanical efficiency taken as 100% here)" />
+          <NumberField label="IPT efficiency η_IPT" value={config.eta_IPT}
+            onChange={(v) => onChange({ eta_IPT: v })} min={0.5} max={1.0} step={0.01}
+            hint="IPT drives the IPC only, same bare energy balance as the HPT (§2.1)" />
+          <NumberField label="Fan mechanical efficiency η_m,UDF" value={config.eta_m_UDF}
+            onChange={(v) => onChange({ eta_m_UDF: v })} min={0.9} max={1.0} step={0.005}
+            hint="between the free turbine and the unducted fan (§2.4)" />
+          <NumberField label="Hot nozzle efficiency η_n" value={config.eta_n}
+            onChange={(v) => onChange({ eta_n: v })} min={0.5} max={1.0} step={0.01}
+            hint="always fully expanded to ambient here — no choking check, unlike the turbojet's nozzle.py (§2.3)" />
+          <NumberField label="Bleed ratio b" value={config.bleed_ratio}
+            onChange={(v) => onChange({ bleed_ratio: v })} min={0} max={0.2} step={0.01}
+            hint="mdot_bleed/mdot_a. Applied as (1-b) on the fuel-air ratio and uniformly as (1+f-b) throughout the cycle — a deliberate departure from the source's own inconsistent (1+f-b)/(1+f) usage past the HPT (reference/propfan.md §4, judgment call #1)" />
+
+          <NumberField label="Cold section γ_c" value={config.gamma_c}
+            onChange={(v) => onChange({ gamma_c: v })} min={1.2} max={1.5} step={0.001} />
+          <NumberField label="Cold section Cp_c" value={config.cp_c}
+            onChange={(v) => onChange({ cp_c: v })} min={800} max={1200} step={1}
+            hint="J/(kg·K)" />
+          <NumberField label="Hot section γ_h" value={config.gamma_h}
+            onChange={(v) => onChange({ gamma_h: v })} min={1.2} max={1.45} step={0.001} />
+          <NumberField label="Hot section Cp_h" value={config.cp_h}
+            onChange={(v) => onChange({ cp_h: v })} min={900} max={1400} step={1}
+            hint="J/(kg·K)" />
+        </div>
+      )}
+    </fieldset>
+  );
+}
