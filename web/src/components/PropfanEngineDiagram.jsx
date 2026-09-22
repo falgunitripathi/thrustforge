@@ -448,8 +448,8 @@ function Diagram({ config, result, idSuffix }) {
         nozzle.
       </p>
       <p className="section-note">
-        Each marker shows &ldquo;Step 1 of {TOTAL_STEPS}&rdquo; through
-        &ldquo;Step {TOTAL_STEPS} of {TOTAL_STEPS}&rdquo; in simple flow
+        Each marker shows &ldquo;Step 1&rdquo; through
+        &ldquo;Step {TOTAL_STEPS}&rdquo; in simple flow
         order, by PHYSICAL position front-to-back — the fan&rsquo;s own
         three stations (10, 11, 12) come right after the freestream
         (station a), since the fan sits ahead of the core&rsquo;s own

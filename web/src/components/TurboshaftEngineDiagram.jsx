@@ -355,8 +355,8 @@ function Diagram({ config, result, idSuffix }) {
         Turbine: {turbine.type}.
       </p>
       <p className="section-note">
-        Each marker shows &ldquo;Step 1 of {TOTAL_STEPS}&rdquo; through
-        &ldquo;Step {TOTAL_STEPS} of {TOTAL_STEPS}&rdquo; in simple flow
+        Each marker shows &ldquo;Step 1&rdquo; through
+        &ldquo;Step {TOTAL_STEPS}&rdquo; in simple flow
         order — five flow stations (a, 2, 3, 4, 5, one fewer than the
         turbojet's six since there's no nozzle/station 9), then the Load
         itself as the final step (no T0/p0, since it's a mechanical

@@ -413,8 +413,8 @@ function Diagram({ config, result, idSuffix }) {
         style path: LPC, HPC, combustor, HPT, LPT, hot nozzle.
       </p>
       <p className="section-note">
-        Each marker shows &ldquo;Step 1 of {TOTAL_STEPS}&rdquo; through
-        &ldquo;Step {TOTAL_STEPS} of {TOTAL_STEPS}&rdquo; in simple flow
+        Each marker shows &ldquo;Step 1&rdquo; through
+        &ldquo;Step {TOTAL_STEPS}&rdquo; in simple flow
         order, interleaving both streams by where they physically sit —
         station 10 (fan exit) comes right after station 2, and station
         11 (cold nozzle exit) comes last, alongside station 9.

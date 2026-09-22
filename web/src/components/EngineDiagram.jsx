@@ -494,8 +494,8 @@ function Diagram({ config, result, idSuffix }) {
         Turbine: {turbine.type}.
       </p>
       <p className="section-note">
-        Each station marker shows &ldquo;Step 1 of 6&rdquo; through
-        &ldquo;Step 6 of 6&rdquo; in simple flow order. The St. a/2/3/4/5/9
+        Each station marker shows &ldquo;Step 1&rdquo; through
+        &ldquo;Step 6&rdquo; in simple flow order. The St. a/2/3/4/5/9
         labels underneath are the standard gas-turbine station numbers from
         the textbook this project is built from (Cohen, Rogers &amp;
         Saravanamuttoo) — they intentionally skip 6, 7, and 8, which that

@@ -403,8 +403,8 @@ function Diagram({ config, result, idSuffix }) {
         Compressor: {compressor.type}. Turbine: {turbine.type}.
       </p>
       <p className="section-note">
-        Each marker shows &ldquo;Step 1 of {TOTAL_STEPS}&rdquo; through
-        &ldquo;Step {TOTAL_STEPS} of {TOTAL_STEPS}&rdquo; in simple flow
+        Each marker shows &ldquo;Step 1&rdquo; through
+        &ldquo;Step {TOTAL_STEPS}&rdquo; in simple flow
         order — Step 1 is the propeller itself (no T0/p0, since it moves
         a separate air stream), then the same six flow stations (a, 2,
         3, 4, 5, 9) as the turbojet, since the intake, compressor, and

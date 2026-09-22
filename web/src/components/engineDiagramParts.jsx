@@ -218,7 +218,7 @@ export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, 
     >
       <span className="station-dot" aria-hidden="true" />
       <div className="station-card">
-        <span className="station-tag">Step {seq} of {seqTotal}</span>
+        <span className="station-tag">Step {seq}</span>
         <span className="station-name">St. {station} — {name}</span>
         <span className="station-num">{fmt(animT, 0)} K</span>
         <span className="station-num station-num-muted">{fmt(animP, 0)} kPa</span>
@@ -255,7 +255,7 @@ export function PartStepReadout({
     >
       <span className="station-dot" aria-hidden="true" />
       <div className="station-card">
-        <span className="station-tag">Step {seq} of {seqTotal}</span>
+        <span className="station-tag">Step {seq}</span>
         <span className="station-name">{name}</span>
         <span className="station-num">{fmt(anim1, 1)} {unit1}</span>
         {unit2 && <span className="station-num station-num-muted">{fmt(anim2, 1)} {unit2}</span>}
