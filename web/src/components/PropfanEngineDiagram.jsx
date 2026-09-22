@@ -401,7 +401,7 @@ function Diagram({ config, result, idSuffix }) {
         ))}
       </svg>
 
-      <div className="station-readouts" style={{ width: TOTAL_W }}>
+      <div className="station-readouts" style={{ width: TOTAL_W, height: 300 }}>
         {ALL_STATIONS.map((s, i) => (
           <StationReadout
             key={s.key}
@@ -412,12 +412,22 @@ function Diagram({ config, result, idSuffix }) {
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
             leftPct={((s.x + MARGIN) / TOTAL_W) * 100}
-            // Twelve stations sharing this diagram's width means several
-            // sit close enough together (especially the fan's own three,
-            // clustered at the front) that their labels would collide on
-            // one row — alternating each one's vertical offset keeps
-            // every label readable without needing more horizontal room.
-            top={i % 2 === 1 ? 62 : 0}
+            // The freestream + all three fan stations (a, 10, 11, 12) sit
+            // within ~140px of each other at the very front, far closer
+            // together than the rest of the (much more spread-out) core
+            // stations — a plain two-row alternation isn't enough
+            // separation there and their labels collide. Give that front
+            // cluster its OWN four-row cascade (by station key, not just
+            // alternating index) so each of those four gets a distinct
+            // row; the remaining, well-spaced core stations still only
+            // need the ordinary two-row alternation.
+            top={
+              s.key === "a" ? 0
+                : s.key === "10" ? 76
+                : s.key === "11" ? 152
+                : s.key === "12" ? 228
+                : (i % 2 === 1 ? 62 : 0)
+            }
             onSelect={() => selectStation(s)}
           />
         ))}
