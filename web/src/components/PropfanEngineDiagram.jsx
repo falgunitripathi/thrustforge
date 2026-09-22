@@ -188,7 +188,7 @@ function partDetails(kind, result, config) {
 
 function stationDetails(key, name, seq, st) {
   return {
-    title: `Step ${seq} of ${TOTAL_STEPS} — Station ${key} — ${name}`,
+    title: `Step ${seq} — Station ${key} — ${name}`,
     rows: [
       ["Stagnation temperature", `${fmt(st.T0, 1)} K`],
       ["Stagnation pressure", `${fmtKPa(st.p0, 1)} kPa`],
