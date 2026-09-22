@@ -6,6 +6,8 @@ import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import NozzleSection from "./NozzleSection.jsx";
 import AdvancedSection from "./AdvancedSection.jsx";
+import ReportExport from "./ReportExport.jsx";
+import FormulasExport from "./FormulasExport.jsx";
 import { buildShareUrl } from "../utils/shareLink.js";
 
 /**
@@ -17,7 +19,7 @@ import { buildShareUrl } from "../utils/shareLink.js";
  * physics/engine.js `defaultEngineConfig`); `onChange` receives a partial
  * patch to merge in, mirroring the parent's state-update pattern.
  */
-export default function ConfigForm({ config, onChange, onReset, onCollapse }) {
+export default function ConfigForm({ config, result, onChange, onReset, onCollapse }) {
   const [copied, setCopied] = useState(false);
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
@@ -85,6 +87,8 @@ export default function ConfigForm({ config, onChange, onReset, onCollapse }) {
         )}
       </fieldset>
       <AdvancedSection config={config} onChange={onChange} />
+      {result && <ReportExport config={config} result={result} />}
+      <FormulasExport engineType="turbojet" />
     </div>
   );
 }

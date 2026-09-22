@@ -6,6 +6,7 @@ import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import PropellerSection from "./PropellerSection.jsx";
 import TurbopropAdvancedSection from "./TurbopropAdvancedSection.jsx";
+import FormulasExport from "./FormulasExport.jsx";
 
 /**
  * The full turboprop configuration form — same layout/pattern as the
@@ -67,6 +68,7 @@ export default function TurbopropConfigForm({ config, onChange, onReset, onColla
         )}
       </fieldset>
       <TurbopropAdvancedSection config={config} onChange={onChange} />
+      <FormulasExport engineType="turboprop" />
     </div>
   );
 }

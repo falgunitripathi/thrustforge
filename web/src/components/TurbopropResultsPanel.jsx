@@ -7,7 +7,6 @@ import TsDiagram from "./TsDiagram.jsx";
 import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
-import FormulasExport from "./FormulasExport.jsx";
 import { fmt } from "../utils/format.js";
 
 const STATION_TERMS = [
@@ -55,7 +54,6 @@ export default function TurbopropResultsPanel({ result, config }) {
           nozzle).
         </p>
         <AtmosphereReadout config={config} result={result} />
-        <FormulasExport engineType="turboprop" />
       </section>
 
       <TurbopropEngineDiagram config={config} result={result} />

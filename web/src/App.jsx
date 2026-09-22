@@ -168,6 +168,7 @@ function App() {
           engineType === "turboprop" ? (
             <TurbopropConfigForm
               config={turbopropConfig}
+              result={result}
               onChange={patchTurbopropConfig}
               onReset={resetTurbopropConfig}
               onCollapse={() => setSidebarOpen(false)}
@@ -175,6 +176,7 @@ function App() {
           ) : engineType === "turboshaft" ? (
             <TurboshaftConfigForm
               config={turboshaftConfig}
+              result={result}
               onChange={patchTurboshaftConfig}
               onReset={resetTurboshaftConfig}
               onCollapse={() => setSidebarOpen(false)}
@@ -182,6 +184,7 @@ function App() {
           ) : engineType === "turbofan" ? (
             <TurbofanConfigForm
               config={turbofanConfig}
+              result={result}
               onChange={patchTurbofanConfig}
               onReset={resetTurbofanConfig}
               onCollapse={() => setSidebarOpen(false)}
@@ -189,6 +192,7 @@ function App() {
           ) : engineType === "propfan" ? (
             <PropfanConfigForm
               config={propfanConfig}
+              result={result}
               onChange={patchPropfanConfig}
               onReset={resetPropfanConfig}
               onCollapse={() => setSidebarOpen(false)}
@@ -196,6 +200,7 @@ function App() {
           ) : (
             <ConfigForm
               config={config}
+              result={result}
               onChange={patchConfig}
               onReset={resetConfig}
               onCollapse={() => setSidebarOpen(false)}

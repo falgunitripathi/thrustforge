@@ -6,7 +6,6 @@ import TsDiagram from "./TsDiagram.jsx";
 import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
-import FormulasExport from "./FormulasExport.jsx";
 
 const TURBOFAN_STATION_ORDER = ["a", "2", "10", "3", "4", "5", "6", "7", "9", "11"];
 const TURBOFAN_STATION_LABELS = {
@@ -57,7 +56,6 @@ export default function TurbofanResultsPanel({ result, config }) {
           (intake, both nozzles).
         </p>
         <AtmosphereReadout config={config} result={result} />
-        <FormulasExport engineType="turbofan" />
       </section>
 
       <TurbofanEngineDiagram config={config} result={result} />

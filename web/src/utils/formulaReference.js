@@ -346,6 +346,72 @@ const PROPFAN_FORMULAS = [
   },
 ];
 
+/**
+ * Symbol glossary — the notation conventions used across every formula
+ * above (and every FormulaLabel/FieldInfoLabel in the live app itself),
+ * so a reader doesn't have to already know gas-turbine shorthand to
+ * follow the formula list. Generic/shared symbols only; station-specific
+ * subscript meanings (e.g. what "04" means for THIS engine) are listed
+ * per engine in ENGINE_STATION_NOTES below, since they differ by engine.
+ */
+export const SYMBOL_GLOSSARY = [
+  { symbol: "T0", meaning: "Stagnation (total) temperature — what a thermometer would read if the flow were brought to rest at this point." },
+  { symbol: "p0", meaning: "Stagnation (total) pressure — same idea, for pressure." },
+  { symbol: "T", meaning: "Static temperature — the actual temperature of the moving air/gas." },
+  { symbol: "p", meaning: "Static pressure — the actual pressure of the moving air/gas." },
+  { symbol: "M", meaning: "Mach number — flow speed divided by the local speed of sound." },
+  { symbol: "V, U, u", meaning: "Velocity (flow speed or flight speed, depending on context)." },
+  { symbol: "rho", meaning: "Density." },
+  { symbol: "h, h0", meaning: "Static / stagnation specific enthalpy." },
+  {
+    symbol: "Subscript numbers (e.g. T04, p03)",
+    meaning: "The station number the property is measured at — a fixed point along the engine's flow path. Station numbering is this engine's own (see the Station Analysis table in the app); station 'a' always means the freestream, well ahead of the engine.",
+  },
+  { symbol: "f", meaning: "Fuel-air ratio — mass of fuel burned per unit mass of air (mdot_fuel / mdot_a)." },
+  { symbol: "b", meaning: "Bleed ratio — mass of air bled off (for cooling, anti-icing, etc.) per unit mass of inducted air (mdot_bleed / mdot_a)." },
+  { symbol: "mdot, mdot_a", meaning: "Mass flow rate (kg/s) — mdot_a specifically means the air mass flow rate through the engine core." },
+  { symbol: "Cp_c, Cp_h", meaning: "Specific heat at constant pressure, J/(kg·K) — Cp_c for the cold section (upstream of the combustor), Cp_h for the hot section (downstream of it)." },
+  { symbol: "gamma_c, gamma_h", meaning: "Ratio of specific heats (Cp/Cv), dimensionless — same cold/hot split as Cp." },
+  { symbol: "R", meaning: "Specific gas constant, J/(kg·K) — derived from Cp and gamma (R = Cp·(gamma-1)/gamma), not an independent input." },
+  { symbol: "eta_x", meaning: "An efficiency (a fraction, 0-1) — which component it belongs to is given by the subscript, e.g. eta_d = intake/diffuser efficiency, eta_b = combustor efficiency, eta_t = turbine efficiency, eta_N = nozzle efficiency, eta_m = mechanical (shaft) efficiency." },
+  { symbol: "pi_x", meaning: "A pressure ratio (dimensionless, >1) — which component it belongs to is given by the subscript, e.g. pi_c = overall compressor pressure ratio." },
+  { symbol: "alpha", meaning: "A power/energy SPLIT fraction (0-1) — e.g. the fraction of a turbine's available energy sent to a shaft/propeller/fan rather than a residual jet. What exactly it splits depends on the engine — see that engine's own formulas above." },
+  { symbol: "beta", meaning: "Engine-specific — a bypass ratio (turbofan) or a solved power-split fraction (propfan). See that engine's own formulas above for its exact meaning here." },
+  { symbol: "lambda", meaning: "Fraction of turbine power driving the compressor (shaft-balance formulas) — a design input, not derived." },
+];
+
+/**
+ * The physical gas-property constants every engine's physics uses by
+ * default (see aeropropsim/constants.py) — all configurable in each
+ * engine's own Advanced section, but these are the values used unless
+ * changed.
+ */
+export const GAS_PROPERTY_CONSTANTS = [
+  { symbol: "gamma_c", value: "1.400", meaning: "Cold-section ratio of specific heats (air, upstream of the combustor)." },
+  { symbol: "Cp_c", value: "1005 J/(kg·K)", meaning: "Cold-section specific heat at constant pressure." },
+  { symbol: "gamma_h", value: "1.333", meaning: "Hot-section ratio of specific heats (combustion products, downstream of the combustor)." },
+  { symbol: "Cp_h", value: "1148 J/(kg·K)", meaning: "Hot-section specific heat at constant pressure." },
+];
+
+/**
+ * Default efficiency/design values every engine starts from (Advanced
+ * section) — the source's own typical ranges, or a clearly labelled
+ * conventional placeholder where the source gives none. Not every
+ * engine uses every one of these (e.g. eta_tt_stage doesn't apply to
+ * the propfan, which uses eta_HPT/eta_IPT/eta_ft instead) — shown here
+ * as the shared, common defaults across most of them.
+ */
+export const DEFAULT_VALUE_CONSTANTS = [
+  { symbol: "eta_d", value: "0.80", meaning: "Intake/diffuser efficiency (typical range 0.70–0.90)." },
+  { symbol: "eta_c_stage", value: "0.90", meaning: "Per-stage compressor isentropic/polytropic efficiency." },
+  { symbol: "eta_b", value: "0.97", meaning: "Combustor efficiency (typical ~0.97)." },
+  { symbol: "delta_p_cc_pct", value: "0.05 (5%)", meaning: "Combustor fractional total-pressure loss. Conventional placeholder — not a number the source gives directly." },
+  { symbol: "Q_R", value: "43,000,000 J/kg (43 MJ/kg)", meaning: "Fuel heating value — standard published Jet-A (kerosene) lower heating value." },
+  { symbol: "eta_m", value: "0.98", meaning: "Mechanical (shaft) efficiency between a turbine and what it drives." },
+  { symbol: "eta_tt_stage", value: "0.90", meaning: "Per-stage axial turbine total-to-total isentropic efficiency. Conventional literature value — the source only gives a number for radial turbines." },
+  { symbol: "eta_N", value: "0.95", meaning: "Nozzle efficiency (source: “high, ~0.95+, typical”)." },
+];
+
 export const ENGINE_FORMULAS = {
   turbojet: { name: "Turbojet", sections: TURBOJET_FORMULAS },
   turboprop: { name: "Turboprop", sections: TURBOPROP_FORMULAS },

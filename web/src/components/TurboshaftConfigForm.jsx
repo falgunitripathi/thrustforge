@@ -6,6 +6,7 @@ import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import LoadSection from "./LoadSection.jsx";
 import TurboshaftAdvancedSection from "./TurboshaftAdvancedSection.jsx";
+import FormulasExport from "./FormulasExport.jsx";
 
 /**
  * The full turboshaft configuration form — same layout/pattern as the
@@ -64,6 +65,7 @@ export default function TurboshaftConfigForm({ config, onChange, onReset, onColl
         )}
       </fieldset>
       <TurboshaftAdvancedSection config={config} onChange={onChange} />
+      <FormulasExport engineType="turboshaft" />
     </div>
   );
 }

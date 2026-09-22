@@ -5,6 +5,7 @@ import FanSection from "./FanSection.jsx";
 import CoreCompressorsSection from "./CoreCompressorsSection.jsx";
 import TurbofanCombustorSection from "./TurbofanCombustorSection.jsx";
 import TurbofanAdvancedSection from "./TurbofanAdvancedSection.jsx";
+import FormulasExport from "./FormulasExport.jsx";
 
 /**
  * The full turbofan configuration form — same layout/pattern as the
@@ -62,6 +63,7 @@ export default function TurbofanConfigForm({ config, onChange, onReset, onCollap
         )}
       </fieldset>
       <TurbofanAdvancedSection config={config} onChange={onChange} />
+      <FormulasExport engineType="turbofan" />
     </div>
   );
 }

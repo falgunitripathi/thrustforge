@@ -6,6 +6,7 @@ import PropfanCompressorsSection from "./PropfanCompressorsSection.jsx";
 import PropfanCombustorSection from "./PropfanCombustorSection.jsx";
 import PropfanFreeTurbineSection from "./PropfanFreeTurbineSection.jsx";
 import PropfanAdvancedSection from "./PropfanAdvancedSection.jsx";
+import FormulasExport from "./FormulasExport.jsx";
 
 /**
  * The full propfan configuration form — same layout/pattern as the
@@ -65,6 +66,7 @@ export default function PropfanConfigForm({ config, onChange, onReset, onCollaps
         )}
       </fieldset>
       <PropfanAdvancedSection config={config} onChange={onChange} />
+      <FormulasExport engineType="propfan" />
     </div>
   );
 }
