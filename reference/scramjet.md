@@ -193,47 +193,91 @@ flow or total (air+fuel) flow; see judgment-call note in §4.
 
 ## 4. Judgment calls, ambiguities, and things to resolve before coding
 
-1. **Likely transcription error in the nozzle exit-temperature formula.**
-   `T4 = T3 - T3*eta_N*(1 - (p2/p3)^((gamma_n-1)/gamma_n))` uses the
-   ratio `p2/p3` (combustor-entrance to combustor-exit pressure), which
-   is physically odd for a formula describing expansion through the
-   *nozzle* (station 3 to station 4). The intake's own efficiency formula
-   two pages earlier (§2.1, `p2 = p1*(1+eta_I*(T2/T1-1))^(gamma_c/(gamma_c-1))`)
-   has a similar *shape*, and it's plausible the lecturer/transcriber
-   reused that pattern's symbols by mistake instead of writing `p4/p3`.
-   This should be checked against a second source (e.g. Heiser & Pratt,
-   or Mattingly) before being wired into code as-is; implementing it
-   literally as transcribed vs. substituting `p4/p3` will give different
-   numbers, and the source gives no way to disambiguate on its own.
-2. **`Isp` mass-flow ambiguity.** `Isp = T/(mdot*g)` does not say whether
+1. **Anomalous `p2/p3` in the nozzle exit-temperature formula — verified
+   NOT an OCR/transcription artifact.** `T4 = T3 - T3*eta_N*(1 -
+   (p2/p3)^((gamma_n-1)/gamma_n))` uses the ratio `p2/p3`
+   (combustor-entrance to combustor-exit pressure), which is physically
+   odd for a formula describing expansion through the *nozzle* (station
+   3 to station 4). Checked directly against the raw OCR transcript: the
+   glyphs for "p2" and "p3" here are rendered identically and
+   unambiguously to every other "p2"/"p3" nearby in the same paragraph
+   (e.g. the combustor's own `p3 = p2*(1+gamma_c*M2^2)/(1+gamma_c*M3^2)`
+   immediately above it) — there is no OCR confusion between "2" and "4"
+   here, and no separate ambient/exit-pressure symbol appears nearby that
+   could have been garbled into "p2". **The source genuinely reads
+   `p2/p3` as transcribed; this is not a scanning error.** Whether it's a
+   lecturer/slide error or an intentional (oddly labeled) simplification
+   cannot be determined from this source alone.
+   Additional evidence this is likely a real error rather than
+   intentional: the *ramjet* section's own analogous nozzle formula, two
+   pages earlier in the same lecture (NPTEL p.??, "T_B =
+   T0A*[1-eta_N*(1-(pB/p0A)^((gamma_m-1)/gamma_m))]"), uses the exit
+   static pressure over the **inlet's own total pressure** (`pB/p0A`),
+   not two different upstream stations' static pressures. If the
+   scramjet nozzle followed that same pattern, the expected ratio would
+   be `p4/p03` (using the combustor-exit *total* pressure), not `p4/p3`
+   or `p2/p3` — meaning the source is internally inconsistent about
+   which nozzle-inlet reference pressure to use even between its own
+   ramjet and scramjet sections. This makes "the scramjet formula is
+   simply an error" the more likely explanation than "deliberate
+   departure from convention." Still needs a second source (Heiser &
+   Pratt, or Mattingly) to resolve with confidence before coding.
+2. **`Isp` mass-flow ambiguity — partially resolved by cross-reference
+   within the same course.** `Isp = T/(mdot*g)` does not say whether
    `mdot` is `mdot_f` (the standard "fuel specific impulse" definition
-   used for airbreathing/rocket comparison) or `mdot_a`/`(mdot_a+mdot_f)`.
-   The conventional definition for airbreathing engines uses fuel flow
-   only; recommend defaulting to `mdot_f` unless a second source says
-   otherwise, but flag this as an assumption, not a transcribed fact.
-3. **`T02` used before it is defined.** The combustor's `T03/T02`
-   temperature-ratio formula (§2.2) references `T02`, but the source
-   never separately derives a stagnation temperature at station 2 — only
-   the static `T2` (§2.1). The natural fill-in via the standard isentropic
-   stagnation relation is `T02 = T2*(1 + 0.5*(gamma_c-1)*M2^2)`, which is
-   *not* an explicit formula from the source but a standard identity used
-   to make the transcript's own combustor formula usable; flagged so it's
-   not mistaken for a directly-sourced equation.
-4. **Two distinct, seemingly unreconciled, intake-pressure treatments.**
+   used for airbreathing/rocket comparison) or `mdot_a`/`(mdot_a+mdot_f)`
+   — confirmed the raw transcript has no subscript at all here, not an
+   OCR drop. However, the same lecturer/course explicitly defines Isp
+   elsewhere in the series (an earlier lecture on aircraft range/
+   endurance, `reference_extraction/nptel.txt` — "specific impulse is
+   defined as that Isp which is thrust per fuel flow rate," immediately
+   followed by the range equation and "specific impulse the unit will be
+   in time," both hallmarks of the fuel-flow convention, which gives Isp
+   units of seconds). This is same-author precedent, not a scramjet-
+   section-specific transcription, but it meaningfully supports
+   defaulting to `mdot = mdot_f` rather than treating the choice as an
+   unguided assumption.
+3. **`T02` used before it is defined — confirmed no direct derivation
+   exists, but the fill-in has a same-lecturer precedent.** The
+   combustor's `T03/T02` temperature-ratio formula (§2.2) references
+   `T02`, but the source never separately derives a stagnation
+   temperature at station 2 in the scramjet section — only the static
+   `T2` (§2.1); confirmed no nearby formula was missed. The natural
+   fill-in via the standard isentropic stagnation relation is `T02 =
+   T2*(1 + 0.5*(gamma_c-1)*M2^2)`. This exact functional form is not
+   given for station 2 in the scramjet material, but the SAME lecturer
+   derives the identical relation explicitly for the ramjet's diffuser
+   two lectures earlier in the same course (`T0B/TA = 1 +
+   (gamma_a-1)/2*Ma^2`, NPTEL p.261) — so this is a same-author,
+   same-course precedent for the identity, not a generic textbook
+   assumption pulled from outside the source, even though it isn't a
+   direct transcription for this specific station.
+4. **Two distinct intake-pressure treatments — resolved: they are
+   presented as unconnected, and only one is actually used downstream.**
    Section 2.1 gives both (a) an isentropic-efficiency-based static
    pressure formula (`p2` from `eta_I` and the isentropic exponent) and
    (b) a wholly separate empirical MIL-E-5007D correlation for total
-   pressure recovery `p02/p01` as a function of `M1` only. The source
-   does not explain how the two combine into one consistent diffuser exit
-   state (e.g., whether `eta_I` should be *derived from* the MIL-spec
-   correlation, or whether the two are alternative/independent options
-   the way this project's own turbojet `intake.py` documents two
-   different, non-interchangeable ram-efficiency conventions). This is
-   the scramjet-side analogue of that same documented turbojet situation
-   and should be resolved the same way — implement both, clearly labeled,
-   pick one as the default, and do not treat the two `eta`/pressure-ratio
-   numbers as interchangeable.
-5. **No independent validation source at all.** Unlike the turbojet
+   pressure recovery `p02/p01` as a function of `M1` only. Checked the
+   raw transcript closely: the source moves from the `eta_I`/`p2`
+   derivation directly into the MIL-E-5007D correlation with only a bare
+   transitional "So" — no language chaining them (no "then," "using
+   this," "substituting"). More conclusively: **`p02/p01` is never
+   referenced again anywhere in the downstream formulas** — every
+   combustor and nozzle equation after it (T03, p3, T3, T4, ...)
+   continues to reference `p2` from the `eta_I` path only. This confirms
+   the two are independent, non-chained pieces of information, and that
+   *the source's own derivation chain only actually uses the `eta_I`/`p2`
+   path* — the MIL-E-5007D correlation is presented as an aside and never
+   wired into this lecture's own cycle calculation. Recommend
+   implementing the `eta_I`/`p2` path as the one used by the solver, and
+   exposing the MIL-E-5007D correlation only as a separate, clearly
+   labeled reference/comparison value — not as an alternative input mode
+   the way the turbojet's two ram-efficiency conventions are exposed.
+5. **No independent validation source at all** (re-confirmed by direct
+   grep of both Ganesan extraction files for "scramjet," "supersonic
+   combustion," "dual-mode" — the only hit in either file is one
+   unrelated multiple-choice quiz question about rocket-propellant
+   combustion, not scramjets). Unlike the turbojet
    (validated against Ganesan's Worked Example 7.5) and even the ramjet
    (at least cross-checked against Ganesan's qualitative §7.3 and one
    Mach-matching identity), there is **no secondary source in the
