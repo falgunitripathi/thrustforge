@@ -8,6 +8,7 @@ import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ConfigCompare from "./ConfigCompare.jsx";
 import ReportExport from "./ReportExport.jsx";
+import FormulasExport from "./FormulasExport.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
 import SectionSkeleton from "./SectionSkeleton.jsx";
 import { fmt } from "../utils/format.js";
@@ -70,6 +71,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
         </p>
         <AtmosphereReadout config={config} result={result} />
         <ReportExport config={config} result={result} />
+        <FormulasExport engineType="turbojet" />
       </section>
 
       <Suspense fallback={<SectionSkeleton title="Live engine cutaway" />}>
