@@ -136,13 +136,13 @@ function partDetails(kind, result, config) {
         ["Exit stagnation pressure", `${fmtKPa(stations["2"].p0, 1)} kPa`],
       ] };
     case "ipc":
-      return { title: "IPC (intermediate-pressure compressor)", rows: [
+      return { title: "IPC — Intermediate-Pressure Compressor", rows: [
         ["Pressure ratio (you set this)", fmt(ipc.pi_IPC, 3)],
         ["Exit stagnation temperature", `${fmt(ipc.T03, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(ipc.p03, 1)} kPa`],
       ] };
     case "hpc":
-      return { title: "HPC (high-pressure compressor)", rows: [
+      return { title: "HPC — High-Pressure Compressor", rows: [
         ["Pressure ratio (you set this)", fmt(hpc.pi_HPC, 3)],
         ["Exit stagnation temperature", `${fmt(hpc.T04, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(hpc.p04, 1)} kPa`],
@@ -155,7 +155,7 @@ function partDetails(kind, result, config) {
         ["Fuel-air ratio", fmt(combustor.f, 4)],
       ] };
     case "hpt":
-      return { title: "HPT (drives HPC only)", rows: [
+      return { title: "HPT — High-Pressure Turbine (drives HPC only)", rows: [
         ["Inlet stagnation temperature", `${fmt(combustor.T05, 1)} K`],
         ["Exit stagnation temperature", `${fmt(hpt.T06, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(hpt.p06, 1)} kPa`],

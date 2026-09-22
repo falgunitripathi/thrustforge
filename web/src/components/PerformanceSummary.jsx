@@ -94,7 +94,7 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         <FormulaLabel
           className="perf-label"
           label="TSFC"
-          formula="TSFC = f / (T/mdot_a) (Ref §9) — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
+          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = f / (T/mdot_a) (Ref §9) — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
         />
         <Stat value={tsfcHr} digits={3} unit="kg/(N·h)" />
       </div>

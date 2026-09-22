@@ -31,19 +31,22 @@ export default function TurbofanAdvancedSection({ config, onChange }) {
             hint="J/kg. NOT IN SOURCE (standard published Jet-A LHV)" />
           <NumberField label="HPT efficiency η_HPT" value={config.eta_HPT}
             onChange={(v) => onChange({ eta_HPT: v })} min={0.5} max={1.0} step={0.01}
-            hint="HPT drives the HPC only (§3)" />
+            hint="HPT = High-Pressure Turbine, right after the combustor — drives the HPC only (§3)" />
           <NumberField label="LPT efficiency η_LPT" value={config.eta_LPT}
             onChange={(v) => onChange({ eta_LPT: v })} min={0.5} max={1.0} step={0.01}
-            hint="LPT drives the fan + LPC together (§3)" />
+            hint="LPT = Low-Pressure Turbine, the last turbine stage before the hot nozzle — drives the fan + LPC together (§3)" />
           <NumberField label="HP-spool mechanical efficiency η_m1" value={config.eta_m1}
-            onChange={(v) => onChange({ eta_m1: v })} min={0.9} max={1.0} step={0.005} />
+            onChange={(v) => onChange({ eta_m1: v })} min={0.9} max={1.0} step={0.005}
+            hint="HP spool = the shaft connecting the HPT (High-Pressure Turbine) to the HPC (High-Pressure Compressor). Mechanical losses (bearings, etc.) between them." />
           <NumberField label="LP-spool mechanical efficiency η_m2" value={config.eta_m2}
-            onChange={(v) => onChange({ eta_m2: v })} min={0.9} max={1.0} step={0.005} />
+            onChange={(v) => onChange({ eta_m2: v })} min={0.9} max={1.0} step={0.005}
+            hint="LP spool = the shaft connecting the LPT (Low-Pressure Turbine) to the fan and LPC (Low-Pressure Compressor). Mechanical losses (bearings, etc.) between them." />
           <NumberField label="HPT work fraction λ1" value={config.lambda1}
             onChange={(v) => onChange({ lambda1: v })} min={0.8} max={1.0} step={0.01}
-            hint="the source never precisely defines this 'conversion factor' — defaults to 1.0, the same resolution used elsewhere in this project for the same ambiguity" />
+            hint="HPT = High-Pressure Turbine. The source never precisely defines this 'conversion factor' — defaults to 1.0, the same resolution used elsewhere in this project for the same ambiguity" />
           <NumberField label="LPT work fraction λ2" value={config.lambda2}
-            onChange={(v) => onChange({ lambda2: v })} min={0.8} max={1.0} step={0.01} />
+            onChange={(v) => onChange({ lambda2: v })} min={0.8} max={1.0} step={0.01}
+            hint="LPT = Low-Pressure Turbine. Same undefined 'conversion factor' as λ1 above, for this spool instead." />
           <NumberField label="Jet-pipe Δp loss" value={config.delta_p_jetpipe}
             onChange={(v) => onChange({ delta_p_jetpipe: v })} min={0} max={0.1} step={0.005}
             hint="fraction, not %. NOT IN SOURCE numerically" />

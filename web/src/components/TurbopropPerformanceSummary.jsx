@@ -51,8 +51,8 @@ export default function TurbopropPerformanceSummary({ performance, propeller }) 
       <div className="perf-card">
         <FormulaLabel
           className="perf-label"
-          label="Equivalent shaft power"
-          formula="ESHP = shaft power + Tn·U/η_Pr (§2.4, this project's SI form — see aeropropsim/turboprop.py docstring for why the source's imperial constant isn't needed in SI): the residual jet's thrust power, expressed as if it had instead gone through the propeller at the same efficiency, added to the actual shaft power."
+          label="Equivalent shaft power (ESHP)"
+          formula="ESHP = Equivalent Shaft Horsepower (tracked here in kW, not literal horsepower). ESHP = shaft power + Tn·U/η_Pr (§2.4, this project's SI form — see aeropropsim/turboprop.py docstring for why the source's imperial constant isn't needed in SI): the residual jet's thrust power, expressed as if it had instead gone through the propeller at the same efficiency, added to the actual shaft power."
         />
         <Stat value={eshpKW} digits={1} unit="kW" />
       </div>
@@ -60,7 +60,7 @@ export default function TurbopropPerformanceSummary({ performance, propeller }) 
         <FormulaLabel
           className="perf-label"
           label="ESFC"
-          formula="ESFC = mdot_f / ESHP (§2.5) — fuel consumption per unit equivalent shaft power. Source's own cited typical value: ~0.272 kg/(kW·hr)."
+          formula="ESFC = Equivalent Specific Fuel Consumption — fuel burned per unit of ESHP (Equivalent Shaft Horsepower, see the card above). ESFC = mdot_f / ESHP (§2.5) — fuel consumption per unit equivalent shaft power. Source's own cited typical value: ~0.272 kg/(kW·hr)."
         />
         <Stat value={performance.ESFC_kg_per_kWh} digits={3} unit="kg/(kW·h)" />
       </div>
@@ -68,7 +68,7 @@ export default function TurbopropPerformanceSummary({ performance, propeller }) 
         <FormulaLabel
           className="perf-label"
           label="TSFC"
-          formula="TSFC = f / (T/mdot_a) — same definition as the turbojet's, using total thrust, for direct comparison."
+          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = f / (T/mdot_a) — same definition as the turbojet's, using total thrust, for direct comparison."
         />
         <Stat value={performance.tsfc} digits={5} unit="kg/(N·s)" />
       </div>

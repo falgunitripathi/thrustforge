@@ -704,17 +704,17 @@ button.field-label.formula-trigger:focus-visible {
 
 .ts-axis {
   stroke: var(--text-muted);
-  stroke-width: 1;
+  stroke-width: 1.5;
 }
 
 .ts-axis-label {
   fill: var(--text-muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .ts-path {
   stroke: var(--accent);
-  stroke-width: 2;
+  stroke-width: 3.5;
 }
 
 .ts-point {
@@ -723,7 +723,8 @@ button.field-label.formula-trigger:focus-visible {
 
 .ts-point-label {
   fill: var(--text-h);
-  font-size: 11px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 /* --- Engine diagram --- */

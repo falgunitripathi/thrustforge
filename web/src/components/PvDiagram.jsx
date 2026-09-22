@@ -3,9 +3,9 @@ import { resolveLabelOffsets } from "../utils/labelPlacement.js";
 
 const STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
 
-const WIDTH = 560;
-const HEIGHT = 360;
-const MARGIN = { top: 20, right: 30, bottom: 44, left: 56 };
+const WIDTH = 580;
+const HEIGHT = 380;
+const MARGIN = { top: 24, right: 34, bottom: 52, left: 68 };
 
 /**
  * A simplified P-v (pressure-specific volume) process diagram connecting
@@ -88,7 +88,7 @@ export default function PvDiagram({ stations }) {
           const off = labelOffsets[i];
           return (
             <g key={p.key}>
-              <circle cx={xScale(p.v)} cy={yScale(p.p)} r={4} className="ts-point" />
+              <circle cx={xScale(p.v)} cy={yScale(p.p)} r={6} className="ts-point" />
               <text
                 x={xScale(p.v) + off.dx}
                 y={yScale(p.p) + off.dy}

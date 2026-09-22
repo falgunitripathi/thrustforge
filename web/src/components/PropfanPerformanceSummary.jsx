@@ -54,7 +54,7 @@ export default function PropfanPerformanceSummary({ performance, hotNozzle }) {
         <FormulaLabel
           className="perf-label"
           label="TSFC"
-          formula="TSFC = f / (T_total/mdot_a) (§2.4) — same definition as the turbojet's, using total thrust and the gas generator's own fuel-air ratio."
+          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = f / (T_total/mdot_a) (§2.4) — same definition as the turbojet's, using total thrust and the gas generator's own fuel-air ratio."
         />
         <Stat value={performance.tsfc} digits={6} unit="kg/(N·s)" />
       </div>

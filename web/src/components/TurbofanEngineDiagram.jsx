@@ -120,13 +120,13 @@ function partDetails(kind, result) {
         ["Feeds", "both the core (LPC) and the bypass duct, split by β"],
       ] };
     case "lpc":
-      return { title: "LPC (booster)", rows: [
+      return { title: "LPC — Low-Pressure Compressor (booster)", rows: [
         ["Pressure ratio (you set this)", fmt(lpc.pi_LPC, 3)],
         ["Exit stagnation temperature", `${fmt(lpc.T03, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(lpc.p03, 1)} kPa`],
       ] };
     case "hpc":
-      return { title: "HPC", rows: [
+      return { title: "HPC — High-Pressure Compressor", rows: [
         ["Pressure ratio (you set this)", fmt(hpc.pi_HPC, 3)],
         ["Exit stagnation temperature", `${fmt(hpc.T04, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(hpc.p04, 1)} kPa`],
@@ -135,17 +135,17 @@ function partDetails(kind, result) {
     case "combustor":
       return { title: "Combustor", rows: [
         ["Inlet stagnation temperature", `${fmt(hpc.T04, 1)} K`],
-        ["Exit stagnation temperature (TIT)", `${fmt(combustor.T05, 1)} K`],
+        ["Exit stagnation temperature (TIT — turbine inlet temperature)", `${fmt(combustor.T05, 1)} K`],
         ["Fuel-air ratio", fmt(combustor.f, 4)],
       ] };
     case "hpt":
-      return { title: "HPT (drives HPC only)", rows: [
+      return { title: "HPT — High-Pressure Turbine (drives HPC only)", rows: [
         ["Inlet stagnation temperature", `${fmt(combustor.T05, 1)} K`],
         ["Exit stagnation temperature", `${fmt(hpt.T06, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(hpt.p06, 1)} kPa`],
       ] };
     case "lpt":
-      return { title: "LPT (drives fan + LPC)", rows: [
+      return { title: "LPT — Low-Pressure Turbine (drives fan + LPC)", rows: [
         ["Inlet stagnation temperature", `${fmt(hpt.T06, 1)} K`],
         ["Exit stagnation temperature", `${fmt(lpt.T07, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(lpt.p07, 1)} kPa`],

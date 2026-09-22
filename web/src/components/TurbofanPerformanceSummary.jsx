@@ -52,7 +52,7 @@ export default function TurbofanPerformanceSummary({ performance, hotNozzle, col
         <FormulaLabel
           className="perf-label"
           label="TSFC"
-          formula="TSFC = f / (T/mdot_a) (§3) — same definition as the turbojet's, using total thrust and core-stream fuel-air ratio."
+          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = f / (T/mdot_a) (§3) — same definition as the turbojet's, using total thrust and core-stream fuel-air ratio."
         />
         <Stat value={performance.tsfc} digits={6} unit="kg/(N·s)" />
       </div>

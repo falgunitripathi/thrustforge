@@ -3,9 +3,9 @@ import { resolveLabelOffsets } from "../utils/labelPlacement.js";
 
 const STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
 
-const WIDTH = 560;
-const HEIGHT = 360;
-const MARGIN = { top: 20, right: 30, bottom: 44, left: 56 };
+const WIDTH = 580;
+const HEIGHT = 380;
+const MARGIN = { top: 24, right: 34, bottom: 52, left: 68 };
 
 /**
  * A simplified T-s (temperature-entropy) process diagram connecting the
@@ -100,7 +100,7 @@ export default function TsDiagram({ stations }) {
           const off = labelOffsets[i];
           return (
             <g key={p.key}>
-              <circle cx={xScale(p.s)} cy={yScale(p.T)} r={4} className="ts-point" />
+              <circle cx={xScale(p.s)} cy={yScale(p.T)} r={6} className="ts-point" />
               <text
                 x={xScale(p.s) + off.dx}
                 y={yScale(p.T) + off.dy}

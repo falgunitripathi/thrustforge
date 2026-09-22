@@ -35,7 +35,7 @@ export default function TurboshaftPerformanceSummary({ shaft, performance }) {
         <FormulaLabel
           className="perf-label"
           label="SFC"
-          formula="SFC = mdot_f / Pload — fuel consumption per unit load power. Not spelled out explicitly for the turboshaft in the source; inferred by analogy to the turboprop's ESFC (reference/turboshaft.md §4, item 4)."
+          formula="SFC = Specific Fuel Consumption — fuel burned per unit of load power delivered. SFC = mdot_f / Pload — fuel consumption per unit load power. Not spelled out explicitly for the turboshaft in the source; inferred by analogy to the turboprop's ESFC (reference/turboshaft.md §4, item 4)."
         />
         <Stat value={performance.SFC_kg_per_kWh} digits={3} unit="kg/(kW·h)" />
       </div>

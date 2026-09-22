@@ -31,7 +31,7 @@ export default function PropfanCompressorsSection({ config, onChange }) {
             min={1.0}
             max={5.0}
             step={0.1}
-            hint="p03 = p02·π_IPC (§2.1). NOT IN SOURCE numerically."
+            hint="IPC = Intermediate-Pressure Compressor, the first (lowest-pressure) of the two gas-generator compressors, right after the core intake. p03 = p02·π_IPC (§2.1). NOT IN SOURCE numerically."
           />
           <NumberField
             label="IPC efficiency η_IPC"
@@ -40,6 +40,7 @@ export default function PropfanCompressorsSection({ config, onChange }) {
             min={0.7}
             max={0.98}
             step={0.01}
+            hint="IPC = Intermediate-Pressure Compressor — see the pressure-ratio field above for what it is. How much of the ideal compression this stage actually achieves."
           />
           <NumberField
             label="HPC pressure ratio π_HPC"
@@ -48,7 +49,7 @@ export default function PropfanCompressorsSection({ config, onChange }) {
             min={2}
             max={25}
             step={0.5}
-            hint="p04 = p03·π_HPC (§2.1). NOT IN SOURCE numerically; chosen with π_IPC to reach a plausible core overall pressure ratio."
+            hint="HPC = High-Pressure Compressor, the second (final, highest-pressure) gas-generator compressor, right before the combustor. p04 = p03·π_HPC (§2.1). NOT IN SOURCE numerically; chosen with π_IPC to reach a plausible core overall pressure ratio."
           />
           <NumberField
             label="HPC efficiency η_HPC"
@@ -57,6 +58,7 @@ export default function PropfanCompressorsSection({ config, onChange }) {
             min={0.7}
             max={0.98}
             step={0.01}
+            hint="HPC = High-Pressure Compressor — see the pressure-ratio field above for what it is. How much of the ideal compression this stage actually achieves."
           />
         </>
       )}

@@ -31,13 +31,13 @@ export default function PropfanAdvancedSection({ config, onChange }) {
             hint="J/kg. NOT IN SOURCE (standard published Jet-A LHV)" />
           <NumberField label="HPT efficiency η_HPT" value={config.eta_HPT}
             onChange={(v) => onChange({ eta_HPT: v })} min={0.5} max={1.0} step={0.01}
-            hint="HPT drives the HPC only, bare energy balance — no lambda/eta_m term (§2.1, module docstring: shaft/mechanical efficiency taken as 100% here)" />
+            hint="HPT = High-Pressure Turbine, right after the combustor — drives the HPC (High-Pressure Compressor) only, bare energy balance — no lambda/eta_m term (§2.1, module docstring: shaft/mechanical efficiency taken as 100% here)" />
           <NumberField label="IPT efficiency η_IPT" value={config.eta_IPT}
             onChange={(v) => onChange({ eta_IPT: v })} min={0.5} max={1.0} step={0.01}
-            hint="IPT drives the IPC only, same bare energy balance as the HPT (§2.1)" />
+            hint="IPT = Intermediate-Pressure Turbine, right after the HPT — drives the IPC (Intermediate-Pressure Compressor) only, same bare energy balance as the HPT (§2.1)" />
           <NumberField label="Fan mechanical efficiency η_m,UDF" value={config.eta_m_UDF}
             onChange={(v) => onChange({ eta_m_UDF: v })} min={0.9} max={1.0} step={0.005}
-            hint="between the free turbine and the unducted fan (§2.4)" />
+            hint="UDF = Unducted Fan, the propfan's own open-rotor fan (see the Unducted fan section). This is the mechanical efficiency between the free turbine and that fan (§2.4)" />
           <NumberField label="Hot nozzle efficiency η_n" value={config.eta_n}
             onChange={(v) => onChange({ eta_n: v })} min={0.5} max={1.0} step={0.01}
             hint="always fully expanded to ambient here — no choking check, unlike the turbojet's nozzle.py (§2.3)" />
