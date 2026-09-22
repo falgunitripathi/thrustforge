@@ -963,6 +963,19 @@ button.field-label.formula-trigger:focus-visible {
   overflow-x: auto;
 }
 
+/* Wraps the SVG + station-readouts row + PartCard as one fixed-width
+   unit (see the engine diagram components' own TOTAL_W) — margin:auto
+   centers that unit in the (usually wider) panel instead of it sitting
+   flush left, and being `position: relative` gives PartCard's
+   percentage-based `left` the CORRECT container to resolve against
+   (exactly TOTAL_W wide, matching how leftPct is computed), not the
+   panel's own, wider width. Still scrolls normally when the viewport
+   is narrower than TOTAL_W. */
+.engine-diagram-viewport {
+  position: relative;
+  margin: 0 auto;
+}
+
 .engine-diagram-scroll-big .engine-diagram-svg {
   min-width: 980px;
 }

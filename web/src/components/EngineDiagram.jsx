@@ -252,6 +252,7 @@ function Diagram({ config, result, idSuffix }) {
     <div className="ed-diagram-wrap">
       <InspectToolbar parts={PART_BUTTONS} activeKind={selected?.kind ?? null} onSelect={selectPartByKind} />
       <div className="engine-diagram-scroll" onClick={handleWrapperClick}>
+      <div className="engine-diagram-viewport" style={{ width: TOTAL_W }}>
       <svg
         viewBox={`${-MARGIN} 0 ${TOTAL_W} ${VBOX_H}`}
         className="engine-diagram-svg"
@@ -482,6 +483,7 @@ function Diagram({ config, result, idSuffix }) {
       </div>
 
       <PartCard details={selected?.details} leftPct={selected?.leftPct ?? 50} onClose={() => setSelected(null)} />
+      </div>
 
       <p className="section-note">
         A live half-cutaway — use the buttons above, or click any part or
