@@ -313,7 +313,7 @@ function Diagram({ config, result, idSuffix }) {
       </svg>
 
       <div className="station-readouts" style={{ width: TOTAL_W }}>
-        {STATIONS.map((s) => (
+        {STATIONS.map((s, i) => (
           <StationReadout
             key={s.key}
             station={s.key}
@@ -323,6 +323,11 @@ function Diagram({ config, result, idSuffix }) {
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
             leftPct={((s.x + MARGIN) / TOTAL_W) * 100}
+            // The turbine-exit station and the Load marker right after it
+            // sit close enough together (both long labels) that they'd
+            // otherwise collide — alternate every marker's row, same
+            // convention used by every other engine's diagram.
+            top={i % 2 === 1 ? 62 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}
@@ -333,6 +338,7 @@ function Diagram({ config, result, idSuffix }) {
           value1={shaft.Pload_W / 1000}
           unit1="kW delivered"
           leftPct={((loadMid + MARGIN) / TOTAL_W) * 100}
+          top={STATIONS.length % 2 === 1 ? 62 : 0}
           onSelect={() => selectPartByKind("load")}
         />
       </div>
