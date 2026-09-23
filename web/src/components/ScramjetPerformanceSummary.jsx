@@ -100,7 +100,7 @@ export default function ScramjetPerformanceSummary({ performance, combustor, int
         <FormulaLabel
           className="perf-label"
           label="MIL-E-5007D recovery (reference only)"
-          formula="p02/p01 = 800/(M1^4 + 935) for M1 > 5; 1 − 0.776·(M1 − 1)^1.5 for 1 < M1 < 5 (NPTEL p.278, §2.1) — a US military-specification estimate of how much total pressure a supersonic intake keeps. REFERENCE ONLY: the solver does NOT use this number — p2 comes from the intake efficiency eta_I instead, exactly as the source's own derivation chain does (reference/scramjet.md §4, judgment call #4)."
+          formula="p02/p01 = 800/(M1^4 + 935) for M1 > 5; 1 − 0.075·(M1 − 1)^1.35 for 1 < M1 < 5 (NPTEL p.278, §2.1; the source prints 0.776 and 1.5 there, which goes negative above Mach 2.2 — the published military-spec constants are used instead) — a US military-specification estimate of how much total pressure a supersonic intake keeps. REFERENCE ONLY: the solver does NOT use this number — p2 comes from the intake efficiency eta_I instead, exactly as the source's own derivation chain does (reference/scramjet.md §4, judgment call #4)."
         />
         <span className="perf-value">{fmt(intake.recovery_mil_e_5007d, 3)} <small>not used</small></span>
       </div>

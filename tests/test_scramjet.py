@@ -62,5 +62,8 @@ def test_more_fuel_raises_thrust():
 
 def test_mil_e_5007d_branches():
     assert mil_e_5007d_recovery(0.5) == 1.0
-    assert mil_e_5007d_recovery(3.0) == pytest.approx(1.0 - 0.776 * 2.0 ** 1.5)
+    assert mil_e_5007d_recovery(3.0) == pytest.approx(1.0 - 0.075 * 2.0 ** 1.35)
+    # Continuous with the M>5 branch at M=5, and never negative.
+    assert mil_e_5007d_recovery(5.0) == pytest.approx(800.0 / (5.0 ** 4 + 935.0), abs=1e-3)
+    assert all(mil_e_5007d_recovery(m / 10) > 0 for m in range(0, 120))
     assert mil_e_5007d_recovery(6.0) == pytest.approx(800.0 / (6.0 ** 4 + 935.0))

@@ -33,7 +33,8 @@ export function defaultScramjetConfig() {
 
 export function milE5007dRecovery(M1) {
   if (M1 <= 1.0) return 1.0;
-  if (M1 <= 5.0) return 1.0 - 0.776 * (M1 - 1.0) ** 1.5;
+  // Published MIL-E-5007D constants — the source's 0.776/1.5 goes negative above M~2.2.
+  if (M1 <= 5.0) return 1.0 - 0.075 * (M1 - 1.0) ** 1.35;
   return 800.0 / (M1 ** 4 + 935.0);
 }
 

@@ -373,8 +373,8 @@ const SCRAMJET_FORMULAS = [
       },
       {
         label: "MIL-E-5007D total-pressure recovery (reference only)",
-        formula: "p02/p01 = 800/(M1^4 + 935) for M1 > 5; 1 - 0.776·(M1-1)^1.5 for 1 < M1 < 5",
-        note: "Reported for comparison only — NOT used by the solver, which takes p2 from eta_I as the source's own derivation chain does (judgment call #4).",
+        formula: "p02/p01 = 800/(M1^4 + 935) for M1 > 5; 1 - 0.075·(M1-1)^1.35 for 1 < M1 < 5",
+        note: "Published MIL-E-5007D constants (the source prints 0.776 and 1.5, which goes negative above Mach 2.2). Reported for comparison only — NOT used by the solver, which takes p2 from eta_I as the source's own derivation chain does (judgment call #4).",
       },
     ],
   },

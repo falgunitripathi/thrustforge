@@ -83,11 +83,17 @@ class ScramjetResult:
 
 
 def mil_e_5007d_recovery(M1: float) -> float:
-    """p02/p01 = 1 (M<1); 1-0.776(M-1)^1.5 (1<M<5); 800/(M^4+935) (M>5). Ref §2.1."""
+    """p02/p01 = 1 (M<1); 1-0.075(M-1)^1.35 (1<M<5); 800/(M^4+935) (M>5). Ref §2.1.
+
+    The source's middle branch reads 1-0.776(M-1)^1.5, which goes negative
+    above M~2.2; the published MIL-E-5007D constants (0.075, 1.35) are used
+    instead — they also meet the M>5 branch exactly at M=5 (0.513), which
+    the source's version doesn't (-5.2).
+    """
     if M1 <= 1.0:
         return 1.0
     if M1 <= 5.0:
-        return 1.0 - 0.776 * (M1 - 1.0) ** 1.5
+        return 1.0 - 0.075 * (M1 - 1.0) ** 1.35
     return 800.0 / (M1 ** 4 + 935.0)
 
 
