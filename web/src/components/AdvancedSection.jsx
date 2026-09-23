@@ -36,7 +36,7 @@ export default function AdvancedSection({ config, onChange }) {
             hint="appears in the fuel-air ratio energy balance: f = [(Cp_h/Cp_c)(T04/T03)−1] / [(η_b·Q_R)/(Cp_c·T03)−(Cp_h/Cp_c)(T04/T03)] (§5). Typical ~0.97 (§10)." />
           <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
             onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.01}
-            hint="p04 = p03·(1−Δp_cc) (§5). Fraction, not %. NOT IN SOURCE (conventional placeholder, §10)" />
+            hint="p04 = p03·(1−Δp_cc) (§5). Fraction, not %. Typical value" />
           <NumberField label="Shaft power fraction λ" value={config.lambda_shaft}
             onChange={(v) => onChange({ lambda_shaft: v })} min={0.5} max={1.0} step={0.01}
             hint="fraction of turbine power driving the compressor, in the shaft balance T05/T04 = 1−Cp_c·(T03−T02)/(λ·η_m·(1+f)·Cp_h·T04) (§7). Typical 0.75–0.85 (§10)." />
@@ -45,7 +45,7 @@ export default function AdvancedSection({ config, onChange }) {
             hint="same shaft-balance formula as λ above (§7). Typical ~0.98 (§10)." />
           <NumberField label="Turbine stage efficiency η_tt" value={config.eta_tt_stage}
             onChange={(v) => onChange({ eta_tt_stage: v })} min={0.5} max={1.0} step={0.01}
-            hint="per-stage p_out/p_in = [1−ΔT0/(η_tt·T01)]^(γ_h/(γ_h−1)) (§6.1). NOT IN SOURCE for axial (source only gives radial, >0.7)" />
+            hint="per-stage p_out/p_in = [1−ΔT0/(η_tt·T01)]^(γ_h/(γ_h−1)) (§6.1). Typical axial-turbine value" />
           <NumberField label="Nozzle efficiency η_N" value={config.eta_N}
             onChange={(v) => onChange({ eta_N: v })} min={0.5} max={1.0} step={0.01}
             hint="sets choking pressure p_c = p0·[1−(1/η_N)·(γ_h−1)/(γ_h+1)]^(γ_h/(γ_h−1)), and (when unchoked) V_exit = √(2·Cp_h·η_N·T0·[1−(p_a/p0)^((γ_h−1)/γ_h)]) (§8)" />

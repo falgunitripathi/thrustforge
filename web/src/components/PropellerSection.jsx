@@ -49,7 +49,7 @@ export default function PropellerSection({ config, onChange }) {
             min={0.9}
             max={1.0}
             step={0.005}
-            hint="reduction-gearbox mechanical efficiency between the turbine shaft and the (much slower-turning) propeller. NOT IN SOURCE — conventional value"
+            hint="reduction-gearbox mechanical efficiency between the turbine shaft and the (much slower-turning) propeller. Typical value"
           />
         </>
       )}

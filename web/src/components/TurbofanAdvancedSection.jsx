@@ -31,7 +31,7 @@ export default function TurbofanAdvancedSection({ config, onChange }) {
             hint="same fuel-air-ratio energy balance as the turbojet" />
           <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
             onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.01}
-            hint="fraction, not %. NOT IN SOURCE (conventional placeholder)" />
+            hint="fraction, not %. Typical value" />
           <NumberField label="HPT efficiency η_HPT" value={config.eta_HPT}
             onChange={(v) => onChange({ eta_HPT: v })} min={0.5} max={1.0} step={0.01}
             hint="HPT = High-Pressure Turbine, right after the combustor — drives the HPC only (§3)" />
@@ -52,7 +52,7 @@ export default function TurbofanAdvancedSection({ config, onChange }) {
             hint="LPT = Low-Pressure Turbine. Same undefined 'conversion factor' as λ1 above, for this spool instead." />
           <NumberField label="Jet-pipe Δp loss" value={config.delta_p_jetpipe}
             onChange={(v) => onChange({ delta_p_jetpipe: v })} min={0} max={0.1} step={0.005}
-            hint="fraction, not %. NOT IN SOURCE numerically" />
+            hint="fraction, not %." />
           <NumberField label="Hot nozzle efficiency η_n1" value={config.eta_n1}
             onChange={(v) => onChange({ eta_n1: v })} min={0.5} max={1.0} step={0.01} />
           <NumberField label="Cold (fan) nozzle efficiency η_fn" value={config.eta_fn}

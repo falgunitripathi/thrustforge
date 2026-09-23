@@ -34,7 +34,7 @@ export default function TurboshaftAdvancedSection({ config, onChange }) {
             hint="same fuel-air-ratio energy balance as the turbojet" />
           <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
             onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.01}
-            hint="fraction, not %. NOT IN SOURCE (conventional placeholder)" />
+            hint="fraction, not %. Typical value" />
           <NumberField label="Turbine efficiency η_t" value={config.eta_t}
             onChange={(v) => onChange({ eta_t: v })} min={0.5} max={1.0} step={0.01}
             hint="derates the turbine's temperature drop below its isentropic value for the same full expansion to ambient pressure (§2.1)" />

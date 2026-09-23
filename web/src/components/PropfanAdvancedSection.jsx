@@ -31,7 +31,7 @@ export default function PropfanAdvancedSection({ config, onChange }) {
             hint="same fuel-air-ratio energy balance as the turbojet" />
           <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
             onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.01}
-            hint="fraction, not %. NOT IN SOURCE (conventional placeholder)" />
+            hint="fraction, not %. Typical value" />
           <NumberField label="HPT efficiency η_HPT" value={config.eta_HPT}
             onChange={(v) => onChange({ eta_HPT: v })} min={0.5} max={1.0} step={0.01}
             hint="HPT = High-Pressure Turbine, right after the combustor — drives the HPC (High-Pressure Compressor) only, bare energy balance — no lambda/eta_m term (§2.1, module docstring: shaft/mechanical efficiency taken as 100% here)" />

@@ -29,7 +29,7 @@ export default function FanSection({ config, onChange }) {
             min={0.5}
             max={15}
             step={0.5}
-            hint="mdot_cold/mdot_hot (§2) — how much air goes around the core vs. through it. NOT IN SOURCE numerically; ~5 is typical for a medium-bypass turbofan."
+            hint="mdot_cold/mdot_hot (§2) — how much air goes around the core vs. through it. ~5 is typical for a medium-bypass turbofan."
           />
           <NumberField
             label="Fan pressure ratio π_f"
@@ -38,7 +38,7 @@ export default function FanSection({ config, onChange }) {
             min={1.1}
             max={3.0}
             step={0.05}
-            hint="p010 = p02·π_f (§3). NOT IN SOURCE numerically; high-bypass fans typically run 1.4–1.8."
+            hint="p010 = p02·π_f (§3). High-bypass fans typically run 1.4–1.8."
           />
           <NumberField
             label="Fan efficiency η_f"
@@ -47,7 +47,7 @@ export default function FanSection({ config, onChange }) {
             min={0.7}
             max={0.98}
             step={0.01}
-            hint="T010/T02 = 1 + (π_f^((γ−1)/γ)−1)/η_f (§3). NOT IN SOURCE numerically."
+            hint="T010/T02 = 1 + (π_f^((γ−1)/γ)−1)/η_f (§3)."
           />
         </>
       )}

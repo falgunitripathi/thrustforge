@@ -27,7 +27,7 @@ export default function CoreCompressorsSection({ config, onChange }) {
             min={1.0}
             max={3.0}
             step={0.05}
-            hint="LPC = Low-Pressure Compressor, a.k.a. the 'booster' — the compression stage right after the fan, on the same (slower) shaft as the fan. p03 = p010·π_LPC (§3). NOT IN SOURCE numerically."
+            hint="LPC = Low-Pressure Compressor, a.k.a. the 'booster' — the compression stage right after the fan, on the same (slower) shaft as the fan. p03 = p010·π_LPC (§3)."
           />
           <NumberField
             label="LPC efficiency η_LPC"
@@ -45,7 +45,7 @@ export default function CoreCompressorsSection({ config, onChange }) {
             min={2}
             max={25}
             step={0.5}
-            hint="HPC = High-Pressure Compressor — the final, highest-pressure compression stage, right before the combustor. p04 = p03·π_HPC (§3). NOT IN SOURCE numerically; chosen with π_f/π_LPC to reach a realistic overall pressure ratio."
+            hint="HPC = High-Pressure Compressor — the final, highest-pressure compression stage, right before the combustor. p04 = p03·π_HPC (§3). Chosen with π_f/π_LPC to reach a realistic overall pressure ratio."
           />
           <NumberField
             label="HPC efficiency η_HPC"

@@ -33,7 +33,7 @@ export default function PropfanFanSection({ config, onChange }) {
             min={1.02}
             max={2.0}
             step={0.01}
-            hint="UDF = Unducted Fan, this engine's open-rotor fan (see this section's title). p011 = p010·π_UDF (§2.2). NOT IN SOURCE numerically; kept modest since the fan is unducted and sized directly off the freestream, not the ducted core."
+            hint="UDF = Unducted Fan, this engine's open-rotor fan (see this section's title). p011 = p010·π_UDF (§2.2). Kept modest since the fan is unducted and sized directly off the freestream, not the ducted core."
           />
           <NumberField
             label="Fan efficiency η_UDF"
@@ -42,7 +42,7 @@ export default function PropfanFanSection({ config, onChange }) {
             min={0.5}
             max={0.98}
             step={0.01}
-            hint="UDF = Unducted Fan (see this section's title). T011/T010 = 1 + (π_UDF^((γ−1)/γ)−1)/η_UDF (§2.2). NOT IN SOURCE numerically."
+            hint="UDF = Unducted Fan (see this section's title). T011/T010 = 1 + (π_UDF^((γ−1)/γ)−1)/η_UDF (§2.2)."
           />
         </>
       )}

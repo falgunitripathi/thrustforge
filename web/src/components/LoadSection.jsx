@@ -26,7 +26,7 @@ export default function LoadSection({ config, onChange }) {
           min={0.85}
           max={1.0}
           step={0.005}
-          hint="Wload = η_m·Wshaft (§2.1) — mechanical losses between the shaft and the actual load, e.g. rotor friction for a helicopter. NOT IN SOURCE numerically — carried over from this project's general η_m default."
+          hint="Wload = η_m·Wshaft (§2.1) — mechanical losses between the shaft and the actual load, e.g. rotor friction for a helicopter. Carried over from this project's general η_m default."
         />
       )}
     </fieldset>
