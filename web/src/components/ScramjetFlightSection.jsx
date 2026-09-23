@@ -10,7 +10,7 @@ import NumberField from "./NumberField.jsx";
  * isn't sourced (atmosphere.js). Real scramjets fly higher; that's a
  * documented limitation of this project, not of the scramjet model.
  *
- * Ref: reference/scramjet.md §1, §3 (NPTEL p.276-277).
+ * Ref: reference/scramjet.md §1, §3.
  */
 export default function ScramjetFlightSection({ config, onChange }) {
   const [open, setOpen] = useState(false);
@@ -39,10 +39,10 @@ export default function ScramjetFlightSection({ config, onChange }) {
             min={3.0}
             max={12.0}
             step={0.1}
-            hint="M1 = the flight Mach number, i.e. how many times the speed of sound the vehicle is flying (station 1 = the free air right at the intake's lip). A scramjet has no compressor, so it relies entirely on its own speed to squeeze the air — it needs roughly Mach 5 or more before it can work at all, and must be boosted there by a rocket or another engine first (NPTEL p.276-277). M1 must stay above M2, the combustor-entrance Mach set in the Intake section."
+            hint="M1 = the flight Mach number, i.e. how many times the speed of sound the vehicle is flying (station 1 = the free air right at the intake's lip). A scramjet has no compressor, so it relies entirely on its own speed to squeeze the air — it needs roughly Mach 5 or more before it can work at all, and must be boosted there by a rocket or another engine first. M1 must stay above M2, the combustor-entrance Mach set in the Intake section."
           />
         </>
-      )}
+)}
     </fieldset>
-  );
+);
 }

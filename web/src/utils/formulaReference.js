@@ -346,7 +346,7 @@ const PROPFAN_FORMULAS = [
   },
 ];
 
-// Scramjet — Ref: reference/scramjet.md (NPTEL Lecture 27, pp.277-281).
+// Scramjet — Ref: reference/scramjet.md.
 // Stations: 1 = freestream / intake inlet, 2 = combustor entrance,
 // 3 = combustor exit / nozzle entrance, 4 = nozzle exit. No compressor
 // or turbine; the flow stays supersonic through the combustor.

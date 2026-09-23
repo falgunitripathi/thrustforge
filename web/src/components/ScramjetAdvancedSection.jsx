@@ -31,7 +31,7 @@ export default function ScramjetAdvancedSection({ config, onChange }) {
             hint="η_b = combustor (burner) efficiency — the fraction of the fuel's heat that actually ends up in the gas. Used in T03 (§2.2) and in the thermal efficiency. No scramjet-specific value in the source — project-wide default carried over." />
           <NumberField label="Nozzle efficiency η_N" value={config.eta_N}
             onChange={(v) => onChange({ eta_N: v })} min={0.5} max={1.0} step={0.01}
-            hint="η_N = nozzle isentropic efficiency, η_N = (T3 − T4)/(T3 − Ty) (§2.3, NPTEL p.279). The nozzle is expanded fully to ambient pressure p_a here — a deliberate deviation from the source's own (p2/p3) ratio, which is physically anomalous for a 3→4 expansion (judgment call #1). No scramjet-specific value in the source — project-wide default carried over." />
+            hint="η_N = nozzle isentropic efficiency, η_N = (T3 − T4)/(T3 − Ty) (§2.3). The nozzle is expanded fully to ambient pressure p_a here — a deliberate deviation from the source's own (p2/p3) ratio, which is physically anomalous for a 3→4 expansion (judgment call #1). No scramjet-specific value in the source — project-wide default carried over." />
 
           <NumberField label="Cold section γ_c" value={config.gamma_c}
             onChange={(v) => onChange({ gamma_c: v })} min={1.2} max={1.5} step={0.001}
@@ -47,7 +47,7 @@ export default function ScramjetAdvancedSection({ config, onChange }) {
             hint="J/(kg·K) — Cp_h = specific heat at constant pressure of the hot combustion gas" />
         </div>
         </>
-      )}
+)}
     </fieldset>
-  );
+);
 }
