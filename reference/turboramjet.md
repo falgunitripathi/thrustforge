@@ -294,3 +294,96 @@ flagged "NOT IN SOURCE" the same way the existing turbojet defaults are.
    apportioned between the two streams when both are operating (dual
    mode). This would need to be modeled from first principles (area/mass
    conservation) rather than lifted from the source.
+
+## 12. Verification against the raw transcript (2026-09-23)
+
+Re-checked every formula against `reference_extraction/nptel_turbofan_turboramjet.txt`
+(TF below) and `reference_extraction/nptel.txt` (N). The nptel.txt turboramjet
+block (N 10525-11142) is byte-identical to TF 677-1294 (N = TF + 9848), so it's
+the same OCR pass, not a second source. Correct lecture range: lecture 32
+(second half, p.330-333) and lecture 33 (p.334-344); lecture 34 is turboprop.
+
+### Judgment calls in §11 — status
+
+1. **`-fab` in turbojet-mode thrust: resolved, transcription slip.** TF 1076 reads
+   `(1 + f - fab)V7 - V`, but the ηp/ηth formulas on the same slide use
+   `(1 + f + fab)` (TF 1092, 1097), dual-mode thrust uses `(1 + f + fab)V7`
+   (TF 1156), and the same lecturer's afterburning turbojet uses
+   `[(1 + f + fab)V7 - V]` (N 9573, p.296). Use `+fab`.
+2. **No pressure-thrust term: resolved, intentional fully-expanded nozzle.** None of
+   the combined-cycle thrust formulas carries one (TF 1076, 1118, 1155-1157, 1213),
+   and ηp/ηth use only kinetic-energy terms, valid only at p_exit = p_a. The same
+   lecturer states it outright for the ramjet: "since the nozzle is fully expanded
+   so that is p e is pa" (N 8647-8649, p.268). Default: p_exit = p_a. This
+   reverses §11's earlier recommendation.
+3. **Over-under mass split "circular": resolved, notation reuse.** The left side of
+   TF 1199-1204 is each leg's EXHAUST flow, not air flow. With
+   β = (ṁa)_TJ / ṁa (our symbol, not the source's):
+   `ṁe,TJ = β·ṁa + ṁfcc + ṁfab`, `ṁe,RJ = (1-β)·ṁa + ṁfR`. Dividing TF 1213
+   by ṁa reproduces TF 1215-1217 exactly. `(ṁa)fcc`/`(ṁa)fab` in TF 1215/1219 are
+   OCR for `ṁfcc`/`ṁfab` (as TF 1200 writes them); the stray `V` + `RJ` is
+   `V_RJ`; `V_F` = flight speed. So §7 (over-under) is the same maths as §6
+   (dual mode) divided by total air flow — one equation set for both layouts.
+4. **Switchover Mach: no closed-form criterion; default of M = 3.0 is well
+   supported.** The design procedure treats the switch point as an optimisation
+   output only (TF 1251-1254). Support for Mach 2-3: SR-72 turbine "up to Mach 3"
+   (TF 1272); SR-71 "mach number was around 3 plus" (TF 889-890); course intro
+   "up to certain Mach number, let us say 2, 3" (N 1322-1325, p.47); Ganesan: at
+   Mach 3 turbojet characteristics "tend to merge with those of the ramjet"
+   (ganesan.txt 12693-12696). A TSFC-crossover switching rule would be our own
+   invention.
+5. **Shared vs separate intake/nozzle: confirmed unresolvable.** Only qualitative
+   (TF 978-980, 995-999, 1005-1015, 1176-1178, 1274-1279). Since §6 and §7 are the
+   same maths, the configuration can be a diagram/label choice with independent
+   parallel flow paths.
+
+### Content missing from §1-§10
+
+- **Afterburner equations** (from the single-spool turbojet lecture, not in the
+  codebase — no aeropropsim module has an afterburner yet):
+  `p06 = p05(1 - Δp_ab)` (N 9413-9414); AB off `T06 = T05` (N 9411-9412);
+  AB on `T06A = Tmax` (N 9415);
+  `fab = (1+f)(Cp6·T06A - Cp5·T05) / (η_b·Q_R - Cp6·T06A)` (N 9443-9445);
+  nozzle choking check (N 9446-9453). Needed for turboramjet mode TJ, and reusable
+  for the standalone afterburner option.
+- **Ramjet-mode fuel-air ratio / exit velocity** aren't on the turboramjet slides;
+  take them from the ramjet lecture: `f = Cp(T04 - T0a)/(Q_R - Cp·T0a)`
+  (N 8644-8646) and the exit-Mach relations in `reference/ramjet.md` (179-199).
+- Wrap-around vs over-under differ by the ram section's position relative to the
+  turbine and "the position of AB of turbojet with respect to the ram" (TF 978-980).
+- Stations: 06 (AB off), 06AB (AB on), 7AB (TF 1045-1049); stations 2 and 8 sit
+  together at the intake exit ("8 or in between somewhere 2", TF 1044).
+  Over-under T-s diagram labels (TF 1185-1186) are scrambled, unusable.
+- Ramjet leg uses r_d (TF 1110 "pressure issue r_d" = pressure ratio), turbojet leg
+  η_d; the same lecturer uses both together for the turbojet (N 9287-9295).
+- Examples: YF-12 ("VF12", TF 990) as a second wrap-around example; the two-stage
+  TBCC vehicle (TF 872-876); SR-72 is over-under with a dual-mode ramjet
+  (TF 1268-1269).
+- TF 1165's second "specific thrust" is actually TSFC.
+- The afterburner (5→6, fab) and ramjet burner (8→9, fR) are distinct burners
+  (TF 1052, 1109-1111, 1163). A J58-style bleed-bypass (AB acting as the ramjet
+  burner) is not in the source — don't model it.
+- No numeric typical values anywhere in TF 1042-1230 (confirms §10).
+- Ganesan has no turboramjet/TBCC material; only relevant lines are the Mach 3 note
+  above, ramjet TSFC poor at low speed (12163-12168), ramjet efficient at about
+  2400-6000 km/h (12181-12183).
+
+### Recommended computable model
+
+- **Mode TJ (M < M_switch)** — stations a→02→03→04→05→06/06AB→7. Reuse the
+  existing turbojet solver for intake/compressor/combustor/turbine (in source);
+  add the afterburner above (in source, new code); fully expanded nozzle; thrust
+  `T/ṁa = (1+f+fab)·V7 - V` (TF 1076, sign corrected); TSFC/ηp/ηth/ηo
+  TF 1080-1101 (in source).
+- **Mode RJ (M ≥ M_switch)** — stations a→8→9→10. r_d intake, fR from the energy
+  balance (N 8638-8646), V10 from nozzle expansion (ramjet.md 179-199), thrust/
+  TSFC/efficiencies TF 1117-1144 (all in source).
+- **Mode DUAL (optional)** — air split β: NOT IN SOURCE, user input or ramp across
+  a transition band. Thrust/TSFC TF 1155-1168 (≡ TF 1199-1223, in source).
+  Combined ηp/ηth NOT IN SOURCE — inferred by summing each stream's KE terms over
+  total fuel × Q_R.
+- **Not in source / invented:** the M_switch criterion (default 3.0, cited above),
+  β, shared intake/nozzle area apportioning (use independent flow paths), any
+  T03/compressor temperature limit near Mach 3, and all numeric efficiencies/
+  losses (borrow constants.py for the turbojet leg and the old ramjet defaults
+  from commit 239399f, flagged NOT IN SOURCE).

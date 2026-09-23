@@ -322,3 +322,93 @@ p.218-219, §7.3.1)
    are 1 in the ideal case) but is worth calling out since the symbol
    changes name (`QR` vs `QHV`) between sections, not just its
    efficiency multiplier.
+
+## Verification + rebuild plan (2026-09-23)
+
+The ramjet was built once and removed (commit dc0b229; code identical in 239399f
+and dc0b229^). Re-checked that code and this file against
+`reference_extraction/nptel_ramjet_scramjet.txt` (raw) and
+`reference_extraction/ganesan_ramjet_pulsejet.txt`.
+
+### The old code
+
+- Implements a real cycle by chaining per-component relations (§2.1-2.4),
+  reusing the turbojet helpers with compressor/turbine skipped; ideal cycle is
+  the special case with every efficiency = 1. Checked: with losses off and an
+  expanded nozzle, exit Mach = flight Mach and specific thrust matches the NPTEL
+  p.269 closed form at M 1.5/2.5/3.5 — worth adding as a test.
+- Every formula matches this file (intake recovery ref 67/raw 219-222, T02 = T0a
+  ref 59/raw 210-212, fuel-air ratio ref 222/raw 602-604, combustor loss,
+  choked-nozzle relations ref 104/109 raw 327-352, expanded-nozzle velocity,
+  thrust/specific thrust/TSFC ref 224/172).
+- **Blocking physics problem: convergent-only nozzle.** Above ~Mach 1.5 it always
+  chokes, so V_exit sticks near 768 m/s. At 11 km, T04 = 1800 K: M2.5 gives
+  eta_P 0.98 / eta_th 0.02; M3 eta_P 1.07 / eta_th -0.05; M4 eta_P 1.21 /
+  eta_th -0.31; M >= 5 errors in the TSFC helper — the efficiency formulas
+  ignore the pressure-thrust term. With the nozzle fully expanded to ambient
+  (the ideal-cycle assumption, raw 407-409, and the same lecturer's "nozzle is
+  fully expanded so that is p e is pa", nptel.txt 8647-8649), results are
+  sensible: specific thrust ~640 at M2.5, TSFC lowest near M3-3.5
+  (~0.21 kg/(N·h)), eta_P 0.72 at M2.5 / 0.84 at M4, eta_th 0.37 / 0.52.
+- eta_th uses Q_R without eta_b, like the turbojet (performance.py); the
+  scramjet includes eta_b. Not in this file — a project convention; keep it
+  consistent deliberately.
+- Atmosphere is 0-11 km only (same limitation as the scramjet).
+
+### Errors in this file (the code is unaffected)
+
+1. Line ~159, ideal-cycle simplified f: copies raw 467-469's denominator
+   `QR - Cp*T0a`; the source's own general form (raw 463-465) reduces to
+   `QR - Cp*T04`. Raw is an algebra slip (~3% low at M2.5); the code is correct.
+2. Lines ~91/95, nozzle efficiency and exit velocity: written with exit TOTAL
+   temperature T0B, verbatim raw 310-312/320. Must be exit STATIC TB — for an
+   adiabatic nozzle T0B = T0A, so the velocity formula as written gives zero.
+   The code uses static.
+3. Raw 314-317 nozzle exit-temperature exponent reads as gamma_m/(gamma_m-1) in
+   the OCR stacking; this file writes (gamma_m-1)/gamma_m, which is physically
+   correct and matches the same lecture's choked form (raw 334-337) — a silent
+   correction, now noted.
+4. Line ~206 lossless check: "m reduces to 1+(g-1)/2*Me^2" (raw 577-578) must be
+   M^2, not Me^2, for Me = M to follow.
+5. Line ~320, judgment call #5: the real-cycle f uses eta_b·Q_R (raw 604 and this
+   file's own line 222), not "eta_b·QHV" — same quantity, notation only.
+
+### Judgment calls
+
+1. Station numbering: raw 367-369 does name a station 5 ("4 to 5 or rather 4 to
+   complete 6"), so "no station 5 ever defined" is inaccurate. Ganesan disagrees
+   with itself (lines 16-22 use 1-5; §7.3.1 lines 80-88 use 1-4). Keep the old
+   code's a, 2, 4, 9 (turbojet convention); station 2 collapses raw 1-3
+   (terminal shock + fuel injection).
+2. r_d: compute it. Raw 229-230 has the intake taking eta_d and M and outputting
+   the pressure ratio; real-cycle r_d = p02/p0a (raw 513-517) is derived. Show it.
+3. Ganesan has no ram-efficiency formula — confirmed (lines 1-243).
+4. No worked numerical example in either source — confirmed; use the ideal-limit
+   NPTEL p.269 match as a test instead.
+5. Q_R vs QHV: same heating value (raw 254 QHV; raw 462/604 Q_R).
+
+### Rebuild plan
+
+- Restore `aeropropsim/ramjet.py`, `web/src/physics/ramjet.js`,
+  `tests/test_ramjet.py`, both dump scripts, and the parity battery from dc0b229^.
+- Fix 1: nozzle default = fully expanded to ambient (C-D); keep convergent/choked
+  as an option to show the pressure-thrust penalty (Ganesan 59-65).
+- Fix 2: up-front `solve_ramjet:` validation like the scramjet's — M below the
+  self-start level (p04 must exceed p_a; Ganesan 66-69), T04 <= T02 (currently
+  gives a silently negative f around M >= 6.3 at T04 = 1800 K), specific thrust
+  <= 0 -> TSFC NaN like the scramjet. Add a ramjet branch to App's error banner.
+- Fix 3: fuel UI — add "ramjet" to fuels.js engine lists, and to FuelComparison
+  SOLVERS/METRICS with its own note (T04-driven, no turbine).
+- Fix 4: update test_ramjet.py (station set, error messages, add the ideal-limit
+  test).
+- Do NOT reuse the scramjet's MIL-E-5007D middle branch as the source prints it
+  (1-0.776(M-1)^1.5 goes negative above M~2.2); fixed 2026-09-23 to the published
+  1-0.075(M-1)^1.35, which meets the M>5 branch at M=5.
+- UI inputs: flight Mach ~0.5-6 (default 2.5-3; Ganesan 73-75 best 2-5),
+  altitude 0-11 km (default 11 km); combustor T04-driven 1200-2273 K (Ganesan
+  ~2000 °C max), default 1800 K, show f and φ with a rich-burning warning
+  (Ganesan 223-225); eta_d 0.80 (NOT IN SOURCE), show p02/p_a and r_d; eta_N
+  0.95. Stations a, 2, 4, 9 via StationTable's existing stationOrder/labels props
+  (no StationTable change needed). Optional: display-only combustor-inlet Mach
+  (~0.2, Ganesan 56-58) for station 2 statics, and an ideal-vs-real toggle
+  (NPTEL §2.5 vs §2.8-2.11, p.272 plots).
