@@ -263,6 +263,13 @@ def solve_turboprop(cfg: TurbopropConfig) -> TurbopropResult:
 
     # --- Shaft power and propeller thrust (Ref §2.2) ---
     Wshaft = cfg.eta_mt * mass_factor * delta_ht - delta_hc / cfg.eta_mc
+    if Wshaft <= 0:
+        raise ValueError(
+            f"solve_turboprop: the compressor needs more power than the turbine can "
+            f"supply (net shaft power would be {Wshaft * cfg.mdot_a / 1000:.1f} kW). "
+            f"Lower the compressor pressure ratio or stage count, or raise the "
+            f"turbine inlet temperature."
+        )
     shaft_power_W = Wshaft * cfg.mdot_a
     Tpr = cfg.mdot_a * cfg.eta_Pr * cfg.eta_g * Wshaft / V_flight
     Tn = cfg.mdot_a * (mass_factor * ue - V_flight)

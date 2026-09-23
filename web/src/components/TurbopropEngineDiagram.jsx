@@ -187,7 +187,6 @@ function Diagram({ config, result, idSuffix }) {
   const isAxialTurbine = config.turbine_type === "axial";
 
   const propellerMid = (SECTION.propeller.x0 + SECTION.propeller.x1) / 2;
-  const gearboxMid = (SECTION.gearbox.x0 + SECTION.gearbox.x1) / 2;
   const intakeMid = (SECTION.intake.x0 + SECTION.intake.x1) / 2;
   const compressorMid = (SECTION.compressor.x0 + SECTION.compressor.x1) / 2;
   const combustorMid = (SECTION.combustor.x0 + SECTION.combustor.x1) / 2;

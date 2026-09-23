@@ -248,11 +248,11 @@ function App() {
                   adjusting one of the numbers on the left — a small change
                   is usually all it takes.
                 </p>
-                {/* Scramjet only: its solver's errors (thermal choking,
-                    M2 <= 1, M1 <= M2) each name the specific fix, so show
-                    that detail too. Other engines keep the generic text. */}
-                {engineType === "scramjet" && (
-                  <p>{error.replace(/^solveScramjet:\s*/, "")}</p>
+                {/* A solver's own up-front checks ("solveX: ...") are written
+                    to name the fix, so show them; deeper internal errors
+                    would only confuse, so those keep the generic text. */}
+                {/^solve\w+:/.test(error) && (
+                  <p>{error.replace(/^solve\w+:\s*/, "")}</p>
                 )}
               </div>
             </div>

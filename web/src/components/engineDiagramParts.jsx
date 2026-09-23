@@ -199,7 +199,7 @@ export function Clickable({ onSelect, label, children }) {
   );
 }
 
-export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, top = 0, onSelect }) {
+export function StationReadout({ station, seq, name, T0, p0, leftPct, top = 0, onSelect }) {
   const animT = useAnimatedNumber(T0);
   const animP = useAnimatedNumber(p0 / 1000);
   return (
@@ -235,7 +235,7 @@ export function StationReadout({ station, seq, seqTotal, name, T0, p0, leftPct, 
  * Takes two already-formatted value/unit pairs instead of T0/p0.
  */
 export function PartStepReadout({
-  name, seq, seqTotal, value1, unit1, value2, unit2, leftPct, top = 0, onSelect,
+  name, seq, value1, unit1, value2, unit2, leftPct, top = 0, onSelect,
 }) {
   const anim1 = useAnimatedNumber(value1);
   const anim2 = useAnimatedNumber(value2);

@@ -75,3 +75,10 @@ def test_turboshaft_higher_T04_raises_shaft_power():
     low = solve_turboshaft(_default_config(T04=1200.0))
     high = solve_turboshaft(_default_config(T04=1600.0))
     assert high.performance["Pload_W"] > low.performance["Pload_W"]
+
+
+def test_turboshaft_raises_when_compressor_outpowers_turbine():
+    """An 8-stage centrifugal compressor (~200:1) needs more power than the
+    turbine makes — must raise a clear error, not report negative load power."""
+    with pytest.raises(ValueError, match="compressor needs more power"):
+        solve_turboshaft(_default_config(compressor_type="centrifugal", n_compressor_stages=8))

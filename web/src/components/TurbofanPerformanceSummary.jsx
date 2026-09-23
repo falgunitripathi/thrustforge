@@ -84,7 +84,7 @@ export default function TurbofanPerformanceSummary({ performance, hotNozzle, col
         <FormulaLabel
           className="perf-label"
           label="Hot nozzle"
-          formula="Same choking check as the turbojet's nozzle.py, hot-side properties."
+          formula="Same choking check as the turbojet's nozzle, using the hot-gas properties."
         />
         <span className="perf-value">{hotNozzle.choked ? "Choked" : "Unchoked"}</span>
       </div>

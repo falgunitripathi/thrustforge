@@ -51,7 +51,7 @@ export default function TurboshaftPerformanceSummary({ shaft, performance }) {
         <FormulaLabel
           className="perf-label"
           label="Turbine specific work"
-          formula="Wt = η_t·Cp_h·(T04−T05s) (this project's inferred derivation — see aeropropsim/turboshaft.py module docstring — since the source states Wshaft in terms of Wt without spelling out Wt's own formula)."
+          formula="Wt = η_t·Cp_h·(T04−T05s) (inferred here, since the source states Wshaft in terms of Wt without spelling out Wt's own formula)."
         />
         <Stat value={shaft.Wt / 1000.0} digits={1} unit="kJ/kg" />
       </div>

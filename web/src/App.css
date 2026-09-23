@@ -26,6 +26,7 @@
 
 .engine-type-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 16px;
 }
@@ -64,6 +65,35 @@
   grid-template-columns: 360px 1fr;
   gap: 0;
   align-items: start;
+}
+
+/* Phone widths only: two columns cannot fit in ~375px (the 360px sidebar
+   alone fills the screen and squeezes the results to a sliver), so stack
+   config above results. Laptop and tablet widths keep two columns. */
+@media (max-width: 640px) {
+  .app-main,
+  .app-main-sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .config-form {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 18px 16px;
+  }
+  .sidebar-reopen-button {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    justify-content: center;
+    padding: 10px 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-reopen-label {
+    writing-mode: horizontal-tb;
+  }
 }
 
 /* The whole config sidebar tucked away — a slim reopen strip instead of

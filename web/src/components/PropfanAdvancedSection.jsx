@@ -43,7 +43,7 @@ export default function PropfanAdvancedSection({ config, onChange }) {
             hint="UDF = Unducted Fan, the propfan's own open-rotor fan (see the Unducted fan section). This is the mechanical efficiency between the free turbine and that fan (§2.4)" />
           <NumberField label="Hot nozzle efficiency η_n" value={config.eta_n}
             onChange={(v) => onChange({ eta_n: v })} min={0.5} max={1.0} step={0.01}
-            hint="always fully expanded to ambient here — no choking check, unlike the turbojet's nozzle.py (§2.3)" />
+            hint="always fully expanded to ambient here — no choking check, unlike the turbojet's nozzle (§2.3)" />
           <NumberField label="Bleed ratio b" value={config.bleed_ratio}
             onChange={(v) => onChange({ bleed_ratio: v })} min={0} max={0.2} step={0.01}
             hint="mdot_bleed/mdot_a. Applied as (1-b) on the fuel-air ratio and uniformly as (1+f-b) throughout the cycle — a deliberate departure from the source's own inconsistent (1+f-b)/(1+f) usage past the HPT (reference/propfan.md §4, judgment call #1)" />

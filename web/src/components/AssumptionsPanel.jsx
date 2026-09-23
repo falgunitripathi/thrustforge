@@ -32,9 +32,8 @@ export default function AssumptionsPanel({ config }) {
     >
       <p className="section-note">
         The efficiency and gas-property values behind the results above,
-        right now (editable in the Advanced section of the form on the
-        left). Full derivations, provenance, and known simplifications are
-        documented in the repository README.
+        right now (editable in the Engine quality section of the form on the
+        left).
       </p>
       <div className="table-scroll">
         <table className="assumptions-table">

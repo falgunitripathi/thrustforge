@@ -220,6 +220,13 @@ def solve_turboshaft(cfg: TurboshaftConfig) -> TurboshaftResult:
     # --- Shaft and load power (Ref §2.1) ---
     Wc = cfg.cp_c * (T03 - T02)
     Wshaft = mass_factor * cfg.eta_mt * Wt - Wc / cfg.eta_mc
+    if Wshaft <= 0:
+        raise ValueError(
+            f"solve_turboshaft: the compressor needs more power than the turbine can "
+            f"supply (net shaft power would be {Wshaft * cfg.mdot_a / 1000:.1f} kW). "
+            f"Lower the compressor pressure ratio or stage count, or raise the "
+            f"turbine inlet temperature."
+        )
     Wload = cfg.eta_m * Wshaft
     Pload_W = cfg.mdot_a * Wload
     result.shaft = {"Wc": Wc, "Wt": Wt, "Wshaft": Wshaft, "Wload": Wload, "Pload_W": Pload_W}

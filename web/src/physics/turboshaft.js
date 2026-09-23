@@ -146,6 +146,14 @@ export function solveTurboshaft(cfg) {
   // --- Shaft and load power ---
   const Wc = cfg.cp_c * (T03 - T02);
   const Wshaft = massFactor * cfg.eta_mt * Wt - Wc / cfg.eta_mc;
+  if (Wshaft <= 0) {
+    throw new Error(
+      `solveTurboshaft: the compressor needs more power than the turbine can ` +
+      `supply (net shaft power would be ${(Wshaft * cfg.mdot_a / 1000).toFixed(1)} kW). ` +
+      `Lower the compressor pressure ratio or stage count, or raise the ` +
+      `turbine inlet temperature.`
+    );
+  }
   const Wload = cfg.eta_m * Wshaft;
   const Pload_W = cfg.mdot_a * Wload;
   result.shaft = { Wc, Wt, Wshaft, Wload, Pload_W };

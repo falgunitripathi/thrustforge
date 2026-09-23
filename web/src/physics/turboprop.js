@@ -168,6 +168,14 @@ export function solveTurboprop(cfg) {
 
   // --- Shaft power and propeller thrust ---
   const Wshaft = cfg.eta_mt * massFactor * delta_ht - delta_hc / cfg.eta_mc;
+  if (Wshaft <= 0) {
+    throw new Error(
+      `solveTurboprop: the compressor needs more power than the turbine can ` +
+      `supply (net shaft power would be ${(Wshaft * cfg.mdot_a / 1000).toFixed(1)} kW). ` +
+      `Lower the compressor pressure ratio or stage count, or raise the ` +
+      `turbine inlet temperature.`
+    );
+  }
   const shaft_power_W = Wshaft * cfg.mdot_a;
   const Tpr = cfg.mdot_a * cfg.eta_Pr * cfg.eta_g * Wshaft / V_flight;
   const Tn = cfg.mdot_a * (massFactor * ue - V_flight);

@@ -185,7 +185,7 @@ function stationDetails(key, name, seq, st) {
   };
 }
 
-function Diagram({ config, result, idSuffix }) {
+function Diagram({ result, idSuffix }) {
   const { stations } = result;
   const [selected, setSelected] = useState(null);
 
@@ -216,7 +216,7 @@ function Diagram({ config, result, idSuffix }) {
     <stop key="11" offset="100%" stopColor={stationHeatColor(stations["11"].T0, tMin, tMax)} />,
   ];
 
-  function selectPart(kind, xMid, yMid = CORE_Y) {
+  function selectPart(kind, xMid) {
     const details = partDetails(kind, result);
     if (!details) return;
     setSelected({ details, leftPct: ((xMid + MARGIN) / TOTAL_W) * 100, kind });

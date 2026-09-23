@@ -118,9 +118,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
               compressor's power demand) before this table is built —
               turbine stage count only changes how that already-fixed
               expansion is broken up for display, not the thrust/TSFC
-              you see elsewhere on this page (see README, "Known
-              simplifications" item 8, for the quantified gap this leaves
-              vs. a true stage-by-stage calculation).
+              you see elsewhere on this page.
             </p>
             {turbine.type === "radial" && (
               <p className="section-note">
@@ -144,8 +142,9 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
             <h3>T-s diagram</h3>
             <TsDiagram stations={stations} />
             <p className="section-note">
-              Approximate — see <code>TsDiagram.jsx</code> for the
-              entropy-datum caveat across the combustor.
+              Approximate: entropy is measured separately for the cold air and the hot
+              combustion gas, so the jump across the combustor shows the right shape
+              but not an exact value.
             </p>
           </div>
           <div>

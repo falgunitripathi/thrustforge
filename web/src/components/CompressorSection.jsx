@@ -19,7 +19,14 @@ export default function CompressorSection({ config, onChange }) {
           <SelectField
             label="Type"
             value={config.compressor_type}
-            onChange={(v) => onChange({ compressor_type: v })}
+            onChange={(v) => onChange(
+              // Real centrifugal compressors use 1-2 stages; carrying over an
+              // axial stage count (e.g. 8) would stack to a ~200:1 pressure
+              // ratio that no turbine can drive.
+              v === "centrifugal"
+                ? { compressor_type: v, n_compressor_stages: 1 }
+                : { compressor_type: v }
+            )}
             options={[
               { value: "axial", label: "Axial (stage-stacked)" },
               { value: "centrifugal", label: "Centrifugal" },
@@ -30,9 +37,11 @@ export default function CompressorSection({ config, onChange }) {
             value={config.n_compressor_stages}
             onChange={(v) => onChange({ n_compressor_stages: Math.max(1, Math.round(v)) })}
             min={1}
-            max={20}
+            max={isAxial ? 20 : 3}
             step={1}
-            hint="splits the target π_c across this many stages via the stage-stacking procedure, each stage's own π_i = (1+η_c·ΔT0/T01)^(γ_c/(γ_c−1)) (§4.2)"
+            hint={isAxial
+              ? "splits the target π_c across this many stages via the stage-stacking procedure, each stage's own π_i = (1+η_c·ΔT0/T01)^(γ_c/(γ_c−1)) (§4.2)"
+              : "each centrifugal stage multiplies the pressure ratio (typically 4-8:1 per stage), so real engines use 1 or 2. More than that needs more power than the turbine can supply."}
           />
           {isAxial ? (
             <NumberField

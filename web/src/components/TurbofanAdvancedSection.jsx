@@ -49,7 +49,7 @@ export default function TurbofanAdvancedSection({ config, onChange }) {
             hint="HPT = High-Pressure Turbine. The source never precisely defines this 'conversion factor' — defaults to 1.0, the same resolution used elsewhere in this project for the same ambiguity" />
           <NumberField label="LPT work fraction λ2" value={config.lambda2}
             onChange={(v) => onChange({ lambda2: v })} min={0.8} max={1.0} step={0.01}
-            hint="LPT = Low-Pressure Turbine. Same undefined 'conversion factor' as λ1 above, for this spool instead." />
+            hint="LPT = Low-Pressure Turbine. Same unspecified 'conversion factor' as λ1 above, for this spool instead." />
           <NumberField label="Jet-pipe Δp loss" value={config.delta_p_jetpipe}
             onChange={(v) => onChange({ delta_p_jetpipe: v })} min={0} max={0.1} step={0.005}
             hint="fraction, not %." />

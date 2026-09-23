@@ -102,7 +102,7 @@ export default function PropfanPerformanceSummary({ performance, hotNozzle }) {
         <FormulaLabel
           className="perf-label"
           label="Hot nozzle"
-          formula="Always fully expanded to ambient here — no choking check, unlike the turbojet's nozzle.py (§2.3)."
+          formula="Always fully expanded to ambient here — no choking check, unlike the turbojet's nozzle (§2.3)."
         />
         <span className="perf-value">{hotNozzle.choked ? "Choked" : "Unchoked"}</span>
       </div>

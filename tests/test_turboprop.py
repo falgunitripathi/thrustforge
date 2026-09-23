@@ -88,3 +88,8 @@ def test_turboprop_higher_alpha_shifts_thrust_toward_propeller():
     high = solve_turboprop(_default_config(alpha=0.95))
     assert high.propeller["Tpr"] > low.propeller["Tpr"]
     assert high.propeller["Tn"] < low.propeller["Tn"]
+
+
+def test_turboprop_raises_when_compressor_outpowers_turbine():
+    with pytest.raises(ValueError, match="compressor needs more power"):
+        solve_turboprop(TurbopropConfig(compressor_type="centrifugal", n_compressor_stages=8))

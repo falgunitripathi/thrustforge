@@ -116,8 +116,9 @@ export default function TurbopropResultsPanel({ result, config }) {
             <h3>T-s diagram</h3>
             <TsDiagram stations={stations} />
             <p className="section-note">
-              Approximate — see <code>TsDiagram.jsx</code> for the
-              entropy-datum caveat across the combustor.
+              Approximate: entropy is measured separately for the cold air and the hot
+              combustion gas, so the jump across the combustor shows the right shape
+              but not an exact value.
             </p>
           </div>
           <div>
