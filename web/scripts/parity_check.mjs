@@ -42,6 +42,8 @@ const PY_TURBOFAN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turbofan_result
 const JS_TURBOFAN_SCRIPT = path.join(__dirname, "dump_turbofan_result.mjs");
 const PY_PROPFAN_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_propfan_result.py");
 const JS_PROPFAN_SCRIPT = path.join(__dirname, "dump_propfan_result.mjs");
+const PY_SCRAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_scramjet_result.py");
+const JS_SCRAMJET_SCRIPT = path.join(__dirname, "dump_scramjet_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -191,6 +193,20 @@ const PROPFAN_SCENARIOS = [
   { name: "propfan: low altitude, high pressure ratio", overrides: { altitude_m: 3000, mach_flight: 0.4, pi_IPC: 2.2, pi_HPC: 8.0, T05: 1400.0, alpha: 0.75, mdot_a: 8.0 } },
   { name: "propfan: high alpha (fan-heavy split), hot cycle", overrides: { altitude_m: 7000, mach_flight: 0.6, pi_IPC: 1.8, pi_HPC: 5.0, T05: 1600.0, alpha: 0.95, mdot_a: 12.0 } },
   { name: "propfan: with bleed", overrides: { altitude_m: 9000, mach_flight: 0.7, pi_IPC: 2.0, pi_HPC: 6.0, T05: 1500.0, alpha: 0.85, mdot_a: 10.0, bleed_ratio: 0.02 } },
+];
+
+// ---------------------------------------------------------------------------
+// Scramjet scenario battery — cruise points across Mach/altitude/fuel,
+// plus the three fail-loud cases (thermal choking, subsonic combustor
+// inlet, flight Mach below combustor Mach) that must raise in both.
+// ---------------------------------------------------------------------------
+const SCRAMJET_SCENARIOS = [
+  { name: "scramjet: default (M6, 10 km)", overrides: {} },
+  { name: "scramjet: M7, richer, faster combustor", overrides: { mach_flight: 7.0, mach_combustor_inlet: 3.0, f: 0.03, mdot_a: 20.0 } },
+  { name: "scramjet: sea level, M5.5", overrides: { altitude_m: 0, mach_flight: 5.5, eta_I: 0.85, eta_N: 0.92 } },
+  { name: "scramjet: thermal choke — expected error in both", overrides: { mach_flight: 5.0, mach_combustor_inlet: 2.0 }, expectError: true },
+  { name: "scramjet: subsonic combustor — expected error in both", overrides: { mach_combustor_inlet: 0.8 }, expectError: true },
+  { name: "scramjet: M1 < M2 — expected error in both", overrides: { mach_flight: 2.0 }, expectError: true },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -529,6 +545,48 @@ function main() {
       for (const m of mismatches) {
         console.error(`  ${m}`);
       }
+      anyFailed = true;
+    }
+  }
+
+  for (const scenario of SCRAMJET_SCENARIOS) {
+    totalScenarios += 1;
+    process.stdout.write(`Scenario: ${scenario.name} ... `);
+    let pyResult, jsResult;
+    try {
+      pyResult = runPython(PY_SCRAMJET_SCRIPT, scenario.overrides);
+      jsResult = runJs(JS_SCRAMJET_SCRIPT, scenario.overrides);
+    } catch (err) {
+      console.log("FAIL (process error)");
+      console.error(err.stderr ? err.stderr.toString() : err);
+      anyFailed = true;
+      continue;
+    }
+    const pyIsError = pyResult && pyResult.error === "ValueError";
+    const jsIsError = jsResult && jsResult.error === "ValueError";
+    if (scenario.expectError) {
+      if (pyIsError && jsIsError) {
+        console.log("OK (both raised, as expected)");
+      } else {
+        console.log("FAIL (expected both sides to raise)");
+        console.error(`  python raised: ${pyIsError}, js raised: ${jsIsError}`);
+        anyFailed = true;
+      }
+      continue;
+    }
+    if (pyIsError || jsIsError) {
+      console.log("FAIL (unexpected error)");
+      if (pyIsError) console.error(`  python: ${pyResult.message}`);
+      if (jsIsError) console.error(`  js: ${jsResult.message}`);
+      anyFailed = true;
+      continue;
+    }
+    const mismatches = diff("result", pyResult, jsResult);
+    if (mismatches.length === 0) {
+      console.log("OK");
+    } else {
+      console.log(`FAIL (${mismatches.length} mismatch(es))`);
+      for (const m of mismatches) console.error(`  ${m}`);
       anyFailed = true;
     }
   }
