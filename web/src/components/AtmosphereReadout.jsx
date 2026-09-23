@@ -21,7 +21,7 @@ export default function AtmosphereReadout({ config, result }) {
       <div className="perf-card">
         <span
           className="perf-label"
-          title="ISA troposphere curve fit: T_a = 288.0 − 0.0065·altitude (Ref §1), evaluated at the configured altitude."
+          title="ISA troposphere curve fit: T_a = 288.0 − 0.0065·altitude, evaluated at the configured altitude."
         >
           Static temperature T_a
         </span>
@@ -30,7 +30,7 @@ export default function AtmosphereReadout({ config, result }) {
       <div className="perf-card">
         <span
           className="perf-label"
-          title="ISA troposphere curve fit: p_a = (1.01325 − 1.12e-4·altitude + 3.8e-9·altitude²) × 10⁵ Pa (Ref §1), evaluated at the configured altitude."
+          title="ISA troposphere curve fit: p_a = (1.01325 − 1.12e-4·altitude + 3.8e-9·altitude²) × 10⁵ Pa, evaluated at the configured altitude."
         >
           Static pressure p_a
         </span>
@@ -48,7 +48,7 @@ export default function AtmosphereReadout({ config, result }) {
       <div className="perf-card">
         <span
           className="perf-label"
-          title="a = sqrt(γ_c·R_c·T_a) (Ref §2) — the local speed of sound at this altitude's static temperature."
+          title="a = sqrt(γ_c·R_c·T_a) — the local speed of sound at this altitude's static temperature."
         >
           Speed of sound a
         </span>

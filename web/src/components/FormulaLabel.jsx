@@ -1,5 +1,6 @@
 import { useState } from "react";
 import FormulaModal from "./FormulaModal.jsx";
+import { stripCitations } from "../utils/citations.js";
 
 /**
  * A label that opens its underlying formula in a centered, closeable
@@ -19,7 +20,7 @@ export default function FormulaLabel({ label, formula, className = "" }) {
         className={`formula-trigger ${className}`}
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        title={formula}
+        title={stripCitations(formula)}
       >
         {label}
         <span className="formula-icon" aria-hidden="true">ƒ</span>

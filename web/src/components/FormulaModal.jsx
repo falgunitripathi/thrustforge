@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { splitFormula, renderFormulaText } from "../utils/formulaText.jsx";
+import { stripCitations } from "../utils/citations.js";
 
 /**
  * A centered, closeable overlay showing one formula the way it reads on
@@ -30,7 +31,9 @@ export default function FormulaModal({ label, formula, onClose }) {
     };
   }, [onClose]);
 
-  const { equation, citation, explanation } = splitFormula(formula);
+  const split = splitFormula(formula);
+  const equation = stripCitations(split.equation);
+  const explanation = stripCitations(split.explanation);
 
   // Portaled to <body> so a stacking context created by some ancestor
   // (e.g. a sticky sidebar column) can never trap this "full-viewport"
@@ -57,7 +60,6 @@ export default function FormulaModal({ label, formula, onClose }) {
         <div className="formula-modal-paper">
           <p className="formula-modal-formula">{renderFormulaText(equation)}</p>
         </div>
-        {citation && <span className="formula-modal-citation">{citation}</span>}
         {explanation && <p className="formula-modal-explanation">{explanation}</p>}
       </div>
     </div>,

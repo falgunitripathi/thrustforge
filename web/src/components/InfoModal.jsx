@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { renderFormulaText } from "../utils/formulaText.jsx";
+import { stripCitations } from "../utils/citations.js";
 
 /**
  * A centered, closeable overlay explaining one config parameter the way
@@ -54,7 +55,7 @@ export default function InfoModal({ label, text, onClose }) {
         </button>
         <p className="formula-modal-label" id={titleId}>{label}</p>
         <div className="formula-modal-paper info-modal-paper">
-          <p className="info-modal-text">{renderFormulaText(text)}</p>
+          <p className="info-modal-text">{renderFormulaText(stripCitations(text))}</p>
         </div>
       </div>
     </div>,

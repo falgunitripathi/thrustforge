@@ -100,7 +100,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
                 {fmt(config.centrifugal_U2, 0)} m/s, and π_c is derived from it
                 via π_c = [1 + η_c·(γ_c−1)·(U2/a01)²]^(γ_c/(γ_c−1)) — the
                 pressure ratio is a result here, not something you dial in
-                directly (§4.3).
+                directly.
               </p>
             )}
             <Glossary terms={STAGE_TERMS} />
@@ -128,7 +128,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
                 {fmt(turbine.V0_spouting, 1)} m/s (from the cycle's own T04 and
                 T05), then blade tip speed U2 = 0.707 × V0 ={" "}
                 {fmt(turbine.U2_sized, 1)} m/s. Both are calculated outputs
-                here — you don't set them directly (§6.2).
+                here — you don't set them directly.
               </p>
             )}
           </section>

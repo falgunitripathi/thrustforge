@@ -35,7 +35,7 @@ function PctStat({ value }) {
       {outOfRange && (
         <span
           className="perf-flag"
-          title="Outside the physically meaningful 0-100% range: this flight condition has pushed the idealized efficiency formula (Ref §9) past where its assumption (exhaust jet faster than flight speed) holds. Not a random glitch — a sign this configuration is far from its efficient design point at this Mach/altitude/throttle."
+          title="Outside the physically meaningful 0-100% range: this flight condition has pushed the idealized efficiency formula past where its assumption (exhaust jet faster than flight speed) holds. Not a random glitch — a sign this configuration is far from its efficient design point at this Mach/altitude/throttle."
         >
           {" "}⚠
         </span>
@@ -55,9 +55,9 @@ function nozzleExplanation(nozzle, ambientPressure) {
   const pc = fmtKPa(nozzle.p_c, 1);
   const pa = fmtKPa(ambientPressure, 1);
   if (nozzle.choked) {
-    return `Choked: the nozzle's critical (throat) pressure p_c = ${pc} kPa is at or above ambient p_a = ${pa} kPa — p_c ≥ p_a (Ref §8) — so the flow is already sonic (M=1) at the throat and can't be pulled any faster by the ambient pressure drop alone. Exit temperature/velocity come from the choked-flow relations (T_exit = T0/[(γ_h+1)/2], V_exit = √(γ_h·R_h·T_exit)), and the exit stays above ambient pressure, which is why Thrust above includes a nonzero (p_exit−p_a)·A_exit term.`;
+    return `Choked: the nozzle's critical (throat) pressure p_c = ${pc} kPa is at or above ambient p_a = ${pa} kPa — p_c ≥ p_a — so the flow is already sonic (M=1) at the throat and can't be pulled any faster by the ambient pressure drop alone. Exit temperature/velocity come from the choked-flow relations (T_exit = T0/[(γ_h+1)/2], V_exit = √(γ_h·R_h·T_exit)), and the exit stays above ambient pressure, which is why Thrust above includes a nonzero (p_exit−p_a)·A_exit term.`;
   }
-  return `Unchoked (fully expanded): the nozzle's critical (throat) pressure p_c = ${pc} kPa is below ambient p_a = ${pa} kPa — p_c < p_a (Ref §8) — so the flow never reaches sonic (M=1); it expands all the way down to ambient pressure instead, p_exit = p_a by construction. That's why Thrust above has no pressure term for this configuration — only the momentum term contributes.`;
+  return `Unchoked (fully expanded): the nozzle's critical (throat) pressure p_c = ${pc} kPa is below ambient p_a = ${pa} kPa — p_c < p_a — so the flow never reaches sonic (M=1); it expands all the way down to ambient pressure instead, p_exit = p_a by construction. That's why Thrust above has no pressure term for this configuration — only the momentum term contributes.`;
 }
 
 /**
@@ -102,7 +102,7 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         <FormulaLabel
           className="perf-label"
           label="Fuel-air ratio f"
-          formula="Combustor energy balance solved for f (Ref §5): f = [(Cp_h/Cp_c)(T04/T03) − 1] / [(η_b·Q_R)/(Cp_c·T03) − (Cp_h/Cp_c)(T04/T03)]"
+          formula="f = [(Cp_h/Cp_c)(T04/T03) − 1] / [(η_b·Q_R)/(Cp_c·T03) − (Cp_h/Cp_c)(T04/T03)] (Ref §5) — the combustor's energy balance, solved for the fuel-air ratio f."
         />
         <Stat value={performance.f} digits={4} />
       </div>
@@ -142,7 +142,7 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         <p className="section-note perf-flag-note">
           ⚠ An efficiency above is outside the physically meaningful 0-100%
           range. That&rsquo;s this configuration&rsquo;s idealized formulas
-          (Ref §9) breaking down at this flight condition — usually very
+          breaking down at this flight condition — usually very
           high Mach relative to this engine&rsquo;s specific thrust, or a
           fuel-air ratio near zero — not a calculation error. Hover the ⚠
           for details.
