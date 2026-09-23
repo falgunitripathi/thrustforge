@@ -346,6 +346,83 @@ const PROPFAN_FORMULAS = [
   },
 ];
 
+// Scramjet — Ref: reference/scramjet.md (NPTEL Lecture 27, pp.277-281).
+// Stations: 1 = freestream / intake inlet, 2 = combustor entrance,
+// 3 = combustor exit / nozzle entrance, 4 = nozzle exit. No compressor
+// or turbine; the flow stays supersonic through the combustor.
+const SCRAMJET_FORMULAS = [
+  {
+    section: "Intake (ramp compression, M1 -> M2 > 1)",
+    entries: [
+      { label: "Freestream (station 1)", formula: "V1 = M1·sqrt(gamma_c·R_c·T1), with T1, p1 from the ISA troposphere at the configured altitude" },
+      {
+        label: "Combustor-entrance static temperature",
+        formula: "T2 = T1·(1 + (gamma_c-1)/2·M1^2) / (1 + (gamma_c-1)/2·M2^2)",
+        note: "M2 (combustor-entrance Mach, > 1) is a configured input.",
+      },
+      {
+        label: "Combustor-entrance static pressure (used by the solver)",
+        formula: "p2 = p1·(1 + eta_I·(T2/T1 - 1))^(gamma_c/(gamma_c-1))",
+        note: "From the intake isentropic efficiency eta_I = (Tx - T1)/(T2 - T1).",
+      },
+      { label: "Area ratio", formula: "A2/A1 = (M1/M2)·[(1 + (gamma_c-1)/2·M1^2) / (1 + (gamma_c-1)/2·M2^2)]^((gamma_c+1)/(2·(gamma_c-1)))" },
+      {
+        label: "Combustor-entrance stagnation temperature",
+        formula: "T02 = T2·(1 + (gamma_c-1)/2·M2^2)",
+        note: "Not given for this station in the source; the same lecturer derives the identical identity for the ramjet's diffuser (judgment call #3).",
+      },
+      {
+        label: "MIL-E-5007D total-pressure recovery (reference only)",
+        formula: "p02/p01 = 800/(M1^4 + 935) for M1 > 5; 1 - 0.776·(M1-1)^1.5 for 1 < M1 < 5",
+        note: "Reported for comparison only — NOT used by the solver, which takes p2 from eta_I as the source's own derivation chain does (judgment call #4).",
+      },
+    ],
+  },
+  {
+    section: "Combustor (supersonic, f-driven)",
+    entries: [
+      {
+        label: "Combustor-exit stagnation temperature",
+        formula: "T03 = (f·eta_b·Q_R + Cp_c·T02) / (Cp_h·(1+f))",
+        note: "Per unit air mass flow. The fuel-air ratio f is a configured input — not solved from a target temperature.",
+      },
+      {
+        label: "Combustor-exit Mach M3 (solved)",
+        formula: "T03/T02 = (M3^2/M2^2)·[(1 + gamma_c·M2^2)/(1 + gamma_h·M3^2)]^2·(1 + (gamma_h-1)/2·M3^2)/(1 + (gamma_c-1)/2·M2^2)",
+        note: "Solved for M3 on the supersonic (M3 > 1) branch by bisection. If T03/T02 exceeds this ratio's value at M3 = 1, the combustor thermally chokes and there is no solution.",
+      },
+      { label: "Combustor-exit static pressure", formula: "p3 = p2·(1 + gamma_c·M2^2) / (1 + gamma_c·M3^2)", note: "gamma_c in both Mach terms, exactly as transcribed from the source." },
+      { label: "Combustor-exit static temperature", formula: "T3 = T03 / (1 + (gamma_h-1)/2·M3^2)" },
+    ],
+  },
+  {
+    section: "Nozzle (fully expanded to ambient)",
+    entries: [
+      {
+        label: "Nozzle-exit static temperature",
+        formula: "T4 = T3 - T3·eta_N·(1 - (p_a/p3)^((gamma_h-1)/gamma_h)), with p4 = p_a",
+        note: "Deliberate deviation: the source writes (p2/p3) here, which is physically anomalous for a 3->4 expansion; this project uses (p_a/p3), i.e. the nozzle expanded fully to ambient (judgment call #1).",
+      },
+      { label: "Nozzle-exit velocity", formula: "V4 = sqrt(2·Cp_h·(T03 - T4))" },
+    ],
+  },
+  {
+    section: "Overall performance",
+    entries: [
+      { label: "Thrust / specific thrust", formula: "T = mdot_a·[(1+f)·V4 - V1],  T/mdot_a = (1+f)·V4 - V1" },
+      { label: "TSFC", formula: "TSFC = mdot_f/T = f / (T/mdot_a)" },
+      { label: "Propulsive efficiency", formula: "eta_P = 2·V1 / (V1 + V4)", note: "The source's own f<<1 form (judgment call #5)." },
+      { label: "Thermal efficiency", formula: "eta_th = (V4^2 - V1^2) / (2·f·eta_b·Q_R)", note: "The source's own f<<1 form (judgment call #5)." },
+      { label: "Overall efficiency", formula: "eta_o = eta_P·eta_th" },
+      {
+        label: "Specific impulse",
+        formula: "Isp = T / (mdot_f·g), g = 9.80665 m/s^2",
+        note: "Taken on fuel flow mdot_f — the source leaves mdot unsubscripted; same-lecturer precedent elsewhere in the course (judgment call #2).",
+      },
+    ],
+  },
+];
+
 /**
  * Symbol glossary — the notation conventions used across every formula
  * above (and every FormulaLabel/FieldInfoLabel in the live app itself),
@@ -418,4 +495,5 @@ export const ENGINE_FORMULAS = {
   turboshaft: { name: "Turboshaft", sections: TURBOSHAFT_FORMULAS },
   turbofan: { name: "Turbofan (two-spool, unmixed)", sections: TURBOFAN_FORMULAS },
   propfan: { name: "Propfan (three-spool, unducted fan)", sections: PROPFAN_FORMULAS },
+  scramjet: { name: "Scramjet (supersonic-combustion ramjet)", sections: SCRAMJET_FORMULAS },
 };

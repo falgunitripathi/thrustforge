@@ -4,6 +4,7 @@ import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
 import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.js";
 import { defaultTurbofanConfig, solveTurbofan } from "./physics/turbofan.js";
 import { defaultPropfanConfig, solvePropfan } from "./physics/propfan.js";
+import { defaultScramjetConfig, solveScramjet } from "./physics/scramjet.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
@@ -15,6 +16,8 @@ import TurbofanConfigForm from "./components/TurbofanConfigForm.jsx";
 import TurbofanResultsPanel from "./components/TurbofanResultsPanel.jsx";
 import PropfanConfigForm from "./components/PropfanConfigForm.jsx";
 import PropfanResultsPanel from "./components/PropfanResultsPanel.jsx";
+import ScramjetConfigForm from "./components/ScramjetConfigForm.jsx";
+import ScramjetResultsPanel from "./components/ScramjetResultsPanel.jsx";
 import "./App.css";
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -25,6 +28,7 @@ const ENGINE_TYPES = [
   { value: "turboshaft", label: "Turboshaft" },
   { value: "turbofan", label: "Turbofan" },
   { value: "propfan", label: "Propfan" },
+  { value: "scramjet", label: "Scramjet" },
 ];
 
 // A link opens the app at exactly the configuration it was built from:
@@ -69,6 +73,7 @@ function App() {
   const [turboshaftConfig, setTurboshaftConfig] = useState(defaultTurboshaftConfig);
   const [turbofanConfig, setTurbofanConfig] = useState(defaultTurbofanConfig);
   const [propfanConfig, setPropfanConfig] = useState(defaultPropfanConfig);
+  const [scramjetConfig, setScramjetConfig] = useState(defaultScramjetConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -85,6 +90,8 @@ function App() {
   const resetTurbofanConfig = () => setTurbofanConfig(defaultTurbofanConfig());
   const patchPropfanConfig = (patch) => setPropfanConfig((prev) => ({ ...prev, ...patch }));
   const resetPropfanConfig = () => setPropfanConfig(defaultPropfanConfig());
+  const patchScramjetConfig = (patch) => setScramjetConfig((prev) => ({ ...prev, ...patch }));
+  const resetScramjetConfig = () => setScramjetConfig(defaultScramjetConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
   // turbojet configuration — replaceState (not pushState) so tweaking a
@@ -117,12 +124,13 @@ function App() {
         : engineType === "turboshaft" ? solveTurboshaft(turboshaftConfig)
         : engineType === "turbofan" ? solveTurbofan(turbofanConfig)
         : engineType === "propfan" ? solvePropfan(propfanConfig)
+        : engineType === "scramjet" ? solveScramjet(scramjetConfig)
         : solveEngine(config);
       return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig]);
+  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig, scramjetConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
@@ -197,6 +205,14 @@ function App() {
               onReset={resetPropfanConfig}
               onCollapse={() => setSidebarOpen(false)}
             />
+          ) : engineType === "scramjet" ? (
+            <ScramjetConfigForm
+              config={scramjetConfig}
+              result={result}
+              onChange={patchScramjetConfig}
+              onReset={resetScramjetConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
           ) : (
             <ConfigForm
               config={config}
@@ -232,6 +248,12 @@ function App() {
                   adjusting one of the numbers on the left — a small change
                   is usually all it takes.
                 </p>
+                {/* Scramjet only: its solver's errors (thermal choking,
+                    M2 <= 1, M1 <= M2) each name the specific fix, so show
+                    that detail too. Other engines keep the generic text. */}
+                {engineType === "scramjet" && (
+                  <p>{error.replace(/^solveScramjet:\s*/, "")}</p>
+                )}
               </div>
             </div>
           ) : engineType === "turboprop" ? (
@@ -242,6 +264,8 @@ function App() {
             <TurbofanResultsPanel result={result} config={turbofanConfig} />
           ) : engineType === "propfan" ? (
             <PropfanResultsPanel result={result} config={propfanConfig} />
+          ) : engineType === "scramjet" ? (
+            <ScramjetResultsPanel result={result} config={scramjetConfig} />
           ) : (
             <ResultsPanel
               result={result}
