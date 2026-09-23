@@ -15,17 +15,20 @@ export default function ScramjetAdvancedSection({ config, onChange }) {
     <fieldset className="config-section advanced">
       <legend>
         <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? "▾" : "▸"} Advanced: design defaults &amp; gas properties
+          {open ? "▾" : "▸"} Engine quality: efficiencies &amp; gas properties
         </button>
       </legend>
       {open && (
+        <>
+        <p className="section-intro-note">
+          These describe how well the engine's own hardware is built (intake, compressor, turbine, nozzle losses)
+          and the air/gas it works with &mdash; not the fuel, which has its own section above. They start at
+          typical textbook values; change one to see how a lossier part costs thrust or fuel.
+        </p>
         <div className="advanced-grid">
           <NumberField label="Combustor efficiency η_b" value={config.eta_b}
             onChange={(v) => onChange({ eta_b: v })} min={0.5} max={1.0} step={0.01}
             hint="η_b = combustor (burner) efficiency — the fraction of the fuel's heat that actually ends up in the gas. Used in T03 (§2.2) and in the thermal efficiency. No scramjet-specific value in the source — project-wide default carried over." />
-          <NumberField label="Fuel heating value Q_R" value={config.Q_R}
-            onChange={(v) => onChange({ Q_R: v })} min={3.0e7} max={1.5e8} step={1.0e5}
-            hint="J/kg — Q_R = the fuel's heating value, the heat released by burning 1 kg of it (QHV in the source). NOT IN SOURCE (standard published Jet-A LHV, the project-wide default). Real scramjets often burn hydrogen, whose heating value is roughly three times higher — the range here allows that." />
           <NumberField label="Nozzle efficiency η_N" value={config.eta_N}
             onChange={(v) => onChange({ eta_N: v })} min={0.5} max={1.0} step={0.01}
             hint="η_N = nozzle isentropic efficiency, η_N = (T3 − T4)/(T3 − Ty) (§2.3, NPTEL p.279). The nozzle is expanded fully to ambient pressure p_a here — a deliberate deviation from the source's own (p2/p3) ratio, which is physically anomalous for a 3→4 expansion (judgment call #1). No scramjet-specific value in the source — project-wide default carried over." />
@@ -43,6 +46,7 @@ export default function ScramjetAdvancedSection({ config, onChange }) {
             onChange={(v) => onChange({ cp_h: v })} min={900} max={1400} step={1}
             hint="J/(kg·K) — Cp_h = specific heat at constant pressure of the hot combustion gas" />
         </div>
+        </>
       )}
     </fieldset>
   );

@@ -4,6 +4,7 @@ import ScramjetFlightSection from "./ScramjetFlightSection.jsx";
 import ScramjetIntakeSection from "./ScramjetIntakeSection.jsx";
 import ScramjetCombustorSection from "./ScramjetCombustorSection.jsx";
 import ScramjetAdvancedSection from "./ScramjetAdvancedSection.jsx";
+import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
 
 /**
@@ -62,6 +63,7 @@ export default function ScramjetConfigForm({ config, result, onChange, onReset, 
           />
         )}
       </fieldset>
+      <FuelSection engineType="scramjet" config={config} result={result} onChange={onChange} />
       <ScramjetAdvancedSection config={config} onChange={onChange} />
       <FormulasExport engineType="scramjet" />
     </div>

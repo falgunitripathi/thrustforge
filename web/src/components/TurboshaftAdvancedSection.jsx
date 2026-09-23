@@ -12,10 +12,16 @@ export default function TurboshaftAdvancedSection({ config, onChange }) {
     <fieldset className="config-section advanced">
       <legend>
         <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? "▾" : "▸"} Advanced: design defaults &amp; gas properties
+          {open ? "▾" : "▸"} Engine quality: efficiencies &amp; gas properties
         </button>
       </legend>
       {open && (
+        <>
+        <p className="section-intro-note">
+          These describe how well the engine's own hardware is built (intake, compressor, turbine, nozzle losses)
+          and the air/gas it works with &mdash; not the fuel, which has its own section above. They start at
+          typical textbook values; change one to see how a lossier part costs thrust or fuel.
+        </p>
         <div className="advanced-grid">
           <NumberField label="Intake efficiency η_d" value={config.eta_d}
             onChange={(v) => onChange({ eta_d: v })} min={0.5} max={1.0} step={0.01}
@@ -29,9 +35,6 @@ export default function TurboshaftAdvancedSection({ config, onChange }) {
           <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
             onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.01}
             hint="fraction, not %. NOT IN SOURCE (conventional placeholder)" />
-          <NumberField label="Fuel heating value Q_R" value={config.Q_R}
-            onChange={(v) => onChange({ Q_R: v })} min={3.0e7} max={5.0e7} step={1.0e5}
-            hint="J/kg. NOT IN SOURCE (standard published Jet-A LHV)" />
           <NumberField label="Turbine efficiency η_t" value={config.eta_t}
             onChange={(v) => onChange({ eta_t: v })} min={0.5} max={1.0} step={0.01}
             hint="derates the turbine's temperature drop below its isentropic value for the same full expansion to ambient pressure (§2.1)" />
@@ -56,6 +59,7 @@ export default function TurboshaftAdvancedSection({ config, onChange }) {
             onChange={(v) => onChange({ cp_h: v })} min={900} max={1400} step={1}
             hint="J/(kg·K)" />
         </div>
+        </>
       )}
     </fieldset>
   );

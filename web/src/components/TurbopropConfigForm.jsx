@@ -6,6 +6,7 @@ import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import PropellerSection from "./PropellerSection.jsx";
 import TurbopropAdvancedSection from "./TurbopropAdvancedSection.jsx";
+import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
 
 /**
@@ -20,7 +21,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * separate section here since this model always treats the residual
  * jet as fully expanded (no choking, no C-D geometry option to expose).
  */
-export default function TurbopropConfigForm({ config, onChange, onReset, onCollapse }) {
+export default function TurbopropConfigForm({ config, result, onChange, onReset, onCollapse }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -67,6 +68,7 @@ export default function TurbopropConfigForm({ config, onChange, onReset, onColla
           />
         )}
       </fieldset>
+      <FuelSection engineType="turboprop" config={config} result={result} onChange={onChange} />
       <TurbopropAdvancedSection config={config} onChange={onChange} />
       <FormulasExport engineType="turboprop" />
     </div>

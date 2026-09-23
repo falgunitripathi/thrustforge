@@ -8,6 +8,7 @@ import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ConfigCompare from "./ConfigCompare.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
+import FuelComparison from "./FuelComparison.jsx";
 import SectionSkeleton from "./SectionSkeleton.jsx";
 import { fmt } from "../utils/format.js";
 
@@ -183,6 +184,8 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
       >
         <ConfigCompare savedConfigs={savedConfigs} onSave={onSaveConfig} onRemove={onRemoveConfig} />
       </ExpandableSection>
+
+      <FuelComparison engineType="turbojet" config={config} />
     </div>
   );
 }

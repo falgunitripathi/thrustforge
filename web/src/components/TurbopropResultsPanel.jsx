@@ -7,6 +7,7 @@ import TsDiagram from "./TsDiagram.jsx";
 import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
+import FuelComparison from "./FuelComparison.jsx";
 import { fmt } from "../utils/format.js";
 
 const STATION_TERMS = [
@@ -128,6 +129,8 @@ export default function TurbopropResultsPanel({ result, config }) {
           </div>
         </div>
       </ExpandableSection>
+
+      <FuelComparison engineType="turboprop" config={config} />
     </div>
   );
 }

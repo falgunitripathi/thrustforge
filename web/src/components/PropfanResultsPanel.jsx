@@ -6,6 +6,7 @@ import TsDiagram from "./TsDiagram.jsx";
 import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
+import FuelComparison from "./FuelComparison.jsx";
 
 // Ordered by physical/flow position (same convention the diagram uses,
 // and the same convention the turbofan's own StationTable order follows
@@ -116,6 +117,8 @@ export default function PropfanResultsPanel({ result, config }) {
           </div>
         </div>
       </ExpandableSection>
+
+      <FuelComparison engineType="propfan" config={config} />
     </div>
   );
 }

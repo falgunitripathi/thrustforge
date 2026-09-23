@@ -6,6 +6,7 @@ import PropfanCompressorsSection from "./PropfanCompressorsSection.jsx";
 import PropfanCombustorSection from "./PropfanCombustorSection.jsx";
 import PropfanFreeTurbineSection from "./PropfanFreeTurbineSection.jsx";
 import PropfanAdvancedSection from "./PropfanAdvancedSection.jsx";
+import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
 
 /**
@@ -18,7 +19,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * efficiency, and gas properties live in Advanced, same as the other
  * engines' shaft/nozzle efficiency terms.
  */
-export default function PropfanConfigForm({ config, onChange, onReset, onCollapse }) {
+export default function PropfanConfigForm({ config, result, onChange, onReset, onCollapse }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -65,6 +66,7 @@ export default function PropfanConfigForm({ config, onChange, onReset, onCollaps
           />
         )}
       </fieldset>
+      <FuelSection engineType="propfan" config={config} result={result} onChange={onChange} />
       <PropfanAdvancedSection config={config} onChange={onChange} />
       <FormulasExport engineType="propfan" />
     </div>

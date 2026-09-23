@@ -483,7 +483,7 @@ export const DEFAULT_VALUE_CONSTANTS = [
   { symbol: "eta_c_stage", value: "0.90", meaning: "Per-stage compressor isentropic/polytropic efficiency." },
   { symbol: "eta_b", value: "0.97", meaning: "Combustor efficiency (typical ~0.97)." },
   { symbol: "delta_p_cc_pct", value: "0.05 (5%)", meaning: "Combustor fractional total-pressure loss. Conventional placeholder — not a number the source gives directly." },
-  { symbol: "Q_R", value: "43,000,000 J/kg (43 MJ/kg)", meaning: "Fuel heating value — standard published Jet-A (kerosene) lower heating value." },
+  { symbol: "Q_R", value: "43,000,000 J/kg (43 MJ/kg)", meaning: "Fuel heating value — the generic kerosene default. Pick another fuel (hydrogen, methane, JP-7, ...) in the app's Fuel section and this changes to that fuel's published lower heating value." },
   { symbol: "eta_m", value: "0.98", meaning: "Mechanical (shaft) efficiency between a turbine and what it drives." },
   { symbol: "eta_tt_stage", value: "0.90", meaning: "Per-stage axial turbine total-to-total isentropic efficiency. Conventional literature value — the source only gives a number for radial turbines." },
   { symbol: "eta_N", value: "0.95", meaning: "Nozzle efficiency (source: “high, ~0.95+, typical”)." },

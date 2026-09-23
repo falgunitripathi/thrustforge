@@ -6,6 +6,7 @@ import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import LoadSection from "./LoadSection.jsx";
 import TurboshaftAdvancedSection from "./TurboshaftAdvancedSection.jsx";
+import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
 
 /**
@@ -17,7 +18,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * turbojet's). The Load section is new — no propeller, no nozzle here
  * at all, since every bit of the turbine's work goes to an output shaft.
  */
-export default function TurboshaftConfigForm({ config, onChange, onReset, onCollapse }) {
+export default function TurboshaftConfigForm({ config, result, onChange, onReset, onCollapse }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -64,6 +65,7 @@ export default function TurboshaftConfigForm({ config, onChange, onReset, onColl
           />
         )}
       </fieldset>
+      <FuelSection engineType="turboshaft" config={config} result={result} onChange={onChange} />
       <TurboshaftAdvancedSection config={config} onChange={onChange} />
       <FormulasExport engineType="turboshaft" />
     </div>

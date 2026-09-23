@@ -6,6 +6,7 @@ import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import NozzleSection from "./NozzleSection.jsx";
 import AdvancedSection from "./AdvancedSection.jsx";
+import FuelSection from "./FuelSection.jsx";
 import ReportExport from "./ReportExport.jsx";
 import FormulasExport from "./FormulasExport.jsx";
 import { buildShareUrl } from "../utils/shareLink.js";
@@ -86,6 +87,7 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
           />
         )}
       </fieldset>
+      <FuelSection engineType="turbojet" config={config} result={result} onChange={onChange} />
       <AdvancedSection config={config} onChange={onChange} />
       {result && <ReportExport config={config} result={result} />}
       <FormulasExport engineType="turbojet" />

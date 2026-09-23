@@ -4,6 +4,7 @@ import ScramjetEngineDiagram from "./ScramjetEngineDiagram.jsx";
 import StationTable from "./StationTable.jsx";
 import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
+import FuelComparison from "./FuelComparison.jsx";
 
 // The source's own station numbering (reference/scramjet.md §2) — no
 // "a" station: station 1 IS the freestream at the intake lip.
@@ -74,6 +75,8 @@ export default function ScramjetResultsPanel({ result, config }) {
         </p>
         <Glossary terms={STATION_TERMS} />
       </ExpandableSection>
+
+      <FuelComparison engineType="scramjet" config={config} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import TsDiagram from "./TsDiagram.jsx";
 import PvDiagram from "./PvDiagram.jsx";
 import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
+import FuelComparison from "./FuelComparison.jsx";
 import { fmt } from "../utils/format.js";
 
 const TURBOSHAFT_STATION_ORDER = ["a", "2", "3", "4", "5"];
@@ -129,6 +130,8 @@ export default function TurboshaftResultsPanel({ result, config }) {
           </div>
         </div>
       </ExpandableSection>
+
+      <FuelComparison engineType="turboshaft" config={config} />
     </div>
   );
 }

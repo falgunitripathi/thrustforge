@@ -5,6 +5,7 @@ import FanSection from "./FanSection.jsx";
 import CoreCompressorsSection from "./CoreCompressorsSection.jsx";
 import TurbofanCombustorSection from "./TurbofanCombustorSection.jsx";
 import TurbofanAdvancedSection from "./TurbofanAdvancedSection.jsx";
+import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
 
 /**
@@ -16,7 +17,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * turbojet's). HPT/LPT and both nozzles' efficiencies live in Advanced,
  * same as the other engines' shaft/nozzle efficiency terms.
  */
-export default function TurbofanConfigForm({ config, onChange, onReset, onCollapse }) {
+export default function TurbofanConfigForm({ config, result, onChange, onReset, onCollapse }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -62,6 +63,7 @@ export default function TurbofanConfigForm({ config, onChange, onReset, onCollap
           />
         )}
       </fieldset>
+      <FuelSection engineType="turbofan" config={config} result={result} onChange={onChange} />
       <TurbofanAdvancedSection config={config} onChange={onChange} />
       <FormulasExport engineType="turbofan" />
     </div>
