@@ -39,7 +39,7 @@ export default function EngineSizing({ config, result }) {
       <div className="sweep-controls">
         <NumberField
           label="Target thrust"
-          value={targetThrust}
+          value={Number.isFinite(targetThrust) ? targetThrust : ""}
           onChange={setTargetThrust}
           min={0}
           step={10}

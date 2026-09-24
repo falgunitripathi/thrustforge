@@ -129,10 +129,15 @@ export function solveScramjet(cfg) {
   const thrust = cfg.mdot_a * sp_thrust;
   const mdot_f = f * cfg.mdot_a;
   const tsfc = sp_thrust > 0 ? f / sp_thrust : NaN;
-  const eta_P = 2.0 * V1 / (V1 + V4);
-  const eta_th = f > 0 ? (V4 ** 2 - V1 ** 2) / (2.0 * f * cfg.eta_b * cfg.Q_R) : null;
-  const eta_o = (eta_P !== null && eta_th !== null) ? eta_P * eta_th : null;
-  const isp = mdot_f > 0 ? thrust / (mdot_f * G0) : null;
+  // No net thrust -> the efficiencies and Isp stop meaning anything
+  // (eta_P > 1, eta_th < 0), so they're null, like the ramjet.
+  let eta_P = null, eta_th = null, eta_o = null, isp = null;
+  if (sp_thrust > 0) {
+    eta_P = 2.0 * V1 / (V1 + V4);
+    eta_th = f > 0 ? (V4 ** 2 - V1 ** 2) / (2.0 * f * cfg.eta_b * cfg.Q_R) : null;
+    eta_o = eta_th !== null ? eta_P * eta_th : null;
+    isp = mdot_f > 0 ? thrust / (mdot_f * G0) : null;
+  }
   result.performance = {
     thrust, specific_thrust: sp_thrust, tsfc, f,
     eta_propulsive: eta_P, eta_thermal: eta_th, eta_overall: eta_o, isp_s: isp,

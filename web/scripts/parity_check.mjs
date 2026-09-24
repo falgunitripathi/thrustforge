@@ -213,6 +213,7 @@ const SCRAMJET_SCENARIOS = [
   { name: "scramjet: thermal choke — expected error in both", overrides: { mach_flight: 5.0, mach_combustor_inlet: 2.0 }, expectError: true },
   { name: "scramjet: subsonic combustor — expected error in both", overrides: { mach_combustor_inlet: 0.8 }, expectError: true },
   { name: "scramjet: M1 < M2 — expected error in both", overrides: { mach_flight: 2.0 }, expectError: true },
+  { name: "scramjet: too little fuel, negative thrust", overrides: { f: 0.001 } },
 ];
 
 // ---------------------------------------------------------------------------

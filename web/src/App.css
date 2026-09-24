@@ -2120,3 +2120,14 @@ button.field-label.formula-trigger:focus-visible {
   color: var(--accent);
   margin-bottom: 8px;
 }
+
+/* Invalid number entry (see NumberField): red outline + short message. */
+.field input.field-input-invalid {
+  border-color: var(--error-text);
+  outline-color: var(--error-text);
+}
+
+.field-error {
+  font-size: 11.5px;
+  color: var(--error-text);
+}

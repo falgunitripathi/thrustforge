@@ -41,7 +41,7 @@ export default function TurbofanConfigForm({ config, result, onChange, onReset, 
           )}
         </div>
       </div>
-      <FlightConditionsSection config={config} onChange={onChange} />
+      <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={2.0} machNote="Airliner turbofans cruise near Mach 0.8; low-bypass fighter turbofans reach about Mach 2." />
       <FanSection config={config} onChange={onChange} />
       <CoreCompressorsSection config={config} onChange={onChange} />
       <TurbofanCombustorSection config={config} onChange={onChange} />

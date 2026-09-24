@@ -19,7 +19,20 @@ export default function FuelSection({ engineType, config, result, onChange }) {
 
   function choose(id) {
     const next = fuels.find((x) => x.id === id);
-    onChange(next ? { Q_R: next.Q_R, fuel_id: id } : { fuel_id: "custom" });
+    if (!next) {
+      onChange({ fuel_id: "custom" });
+      return;
+    }
+    const patch = { Q_R: next.Q_R, fuel_id: id };
+    // The scramjet's fuel-air ratio is an input, so keep the mixture
+    // strength (phi = f/f_stoich) when the fuel changes. Keeping f itself
+    // would put ~3x the heat of kerosene into the combustor for hydrogen
+    // and thermally choke it the moment the fuel is picked.
+    if (engineType === "scramjet" && fuel && Number.isFinite(config.f)) {
+      const f = config.f * (next.f_stoich / fuel.f_stoich);
+      patch.f = Math.min(0.08, Math.max(0.001, Number(f.toFixed(5))));
+    }
+    onChange(patch);
   }
 
   return (
@@ -58,7 +71,7 @@ export default function FuelSection({ engineType, config, result, onChange }) {
                     {phi > 1
                       ? " — richer than stoichiometric: there isn't enough oxygen to burn all this fuel, but this simple model still counts its full heat, so results here overstate performance."
                       : engineType === "scramjet"
-                        ? ` — lean: only ${fmt(phi * 100, 0)}% of the air's oxygen gets used. Raise f to burn more of it, until the combustor thermally chokes.`
+                        ? ` — lean: only ${fmt(phi * 100, 0)}% of the air's oxygen gets used. Raise f to burn more of it, until the combustor thermally chokes. Switching fuel keeps φ the same, so f changes with it.`
                         : engineType === "ramjet"
                           ? ` — lean (${fmt((1 / phi - 1) * 100, 0)}% more air than the fuel needs). With no turbine to protect, a ramjet can burn much closer to stoichiometric than a turbojet — raise T04 to see φ climb.`
                         : ` — lean (${fmt((1 / phi - 1) * 100, 0)}% more air than the fuel needs), which is normal: real engines run lean to keep the turbine and liner cool.`}

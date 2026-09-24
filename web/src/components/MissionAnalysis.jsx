@@ -80,10 +80,9 @@ export default function MissionAnalysis({ config }) {
     try {
       return { ok: true, dp: lockDesignPoint(config) };
     } catch (err) {
-      if (err instanceof OffDesignError) {
-        return { ok: false, reason: err.message };
-      }
-      throw err;
+      // Any other failure also just means "no locked design point" —
+      // rethrowing would unmount the whole page.
+      return { ok: false, reason: err instanceof OffDesignError ? err.message : "design point could not be locked" };
     }
   }, [config]);
 
@@ -113,11 +112,11 @@ export default function MissionAnalysis({ config }) {
             Nr: r.Nr,
             mr: r.mr,
           };
-        } catch (err) {
-          if (err instanceof OffDesignError) {
-            return { ...seg, tStart, tEnd, valid: false };
-          }
-          throw err;
+        } catch {
+          // OffDesignError (can't match here) or a bad segment input such as
+          // an altitude outside 0-11,000 m: either way this segment just
+          // can't be flown. Rethrowing used to blank the whole page.
+          return { ...seg, tStart, tEnd, valid: false };
         }
       }
 
@@ -241,28 +240,28 @@ export default function MissionAnalysis({ config }) {
                 <td>
                   <input
                     type="number" min={0} max={11000} step={100}
-                    value={seg.altitude_m}
+                    value={Number.isFinite(seg.altitude_m) ? seg.altitude_m : ""}
                     onChange={(e) => updateSegment(seg.id, "altitude_m", parseFloat(e.target.value))}
                   />
                 </td>
                 <td>
                   <input
                     type="number" min={0} max={3} step={0.05}
-                    value={seg.mach_flight}
+                    value={Number.isFinite(seg.mach_flight) ? seg.mach_flight : ""}
                     onChange={(e) => updateSegment(seg.id, "mach_flight", parseFloat(e.target.value))}
                   />
                 </td>
                 <td>
                   <input
                     type="number" min={0} step={10}
-                    value={seg.T04_target}
+                    value={Number.isFinite(seg.T04_target) ? seg.T04_target : ""}
                     onChange={(e) => updateSegment(seg.id, "T04_target", parseFloat(e.target.value))}
                   />
                 </td>
                 <td>
                   <input
                     type="number" min={0} step={1}
-                    value={seg.duration_min}
+                    value={Number.isFinite(seg.duration_min) ? seg.duration_min : ""}
                     onChange={(e) => updateSegment(seg.id, "duration_min", parseFloat(e.target.value))}
                   />
                 </td>

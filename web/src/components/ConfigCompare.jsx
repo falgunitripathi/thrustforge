@@ -10,8 +10,9 @@ function SaveConfigForm({ onSave }) {
       className="save-config-form"
       onSubmit={(e) => {
         e.preventDefault();
-        const trimmed = name.trim();
-        if (!trimmed) return;
+        // No name typed: save anyway under a time-stamped default rather
+        // than silently doing nothing.
+        const trimmed = name.trim() || `Configuration saved ${new Date().toLocaleTimeString()}`;
         onSave(trimmed);
         setName("");
       }}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import FieldInfoLabel from "./FieldInfoLabel.jsx";
 
 /**
@@ -14,10 +15,28 @@ function formatBound(n) {
   return n.toLocaleString(undefined, { maximumFractionDigits: 6 });
 }
 
-/** Reusable labeled numeric input, controlled, with an optional unit/hint. */
+/**
+ * Reusable labeled numeric input, controlled, with an optional unit/hint.
+ *
+ * Only valid numbers reach `onChange`: an empty box, or a value outside
+ * min/max, is kept as a local draft (shown with an inline message) and
+ * the engine keeps solving with the last valid value. Leaving the field
+ * reverts the draft. Without this, NaN or out-of-range values went
+ * straight into the physics and came back as "NaN K" messages or
+ * efficiencies above 100%.
+ */
 export default function NumberField({
   label, value, onChange, min, max, step = "any", hint, disabled = false,
 }) {
+  const [draft, setDraft] = useState(null);
+  function problemWith(raw) {
+    const v = parseFloat(raw);
+    if (raw.trim() === "" || !Number.isFinite(v)) return "Enter a number";
+    if (Number.isFinite(min) && v < min) return `Must be at least ${formatBound(min)}`;
+    if (Number.isFinite(max) && v > max) return `Must be at most ${formatBound(max)}`;
+    return null;
+  }
+  const problem = draft !== null ? problemWith(draft) : null;
   const rangeText = Number.isFinite(min) && Number.isFinite(max)
     ? `valid range ${formatBound(min)}–${formatBound(max)}`
     : null;
@@ -40,16 +59,29 @@ export default function NumberField({
       )}
       <input
         type="number"
-        value={Number.isFinite(value) ? value : ""}
+        value={draft ?? (Number.isFinite(value) ? value : "")}
         min={min}
         max={max}
         step={step}
         disabled={disabled}
+        aria-invalid={problem ? true : undefined}
+        className={problem ? "field-input-invalid" : undefined}
         onChange={(e) => {
           const raw = e.target.value;
-          onChange(raw === "" ? NaN : parseFloat(raw));
+          if (problemWith(raw)) {
+            setDraft(raw);
+          } else {
+            setDraft(null);
+            onChange(parseFloat(raw));
+          }
         }}
+        onBlur={() => setDraft(null)}
       />
+      {problem && (
+        <span className="field-error" role="alert">
+          {problem} — still using {formatBound(value)}
+        </span>
+      )}
     </label>
   );
 }

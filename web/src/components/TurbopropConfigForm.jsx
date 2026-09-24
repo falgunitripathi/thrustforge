@@ -45,7 +45,7 @@ export default function TurbopropConfigForm({ config, result, onChange, onReset,
           )}
         </div>
       </div>
-      <FlightConditionsSection config={config} onChange={onChange} />
+      <FlightConditionsSection config={config} onChange={onChange} machMin={0.05} machMax={0.8} machNote="A turboprop needs some forward speed (propeller thrust is computed from flight speed), and propellers lose efficiency fast above about Mach 0.7-0.8 as the blade tips go supersonic." />
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />
       <TurbineSection config={config} onChange={onChange} />

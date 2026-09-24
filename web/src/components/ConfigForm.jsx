@@ -36,7 +36,12 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
     } catch {
       // Clipboard access can be blocked (permissions, insecure context);
       // fall back to a prompt the user can copy from by hand.
-      window.prompt("Copy this link:", url);
+      try {
+        window.prompt("Copy this link:", url);
+      } catch {
+        // Some embedded browsers block prompt() too; the address bar
+        // already holds the same link, so there's nothing more to do.
+      }
     }
   };
 
@@ -64,7 +69,7 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
           )}
         </div>
       </div>
-      <FlightConditionsSection config={config} onChange={onChange} />
+      <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={3.0} machNote="Turbojets reach about Mach 3 (the SR-71's J58 engines cruised near Mach 3.2); faster than that, ram heating leaves the turbine unable to drive the compressor." />
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />
       <TurbineSection config={config} onChange={onChange} />

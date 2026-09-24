@@ -5,6 +5,8 @@ Ref: reference/scramjet.md. No secondary source or worked example exists
 (Ganesan has no scramjet material) — internal-consistency checks only.
 """
 
+import math
+
 import pytest
 from aeropropsim.scramjet import (
     ScramjetConfig, solve_scramjet, rayleigh_temp_ratio, mil_e_5007d_recovery,
@@ -67,3 +69,15 @@ def test_mil_e_5007d_branches():
     assert mil_e_5007d_recovery(5.0) == pytest.approx(800.0 / (5.0 ** 4 + 935.0), abs=1e-3)
     assert all(mil_e_5007d_recovery(m / 10) > 0 for m in range(0, 120))
     assert mil_e_5007d_recovery(6.0) == pytest.approx(800.0 / (6.0 ** 4 + 935.0))
+
+
+def test_negative_thrust_blanks_efficiencies_and_isp():
+    """Too little fuel: the exhaust leaves slower than the incoming air, so
+    thrust is negative and eta_P/eta_th/Isp are reported as None rather
+    than eta_P > 1 and eta_th < 0."""
+    r = solve_scramjet(ScramjetConfig(f=0.001))
+    p = r.performance
+    assert p["specific_thrust"] < 0
+    assert p["eta_propulsive"] is None and p["eta_thermal"] is None
+    assert p["eta_overall"] is None and p["isp_s"] is None
+    assert math.isnan(p["tsfc"])

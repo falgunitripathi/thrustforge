@@ -6,9 +6,19 @@ reference implementation and print a flat JSON result to stdout.
 Usage: python3 scripts/dump_scramjet_result.py '<json-encoded config overrides>'
 """
 import json
+import math
 import sys
 
 from aeropropsim.scramjet import ScramjetConfig, solve_scramjet
+
+
+def _clean(obj):
+    """NaN (TSFC when thrust <= 0) -> None, matching JS JSON.stringify."""
+    if isinstance(obj, float) and math.isnan(obj):
+        return None
+    if isinstance(obj, dict):
+        return {k: _clean(v) for k, v in obj.items()}
+    return obj
 
 
 def flatten(result):
@@ -26,7 +36,7 @@ def main():
     overrides = json.loads(sys.argv[1] if len(sys.argv) > 1 else "{}")
     try:
         result = solve_scramjet(ScramjetConfig(**overrides))
-        sys.stdout.write(json.dumps(flatten(result)))
+        sys.stdout.write(json.dumps(_clean(flatten(result))))
     except ValueError as e:
         sys.stdout.write(json.dumps({"error": "ValueError", "message": str(e)}))
 

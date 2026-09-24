@@ -18,6 +18,8 @@ import ScramjetConfigForm from "./components/ScramjetConfigForm.jsx";
 import RamjetConfigForm from "./components/RamjetConfigForm.jsx";
 import TurboramjetConfigForm from "./components/TurboramjetConfigForm.jsx";
 import SectionSkeleton from "./components/SectionSkeleton.jsx";
+import ResultsErrorBoundary from "./components/ResultsErrorBoundary.jsx";
+import { explainError } from "./utils/errorText.js";
 import "./App.css";
 
 // Every engine except the default turbojet loads its results panel on
@@ -273,6 +275,7 @@ function App() {
         )}
 
         <div className="results-area">
+          <ResultsErrorBoundary resetKey={engineType + JSON.stringify(result?.config ?? error)}>
           <Suspense fallback={<SectionSkeleton title="Loading results" />}>
           {error ? (
             <div className="error-banner">
@@ -286,12 +289,9 @@ function App() {
                   adjusting one of the numbers on the left — a small change
                   is usually all it takes.
                 </p>
-                {/* A solver's own up-front checks ("solveX: ...") are written
-                    to name the fix, so show them; deeper internal errors
-                    would only confuse, so those keep the generic text. */}
-                {/^solve\w+:/.test(error) && (
-                  <p>{error.replace(/^solve\w+:\s*/, "")}</p>
-                )}
+                {/* The solvers' own checks name the fix; deeper physics
+                    errors are mapped to a plain explanation (errorText.js). */}
+                {explainError(error) && <p>{explainError(error)}</p>}
               </div>
             </div>
           ) : engineType === "turboprop" ? (
@@ -318,6 +318,7 @@ function App() {
             />
           )}
           </Suspense>
+          </ResultsErrorBoundary>
         </div>
       </main>
 

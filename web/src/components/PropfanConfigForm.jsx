@@ -43,7 +43,7 @@ export default function PropfanConfigForm({ config, result, onChange, onReset, o
           )}
         </div>
       </div>
-      <FlightConditionsSection config={config} onChange={onChange} />
+      <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={0.9} machNote="Open-rotor propfans are designed for about Mach 0.7-0.85 airliner cruise." />
       <PropfanFanSection config={config} onChange={onChange} />
       <PropfanCompressorsSection config={config} onChange={onChange} />
       <PropfanCombustorSection config={config} onChange={onChange} />

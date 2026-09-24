@@ -195,10 +195,16 @@ def solve_scramjet(cfg: ScramjetConfig) -> ScramjetResult:
     # The source's own f<<1 forms (§2.4). Its full forms don't credit the
     # fuel's onboard kinetic energy, which for a scramjet (V4 only a bit
     # above V1) pushes eta_P above 1 — unphysical, so not used.
-    eta_P = 2.0 * V1 / (V1 + V4)
-    eta_th = (V4 ** 2 - V1 ** 2) / (2.0 * f * cfg.eta_b * cfg.Q_R) if f > 0 else None
-    eta_o = eta_P * eta_th if (eta_P is not None and eta_th is not None) else None
-    isp = thrust / (mdot_f * G0) if mdot_f > 0 else None
+    # With no net thrust (exhaust no faster than the incoming air) the
+    # efficiencies stop meaning anything (eta_P > 1, eta_th < 0), so they
+    # and Isp are reported as None, like the ramjet.
+    if sp_thrust > 0:
+        eta_P = 2.0 * V1 / (V1 + V4)
+        eta_th = (V4 ** 2 - V1 ** 2) / (2.0 * f * cfg.eta_b * cfg.Q_R) if f > 0 else None
+        eta_o = eta_P * eta_th if eta_th is not None else None
+        isp = thrust / (mdot_f * G0) if mdot_f > 0 else None
+    else:
+        eta_P = eta_th = eta_o = isp = None
     result.performance = {
         "thrust": thrust, "specific_thrust": sp_thrust, "tsfc": tsfc, "f": f,
         "eta_propulsive": eta_P, "eta_thermal": eta_th, "eta_overall": eta_o,

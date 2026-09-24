@@ -42,7 +42,7 @@ export default function TurboshaftConfigForm({ config, result, onChange, onReset
           )}
         </div>
       </div>
-      <FlightConditionsSection config={config} onChange={onChange} />
+      <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={0.6} machNote="Turboshafts power helicopters, ships and tanks, which rarely move faster than about Mach 0.4." />
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />
       <TurbineSection config={config} onChange={onChange} />

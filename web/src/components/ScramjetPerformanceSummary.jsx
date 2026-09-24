@@ -20,7 +20,15 @@ function Stat({ value, digits = 2, unit }) {
  */
 export default function ScramjetPerformanceSummary({ performance, combustor, intake }) {
   const pct = (v) => (v !== null && v !== undefined ? fmtPct(v, 1) : "—");
+  const noThrust = !(performance.specific_thrust > 0);
   return (
+    <>
+    {noThrust && (
+      <p className="section-note fuel-card-warn">
+        No useful thrust at these settings: the exhaust leaves no faster than the air came in, so the
+        engine&rsquo;s drag wins. Burn more fuel (raise f), or improve the nozzle or intake efficiency.
+      </p>
+    )}
     <div className="performance-summary">
       <div className="perf-card">
         <FormulaLabel
@@ -105,5 +113,6 @@ export default function ScramjetPerformanceSummary({ performance, combustor, int
         <span className="perf-value">{fmt(intake.recovery_mil_e_5007d, 3)} <small>not used</small></span>
       </div>
     </div>
+    </>
 );
 }

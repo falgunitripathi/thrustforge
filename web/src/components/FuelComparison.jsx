@@ -9,6 +9,7 @@ import { solveTurboramjet } from "../physics/turboramjet.js";
 import { fuelsForEngine, selectedFuel } from "../utils/fuels.js";
 import { fmt, tsfcPerHour } from "../utils/format.js";
 import ExpandableSection from "./ExpandableSection.jsx";
+import { explainError } from "../utils/errorText.js";
 
 const SOLVERS = {
   turbojet: solveEngine, turboprop: solveTurboprop, turboshaft: solveTurboshaft,
@@ -49,7 +50,7 @@ export default function FuelComparison({ engineType, config }) {
       const r = solve({ ...config, Q_R: fuel.Q_R });
       return { fuel, perf: r.performance, current };
     } catch (err) {
-      return { fuel, error: err.message.replace(/^solve\w+:\s*/, ""), current };
+      return { fuel, error: explainError(err.message) || "This engine can't run on this fuel at these settings.", current };
     }
   });
   const fixedF = engineType === "scramjet";

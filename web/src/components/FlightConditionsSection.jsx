@@ -4,6 +4,10 @@ import NumberField from "./NumberField.jsx";
 /**
  * Flight condition inputs — Ref §1 (Atmosphere & Flight State).
  *
+ * Each engine passes its own realistic flight-Mach range (machMin/
+ * machMax): beyond it the cycle stops working anyway (e.g. the turbine
+ * can no longer drive the compressor once ram heating is large).
+ *
  * Altitude is constrained to the ISA troposphere (0-11000 m): the ported
  * `isaTroposphere` deliberately throws outside that band rather than
  * silently extrapolating (see atmosphere.js docstring) — the stratosphere
@@ -13,7 +17,7 @@ import NumberField from "./NumberField.jsx";
  * legend to open it. Keeps the sidebar short instead of always showing
  * every field for every section at once.
  */
-export default function FlightConditionsSection({ config, onChange }) {
+export default function FlightConditionsSection({ config, onChange, machMin = 0, machMax = 3.0, machNote }) {
   const [open, setOpen] = useState(false);
   return (
     <fieldset className="config-section">
@@ -37,10 +41,10 @@ export default function FlightConditionsSection({ config, onChange }) {
             label="Flight Mach number"
             value={config.mach_flight}
             onChange={(v) => onChange({ mach_flight: v })}
-            min={0}
-            max={5.0}
+            min={machMin}
+            max={machMax}
             step={0.05}
-            hint="M∞ — sets freestream stagnation state T0a = T_a·[1+(γ_c−1)/2·M²], p0a = p_a·[…]^(γ_c/(γ_c−1)) (§1)"
+            hint={`M∞ — sets freestream stagnation state T0a = T_a·[1+(γ_c−1)/2·M²], p0a = p_a·[…]^(γ_c/(γ_c−1)) (§1)${machNote ? `. ${machNote}` : ""}`}
           />
         </>
       )}
