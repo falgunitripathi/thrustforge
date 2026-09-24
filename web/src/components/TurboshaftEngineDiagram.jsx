@@ -318,7 +318,6 @@ function Diagram({ config, result, idSuffix }) {
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
@@ -327,18 +326,17 @@ function Diagram({ config, result, idSuffix }) {
             // sit close enough together (both long labels) that they'd
             // otherwise collide — alternate every marker's row, same
             // convention used by every other engine's diagram.
-            top={i % 2 === 1 ? 62 : 0}
+            top={i % 2 === 1 ? 70 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}
         <PartStepReadout
           name="Load"
           seq={LOAD_SEQ}
-          seqTotal={TOTAL_STEPS}
           value1={shaft.Pload_W / 1000}
           unit1="kW delivered"
           leftPct={((loadMid + MARGIN) / TOTAL_W) * 100}
-          top={STATIONS.length % 2 === 1 ? 62 : 0}
+          top={STATIONS.length % 2 === 1 ? 70 : 0}
           onSelect={() => selectPartByKind("load")}
         />
       </div>

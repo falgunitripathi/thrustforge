@@ -407,7 +407,6 @@ function Diagram({ config, result, idSuffix }) {
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
@@ -426,7 +425,7 @@ function Diagram({ config, result, idSuffix }) {
                 : s.key === "10" ? 76
                 : s.key === "11" ? 152
                 : s.key === "12" ? 228
-                : (i % 2 === 1 ? 62 : 0)
+                : (i % 2 === 1 ? 70 : 0)
             }
             onSelect={() => selectStation(s)}
           />

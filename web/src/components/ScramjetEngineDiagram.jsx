@@ -310,7 +310,6 @@ function Diagram({ config, result, idSuffix }) {
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}

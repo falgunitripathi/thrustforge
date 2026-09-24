@@ -365,7 +365,6 @@ function Diagram({ config, result, idSuffix }) {
         <PartStepReadout
           name="Propeller"
           seq={PROPELLER_SEQ}
-          seqTotal={TOTAL_STEPS}
           value1={propeller.shaft_power_W / 1000}
           unit1="kW shaft power"
           value2={propeller.Tpr}
@@ -373,16 +372,18 @@ function Diagram({ config, result, idSuffix }) {
           leftPct={((propellerMid + MARGIN) / TOTAL_W) * 100}
           onSelect={() => selectPartByKind("propeller")}
         />
-        {STATIONS.map((s) => (
+        {STATIONS.map((s, i) => (
           <StationReadout
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
             leftPct={((s.x + MARGIN) / TOTAL_W) * 100}
+            // Two-row stagger (the propeller card holds row 0 at the far
+            // left): neighbouring station names are wider than their gap.
+            top={i % 2 === 0 ? 70 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}

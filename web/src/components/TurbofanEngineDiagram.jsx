@@ -385,7 +385,6 @@ function Diagram({ result, idSuffix }) {
             key={s.key}
             station={s.key}
             seq={s.seq}
-            seqTotal={TOTAL_STEPS}
             name={s.name}
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
@@ -395,7 +394,7 @@ function Diagram({ result, idSuffix }) {
             // on one row — alternating each one's vertical offset (the
             // same fix a crowded chart axis would use) keeps every
             // label readable without needing more horizontal room.
-            top={i % 2 === 1 ? 62 : 0}
+            top={i % 2 === 1 ? 70 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}

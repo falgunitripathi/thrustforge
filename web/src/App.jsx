@@ -323,11 +323,10 @@ function App() {
 
       <footer className="app-footer">
         <p>
-          Formulas cited section-by-section (Ref: §N) back to the project&rsquo;s
-          compiled formula reference. See the repository README for
-          validation status, known simplifications, and the two
-          documented judgment calls (intake convention, choked-nozzle
-          exit-temperature convention).
+          ThrustForge — an educational jet-engine simulator. Every number is
+          worked out live in your browser from textbook propulsion equations;
+          use &ldquo;Download formulas&rdquo; in the left panel to see every
+          equation an engine uses.
         </p>
       </footer>
     </div>

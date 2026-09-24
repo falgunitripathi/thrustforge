@@ -276,13 +276,13 @@ function Diagram({ config, result, idSuffix }) {
   // Intake flap: pivots at the splitter's nose to close the idle leg.
   const flapEnd = !tj ? [SPLIT_X + 30, TJ_Y + 36] : !rj ? [SPLIT_X + 30, RJ_Y - 26] : [SPLIT_X + 34, SPLIT_Y];
 
-  const tjRow = (i) => (i % 2 === 0 ? 62 : 0);
+  const tjRow = (i) => (i % 2 === 0 ? 70 : 0);
   const readouts = list.map((s) => {
     let top = 0;
     if (s.key !== "a") {
       const ti = TJ_STATIONS.findIndex((t) => t.key === s.key);
       if (ti >= 0) top = tjRow(ti);
-      else top = tj ? 136 : (s.key === "8" ? 62 : 0);
+      else top = tj ? 142 : (s.key === "8" ? 70 : 0);
     }
     return { s, top };
   });
@@ -379,7 +379,7 @@ function Diagram({ config, result, idSuffix }) {
         ))}
       </svg>
 
-      <div className="station-readouts" style={{ width: TOTAL_W, height: tj && rj ? 206 : 140 }}>
+      <div className="station-readouts" style={{ width: TOTAL_W, height: tj && rj ? 212 : 140 }}>
         {readouts.map(({ s, top }) => (
           <StationReadout
             key={s.key}
