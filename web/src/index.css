@@ -1,4 +1,7 @@
 :root {
+  /* Two-series chart colours (validated categorical pair, per mode). */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
   --text: #4a4458;
   --text-h: #241f30;
   --text-muted: #857c93;
@@ -53,6 +56,8 @@
  */
 @media (prefers-color-scheme: dark) {
   :root {
+    --series-1: #3987e5;
+    --series-2: #d95926;
     --text: #c7c1d6;
     --text-h: #f2eff9;
     --text-muted: #948aa8;

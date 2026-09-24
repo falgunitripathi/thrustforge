@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { defaultEngineConfig, solveEngine } from "./physics/engine.js";
 import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
 import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.js";
@@ -6,22 +6,30 @@ import { defaultTurbofanConfig, solveTurbofan } from "./physics/turbofan.js";
 import { defaultPropfanConfig, solvePropfan } from "./physics/propfan.js";
 import { defaultScramjetConfig, solveScramjet } from "./physics/scramjet.js";
 import { defaultRamjetConfig, solveRamjet } from "./physics/ramjet.js";
+import { defaultTurboramjetConfig, solveTurboramjet } from "./physics/turboramjet.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
 import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
-import TurbopropResultsPanel from "./components/TurbopropResultsPanel.jsx";
 import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
-import TurboshaftResultsPanel from "./components/TurboshaftResultsPanel.jsx";
 import TurbofanConfigForm from "./components/TurbofanConfigForm.jsx";
-import TurbofanResultsPanel from "./components/TurbofanResultsPanel.jsx";
 import PropfanConfigForm from "./components/PropfanConfigForm.jsx";
-import PropfanResultsPanel from "./components/PropfanResultsPanel.jsx";
 import ScramjetConfigForm from "./components/ScramjetConfigForm.jsx";
-import ScramjetResultsPanel from "./components/ScramjetResultsPanel.jsx";
 import RamjetConfigForm from "./components/RamjetConfigForm.jsx";
-import RamjetResultsPanel from "./components/RamjetResultsPanel.jsx";
+import TurboramjetConfigForm from "./components/TurboramjetConfigForm.jsx";
+import SectionSkeleton from "./components/SectionSkeleton.jsx";
 import "./App.css";
+
+// Every engine except the default turbojet loads its results panel on
+// first use, so the initial bundle only carries the turbojet's.
+const TurbopropResultsPanel = lazy(() => import("./components/TurbopropResultsPanel.jsx"));
+const TurboshaftResultsPanel = lazy(() => import("./components/TurboshaftResultsPanel.jsx"));
+const TurbofanResultsPanel = lazy(() => import("./components/TurbofanResultsPanel.jsx"));
+const PropfanResultsPanel = lazy(() => import("./components/PropfanResultsPanel.jsx"));
+const ScramjetResultsPanel = lazy(() => import("./components/ScramjetResultsPanel.jsx"));
+const RamjetResultsPanel = lazy(() => import("./components/RamjetResultsPanel.jsx"));
+const TurboramjetResultsPanel = lazy(() => import("./components/TurboramjetResultsPanel.jsx"));
+
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
 
@@ -31,6 +39,7 @@ const ENGINE_TYPES = [
   { value: "turboshaft", label: "Turboshaft" },
   { value: "turbofan", label: "Turbofan" },
   { value: "propfan", label: "Propfan" },
+  { value: "turboramjet", label: "Turboramjet" },
   { value: "ramjet", label: "Ramjet" },
   { value: "scramjet", label: "Scramjet" },
 ];
@@ -79,6 +88,7 @@ function App() {
   const [propfanConfig, setPropfanConfig] = useState(defaultPropfanConfig);
   const [scramjetConfig, setScramjetConfig] = useState(defaultScramjetConfig);
   const [ramjetConfig, setRamjetConfig] = useState(defaultRamjetConfig);
+  const [turboramjetConfig, setTurboramjetConfig] = useState(defaultTurboramjetConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -99,6 +109,8 @@ function App() {
   const resetScramjetConfig = () => setScramjetConfig(defaultScramjetConfig());
   const patchRamjetConfig = (patch) => setRamjetConfig((prev) => ({ ...prev, ...patch }));
   const resetRamjetConfig = () => setRamjetConfig(defaultRamjetConfig());
+  const patchTurboramjetConfig = (patch) => setTurboramjetConfig((prev) => ({ ...prev, ...patch }));
+  const resetTurboramjetConfig = () => setTurboramjetConfig(defaultTurboramjetConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
   // turbojet configuration — replaceState (not pushState) so tweaking a
@@ -133,12 +145,13 @@ function App() {
         : engineType === "propfan" ? solvePropfan(propfanConfig)
         : engineType === "scramjet" ? solveScramjet(scramjetConfig)
         : engineType === "ramjet" ? solveRamjet(ramjetConfig)
+        : engineType === "turboramjet" ? solveTurboramjet(turboramjetConfig)
         : solveEngine(config);
       return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig, scramjetConfig, ramjetConfig]);
+  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig, scramjetConfig, ramjetConfig, turboramjetConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
@@ -221,6 +234,14 @@ function App() {
               onReset={resetScramjetConfig}
               onCollapse={() => setSidebarOpen(false)}
             />
+          ) : engineType === "turboramjet" ? (
+            <TurboramjetConfigForm
+              config={turboramjetConfig}
+              result={result}
+              onChange={patchTurboramjetConfig}
+              onReset={resetTurboramjetConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
           ) : engineType === "ramjet" ? (
             <RamjetConfigForm
               config={ramjetConfig}
@@ -252,6 +273,7 @@ function App() {
         )}
 
         <div className="results-area">
+          <Suspense fallback={<SectionSkeleton title="Loading results" />}>
           {error ? (
             <div className="error-banner">
               <span className="error-icon" aria-hidden="true">
@@ -282,6 +304,8 @@ function App() {
             <PropfanResultsPanel result={result} config={propfanConfig} />
           ) : engineType === "scramjet" ? (
             <ScramjetResultsPanel result={result} config={scramjetConfig} />
+          ) : engineType === "turboramjet" ? (
+            <TurboramjetResultsPanel result={result} config={turboramjetConfig} />
           ) : engineType === "ramjet" ? (
             <RamjetResultsPanel result={result} config={ramjetConfig} />
           ) : (
@@ -293,6 +317,7 @@ function App() {
               onRemoveConfig={removeConfig}
             />
           )}
+          </Suspense>
         </div>
       </main>
 

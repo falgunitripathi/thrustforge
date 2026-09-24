@@ -15,7 +15,7 @@
  * approximate).
  */
 
-const GAS_TURBINES = ["turbojet", "turboprop", "turboshaft", "turbofan", "propfan"];
+const GAS_TURBINES = ["turbojet", "turboprop", "turboshaft", "turbofan", "propfan", "turboramjet"];
 const ALL = [...GAS_TURBINES, "ramjet", "scramjet"];
 
 export const FUELS = [
@@ -48,7 +48,7 @@ export const FUELS = [
     note: "The Russian/CIS standard jet fuel.",
   },
   {
-    id: "jp-7", name: "JP-7 (SR-71 / X-51A)", Q_R: 43.5e6, f_stoich: 0.0682, engines: ["turbojet", "ramjet", "scramjet"],
+    id: "jp-7", name: "JP-7 (SR-71 / X-51A)", Q_R: 43.5e6, f_stoich: 0.0682, engines: ["turbojet", "turboramjet", "ramjet", "scramjet"],
     note: "Very heat-stable fuel made for the SR-71 Blackbird's J58 turbojet; later used by the X-51A scramjet. Value is the spec minimum.",
   },
   {
@@ -56,7 +56,7 @@ export const FUELS = [
     note: "Sustainable aviation fuel made from waste oils. Roughly 1–2% more energy per kg than fossil jet fuel (approximate value).",
   },
   {
-    id: "jp-10", name: "JP-10 (missile fuel)", Q_R: 43.0e6, f_stoich: 0.0704, engines: ["turbojet", "turbofan", "ramjet", "scramjet"],
+    id: "jp-10", name: "JP-10 (missile fuel)", Q_R: 43.0e6, f_stoich: 0.0704, engines: ["turbojet", "turbofan", "turboramjet", "ramjet", "scramjet"],
     note: "Dense synthetic fuel (C10H16) used by cruise missiles like the Tomahawk.",
   },
   {

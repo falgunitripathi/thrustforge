@@ -46,6 +46,8 @@ const PY_SCRAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_scramjet_result
 const JS_SCRAMJET_SCRIPT = path.join(__dirname, "dump_scramjet_result.mjs");
 const PY_RAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_ramjet_result.py");
 const JS_RAMJET_SCRIPT = path.join(__dirname, "dump_ramjet_result.mjs");
+const PY_TURBORAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turboramjet_result.py");
+const JS_TURBORAMJET_SCRIPT = path.join(__dirname, "dump_turboramjet_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -228,6 +230,24 @@ const RAMJET_SCENARIOS = [
   { name: "ramjet: M0 — expected error in both", overrides: { mach_flight: 0 }, expectError: true },
   { name: "ramjet: too slow — expected error in both", overrides: { mach_flight: 0.2, altitude_m: 0 }, expectError: true },
   { name: "ramjet: T04 below ram temperature — expected error in both", overrides: { mach_flight: 6.0, T04: 1200.0 }, expectError: true },
+];
+
+// ---------------------------------------------------------------------------
+// Turboramjet scenario battery — every mode, afterburner on/off, static
+// take-off, and the fail-loud cases.
+// ---------------------------------------------------------------------------
+const TURBORAMJET_SCENARIOS = [
+  { name: "turboramjet: default (auto, M2, turbojet leg + AB)", overrides: {} },
+  { name: "turboramjet: auto above switch -> ramjet", overrides: { mach_flight: 3.5 } },
+  { name: "turboramjet: static take-off, sea level", overrides: { mach_flight: 0, altitude_m: 0, mdot_a: 80.0 } },
+  { name: "turboramjet: AB off, M1.2", overrides: { mach_flight: 1.2, afterburner_on: false, pi_c: 12.0 } },
+  { name: "turboramjet: dual, beta 0.3, M2.5", overrides: { mode: "dual", beta: 0.3, mach_flight: 2.5, mdot_a: 30.0 } },
+  { name: "turboramjet: forced ramjet, hot, M4", overrides: { mode: "ramjet", mach_flight: 4.0, T09: 2200.0 } },
+  { name: "turboramjet: custom switch Mach 2.2", overrides: { mach_switch: 2.2, mach_flight: 2.4 } },
+  { name: "turboramjet: turbojet too hot at M4 — expected error in both", overrides: { mode: "turbojet", mach_flight: 4.0 }, expectError: true },
+  { name: "turboramjet: ramjet at M0 — expected error in both", overrides: { mode: "ramjet", mach_flight: 0 }, expectError: true },
+  { name: "turboramjet: cold afterburner — expected error in both", overrides: { mach_flight: 1.0, T06_ab: 900.0 }, expectError: true },
+  { name: "turboramjet: dual beta 1 — expected error in both", overrides: { mode: "dual", beta: 1.0 }, expectError: true },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -573,6 +593,7 @@ function main() {
   for (const [scenarios, pyScript, jsScript] of [
     [SCRAMJET_SCENARIOS, PY_SCRAMJET_SCRIPT, JS_SCRAMJET_SCRIPT],
     [RAMJET_SCENARIOS, PY_RAMJET_SCRIPT, JS_RAMJET_SCRIPT],
+    [TURBORAMJET_SCENARIOS, PY_TURBORAMJET_SCRIPT, JS_TURBORAMJET_SCRIPT],
   ]) {
     for (const scenario of scenarios) {
       totalScenarios += 1;

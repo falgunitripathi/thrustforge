@@ -346,6 +346,52 @@ const PROPFAN_FORMULAS = [
   },
 ];
 
+// Turboramjet — Ref: reference/turboramjet.md.
+// Turbojet leg a, 2-7 (intake, compressor, combustor, turbine,
+// afterburner, nozzle); ramjet leg 8-10 (intake, combustor, nozzle).
+const TURBORAMJET_FORMULAS = [
+  {
+    section: "Operating mode",
+    entries: [
+      { label: "Auto mode", formula: "turbojet if M < M_switch, ramjet if M >= M_switch", note: "No closed-form switch criterion exists; the switch Mach is a design choice (default 3.0)." },
+      { label: "Air split (both legs running)", formula: "beta = (mdot_a)_TJ / mdot_a,  (mdot_a)_RJ = (1 - beta)·mdot_a", note: "beta is a user input in 'Both' mode; 1 in turbojet mode, 0 in ramjet mode." },
+    ],
+  },
+  {
+    section: "Turbojet leg",
+    entries: [
+      { label: "Intake", formula: "T02 = T0a,  p02 = p_a·(1 + eta_d·(gamma_c-1)/2·M^2)^(gamma_c/(gamma_c-1))" },
+      { label: "Compressor", formula: "T03 = T02·[1 + (pi_c^((gamma_c-1)/gamma_c) - 1)/eta_c],  p03 = pi_c·p02" },
+      { label: "Combustor", formula: "f = (Cp_h·T04 - Cp_c·T03) / (eta_b·Q_R - Cp_h·T04),  p04 = p03·(1 - delta_p_cc)" },
+      { label: "Turbine work balance", formula: "Cp_c·(T03 - T02) = eta_m·(1+f)·Cp_h·(T04 - T05)" },
+      { label: "Turbine pressure", formula: "T05s = T04 - (T04 - T05)/eta_t,  p05 = p04·(T05s/T04)^(gamma_h/(gamma_h-1))" },
+      { label: "Afterburner (on)", formula: "T06 = T06A,  f_ab = (1+f)·(Cp_h·T06A - Cp_h·T05) / (eta_b·Q_R - Cp_h·T06A),  p06 = p05·(1 - delta_p_ab)", note: "Off: T06 = T05, p06 = p05, f_ab = 0." },
+      { label: "Nozzle (fully expanded)", formula: "V7 = sqrt(2·Cp_h·eta_N·T06·[1 - (p_a/p06)^((gamma_h-1)/gamma_h)])" },
+      { label: "Specific thrust", formula: "(T/mdot_a)_TJ = (1 + f + f_ab)·V7 - V", note: "The source prints '- f_ab'; its own efficiency formulas use '+ f_ab', so the minus is a transcription slip." },
+      { label: "TSFC", formula: "(TSFC)_TJ = (f + f_ab) / (T/mdot_a)_TJ" },
+    ],
+  },
+  {
+    section: "Ramjet leg",
+    entries: [
+      { label: "Intake", formula: "T08 = T0a,  p08 = p_a·(1 + eta_d·(gamma_c-1)/2·M^2)^(gamma_c/(gamma_c-1))" },
+      { label: "Combustor", formula: "f_R = (Cp_h·T09 - Cp_c·T08) / (eta_b·Q_R - Cp_h·T09),  p09 = p08·(1 - delta_p_cc)" },
+      { label: "Nozzle (fully expanded)", formula: "V10 = sqrt(2·Cp_h·eta_N·T09·[1 - (p_a/p09)^((gamma_h-1)/gamma_h)])" },
+      { label: "Specific thrust / TSFC", formula: "(T/mdot_a)_RJ = (1 + f_R)·V10 - V,  (TSFC)_RJ = f_R / (T/mdot_a)_RJ" },
+    ],
+  },
+  {
+    section: "Combined performance",
+    entries: [
+      { label: "Thrust", formula: "T = (mdot_a)_TJ·[(1+f+f_ab)·V7 - V] + (mdot_a)_RJ·[(1+f_R)·V10 - V]" },
+      { label: "Total fuel flow", formula: "(mdot_f)_total = (mdot_a)_TJ·(f + f_ab) + (mdot_a)_RJ·f_R,  TSFC = (mdot_f)_total / T" },
+      { label: "Propulsive efficiency", formula: "eta_p = (T/mdot_a)·V / [(T/mdot_a)·V + (V_exit - V)^2/2·(1 + fuel)]", note: "With both legs running, the two jets' leftover kinetic energies are added (a project choice)." },
+      { label: "Thermal efficiency", formula: "eta_th = [(T/mdot_a)·V + (V_exit - V)^2/2·(1 + fuel)] / (Q_R·fuel)" },
+      { label: "Overall efficiency", formula: "eta_o = eta_p·eta_th" },
+    ],
+  },
+];
+
 // Ramjet — Ref: reference/ramjet.md.
 // Stations: a = freestream, 2 = diffuser exit / combustor inlet,
 // 4 = combustor exit / nozzle inlet, 9 = nozzle exit. No compressor or
@@ -544,6 +590,7 @@ export const ENGINE_FORMULAS = {
   turboshaft: { name: "Turboshaft", sections: TURBOSHAFT_FORMULAS },
   turbofan: { name: "Turbofan (two-spool, unmixed)", sections: TURBOFAN_FORMULAS },
   propfan: { name: "Propfan (three-spool, unducted fan)", sections: PROPFAN_FORMULAS },
+  turboramjet: { name: "Turboramjet (turbine-based combined cycle)", sections: TURBORAMJET_FORMULAS },
   ramjet: { name: "Ramjet", sections: RAMJET_FORMULAS },
   scramjet: { name: "Scramjet (supersonic-combustion ramjet)", sections: SCRAMJET_FORMULAS },
 };
