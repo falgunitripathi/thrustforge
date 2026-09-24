@@ -59,7 +59,9 @@ export default function FuelSection({ engineType, config, result, onChange }) {
                       ? " — richer than stoichiometric: there isn't enough oxygen to burn all this fuel, but this simple model still counts its full heat, so results here overstate performance."
                       : engineType === "scramjet"
                         ? ` — lean: only ${fmt(phi * 100, 0)}% of the air's oxygen gets used. Raise f to burn more of it, until the combustor thermally chokes.`
-                        : ` — lean (${fmt((1 - phi) * 100, 0)}% more air than the fuel needs), which is normal: real engines run lean to keep the turbine and liner cool.`}
+                        : engineType === "ramjet"
+                          ? ` — lean (${fmt((1 / phi - 1) * 100, 0)}% more air than the fuel needs). With no turbine to protect, a ramjet can burn much closer to stoichiometric than a turbojet — raise T04 to see φ climb.`
+                        : ` — lean (${fmt((1 / phi - 1) * 100, 0)}% more air than the fuel needs), which is normal: real engines run lean to keep the turbine and liner cool.`}
                   </span>
                 </p>
               )}

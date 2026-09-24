@@ -4,13 +4,14 @@ import { solveTurboshaft } from "../physics/turboshaft.js";
 import { solveTurbofan } from "../physics/turbofan.js";
 import { solvePropfan } from "../physics/propfan.js";
 import { solveScramjet } from "../physics/scramjet.js";
+import { solveRamjet } from "../physics/ramjet.js";
 import { fuelsForEngine, selectedFuel } from "../utils/fuels.js";
 import { fmt, tsfcPerHour } from "../utils/format.js";
 import ExpandableSection from "./ExpandableSection.jsx";
 
 const SOLVERS = {
   turbojet: solveEngine, turboprop: solveTurboprop, turboshaft: solveTurboshaft,
-  turbofan: solveTurbofan, propfan: solvePropfan, scramjet: solveScramjet,
+  turbofan: solveTurbofan, propfan: solvePropfan, ramjet: solveRamjet, scramjet: solveScramjet,
 };
 
 const THRUST = { label: "Thrust (N)", get: (p) => fmt(p.thrust, 1) };
@@ -20,6 +21,7 @@ const METRICS = {
   turboprop: [THRUST, TSFC],
   turbofan: [THRUST, TSFC],
   propfan: [THRUST, TSFC],
+  ramjet: [THRUST, TSFC],
   turboshaft: [
     { label: "Load power (kW)", get: (p) => fmt(p.Pload_W / 1000, 1) },
     { label: "SFC (kg/kWh)", get: (p) => fmt(p.SFC_kg_per_kWh, 3) },
@@ -58,6 +60,8 @@ export default function FuelComparison({ engineType, config }) {
       <p className="section-note">
         {fixedF
           ? "The scramjet's fuel-air ratio f is something you set, so every fuel here burns the same mass of fuel per kg of air — a more energetic fuel releases more heat and produces more thrust, until the combustor can't absorb it and thermally chokes."
+          : engineType === "ramjet"
+            ? "The ramjet's combustor exit temperature T04 is fixed by your design, so the combustor always adds the same heat — a more energetic fuel just needs less of it. Watch the fuel-air ratio f and the TSFC fall for the denser-energy fuels while thrust barely moves."
           : "This engine's turbine-inlet temperature is fixed by your design, so the combustor always adds the same heat — a more energetic fuel just needs less of it. Watch the fuel-air ratio f and the TSFC fall for hydrogen while thrust barely moves (slightly less fuel mass leaves through the nozzle)."}
       </p>
       <div className="table-scroll">

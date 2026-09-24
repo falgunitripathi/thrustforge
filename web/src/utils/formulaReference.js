@@ -346,6 +346,55 @@ const PROPFAN_FORMULAS = [
   },
 ];
 
+// Ramjet — Ref: reference/ramjet.md.
+// Stations: a = freestream, 2 = diffuser exit / combustor inlet,
+// 4 = combustor exit / nozzle inlet, 9 = nozzle exit. No compressor or
+// turbine; the flow is slowed to low subsonic speed before burning.
+const RAMJET_FORMULAS = [
+  {
+    section: "Intake / diffuser (ram compression)",
+    entries: [
+      { label: "Flight speed", formula: "V = M·sqrt(gamma_c·R_c·T_a), with T_a, p_a from the ISA troposphere at the configured altitude" },
+      { label: "Freestream stagnation state", formula: "T0a = T_a·(1 + (gamma_c-1)/2·M^2),  p0a = p_a·(1 + (gamma_c-1)/2·M^2)^(gamma_c/(gamma_c-1))" },
+      { label: "Diffuser-exit stagnation temperature", formula: "T02 = T0a", note: "Adiabatic, no work: intake losses don't change stagnation temperature." },
+      { label: "Diffuser-exit stagnation pressure", formula: "p02 = p_a·(1 + eta_d·(gamma_c-1)/2·M^2)^(gamma_c/(gamma_c-1))" },
+      { label: "Ram pressure ratio / diffuser recovery", formula: "p02/p_a,  r_d = p02/p0a", note: "r_d is computed from eta_d, not set independently." },
+    ],
+  },
+  {
+    section: "Combustor (T04-driven)",
+    entries: [
+      { label: "Fuel-air ratio", formula: "f = (Cp_h·T04 - Cp_c·T02) / (eta_b·Q_R - Cp_h·T04)", note: "T04 is a configured input. It must be above T02, which rises with flight Mach." },
+      { label: "Combustor-exit pressure", formula: "p04 = p02·(1 - delta_p_cc)" },
+    ],
+  },
+  {
+    section: "Nozzle",
+    entries: [
+      {
+        label: "Exit velocity, fully expanded (default)",
+        formula: "V9 = sqrt(2·Cp_h·eta_N·T04·[1 - (p_a/p04)^((gamma_h-1)/gamma_h)]),  p9 = p_a",
+        note: "Convergent-divergent nozzle expanding all the way to ambient pressure. Also used by the convergent nozzle when it doesn't choke.",
+      },
+      { label: "Critical (choking) pressure", formula: "p_c = p04·[1 - (1/eta_N)·(gamma_h-1)/(gamma_h+1)]^(gamma_h/(gamma_h-1))", note: "A convergent nozzle chokes when p_c >= p_a (above about Mach 1.5 for a ramjet)." },
+      { label: "Choked exit state (convergent only)", formula: "T9 = 2·T04/(gamma_h+1),  V9 = sqrt(gamma_h·R_h·T9),  p9 = p_c" },
+    ],
+  },
+  {
+    section: "Overall performance",
+    entries: [
+      { label: "Specific thrust", formula: "T/mdot_a = [(1+f)·V9 - V] + (A9/mdot_a)·(p9 - p_a)", note: "The pressure term is zero for the fully expanded nozzle." },
+      { label: "Thrust", formula: "T = mdot_a·(T/mdot_a)" },
+      { label: "TSFC", formula: "TSFC = f / (T/mdot_a)" },
+      { label: "Effective exhaust velocity", formula: "V_eff = (T/mdot_a + V)/(1+f)", note: "Equals V9 for the expanded nozzle; credits the pressure thrust of a choked one so the efficiencies stay meaningful." },
+      { label: "Propulsive efficiency", formula: "eta_P = 2·(V/V_eff) / (1 + V/V_eff)" },
+      { label: "Thermal efficiency", formula: "eta_th = [(1+f)·V_eff^2/2 - V^2/2] / (f·Q_R)" },
+      { label: "Overall efficiency", formula: "eta_o = eta_P·eta_th" },
+      { label: "Ideal-cycle check", formula: "T/mdot_a = M·sqrt(gamma·R·T_a)·[(1+f)·sqrt(T04/T_a)/sqrt(1 + (gamma-1)/2·M^2) - 1]", note: "With every efficiency 1 and no pressure loss the solver reproduces this closed form exactly (exit Mach = flight Mach)." },
+    ],
+  },
+];
+
 // Scramjet — Ref: reference/scramjet.md.
 // Stations: 1 = freestream / intake inlet, 2 = combustor entrance,
 // 3 = combustor exit / nozzle entrance, 4 = nozzle exit. No compressor
@@ -495,5 +544,6 @@ export const ENGINE_FORMULAS = {
   turboshaft: { name: "Turboshaft", sections: TURBOSHAFT_FORMULAS },
   turbofan: { name: "Turbofan (two-spool, unmixed)", sections: TURBOFAN_FORMULAS },
   propfan: { name: "Propfan (three-spool, unducted fan)", sections: PROPFAN_FORMULAS },
+  ramjet: { name: "Ramjet", sections: RAMJET_FORMULAS },
   scramjet: { name: "Scramjet (supersonic-combustion ramjet)", sections: SCRAMJET_FORMULAS },
 };

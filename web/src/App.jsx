@@ -5,6 +5,7 @@ import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.j
 import { defaultTurbofanConfig, solveTurbofan } from "./physics/turbofan.js";
 import { defaultPropfanConfig, solvePropfan } from "./physics/propfan.js";
 import { defaultScramjetConfig, solveScramjet } from "./physics/scramjet.js";
+import { defaultRamjetConfig, solveRamjet } from "./physics/ramjet.js";
 import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
@@ -18,6 +19,8 @@ import PropfanConfigForm from "./components/PropfanConfigForm.jsx";
 import PropfanResultsPanel from "./components/PropfanResultsPanel.jsx";
 import ScramjetConfigForm from "./components/ScramjetConfigForm.jsx";
 import ScramjetResultsPanel from "./components/ScramjetResultsPanel.jsx";
+import RamjetConfigForm from "./components/RamjetConfigForm.jsx";
+import RamjetResultsPanel from "./components/RamjetResultsPanel.jsx";
 import "./App.css";
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -28,6 +31,7 @@ const ENGINE_TYPES = [
   { value: "turboshaft", label: "Turboshaft" },
   { value: "turbofan", label: "Turbofan" },
   { value: "propfan", label: "Propfan" },
+  { value: "ramjet", label: "Ramjet" },
   { value: "scramjet", label: "Scramjet" },
 ];
 
@@ -74,6 +78,7 @@ function App() {
   const [turbofanConfig, setTurbofanConfig] = useState(defaultTurbofanConfig);
   const [propfanConfig, setPropfanConfig] = useState(defaultPropfanConfig);
   const [scramjetConfig, setScramjetConfig] = useState(defaultScramjetConfig);
+  const [ramjetConfig, setRamjetConfig] = useState(defaultRamjetConfig);
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -92,6 +97,8 @@ function App() {
   const resetPropfanConfig = () => setPropfanConfig(defaultPropfanConfig());
   const patchScramjetConfig = (patch) => setScramjetConfig((prev) => ({ ...prev, ...patch }));
   const resetScramjetConfig = () => setScramjetConfig(defaultScramjetConfig());
+  const patchRamjetConfig = (patch) => setRamjetConfig((prev) => ({ ...prev, ...patch }));
+  const resetRamjetConfig = () => setRamjetConfig(defaultRamjetConfig());
 
   // Keep the address bar itself as a live, shareable link to the current
   // turbojet configuration — replaceState (not pushState) so tweaking a
@@ -125,12 +132,13 @@ function App() {
         : engineType === "turbofan" ? solveTurbofan(turbofanConfig)
         : engineType === "propfan" ? solvePropfan(propfanConfig)
         : engineType === "scramjet" ? solveScramjet(scramjetConfig)
+        : engineType === "ramjet" ? solveRamjet(ramjetConfig)
         : solveEngine(config);
       return { result: solved, error: null };
     } catch (err) {
       return { result: null, error: err.message || String(err) };
     }
-  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig, scramjetConfig]);
+  }, [engineType, config, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig, scramjetConfig, ramjetConfig]);
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
@@ -213,6 +221,14 @@ function App() {
               onReset={resetScramjetConfig}
               onCollapse={() => setSidebarOpen(false)}
             />
+          ) : engineType === "ramjet" ? (
+            <RamjetConfigForm
+              config={ramjetConfig}
+              result={result}
+              onChange={patchRamjetConfig}
+              onReset={resetRamjetConfig}
+              onCollapse={() => setSidebarOpen(false)}
+            />
           ) : (
             <ConfigForm
               config={config}
@@ -266,6 +282,8 @@ function App() {
             <PropfanResultsPanel result={result} config={propfanConfig} />
           ) : engineType === "scramjet" ? (
             <ScramjetResultsPanel result={result} config={scramjetConfig} />
+          ) : engineType === "ramjet" ? (
+            <RamjetResultsPanel result={result} config={ramjetConfig} />
           ) : (
             <ResultsPanel
               result={result}
