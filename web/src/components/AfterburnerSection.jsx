@@ -52,14 +52,16 @@ export default function AfterburnerSection({
               {on ? "Afterburner ON — reheat lit" : "Afterburner OFF — click to light it"}
             </span>
           </button>
-          <p className="section-note">
-            An afterburner is a second combustor between the turbine and the nozzle. There are no turbine
-            blades after it to protect, so it can re-heat the exhaust far hotter than the turbine inlet
-            temperature, giving a big thrust boost for take-off, combat or supersonic dash, at the cost of
-            burning fuel very fast.{note ? ` ${note}` : ""}
-          </p>
+          {/* The explanation and settings only appear once it's lit; off, the
+              section is just the switch. */}
           {on && (
             <>
+              <p className="section-note">
+                An afterburner is a second combustor between the turbine and the nozzle. There are no turbine
+                blades after it to protect, so it can re-heat the exhaust far hotter than the turbine inlet
+                temperature, giving a big thrust boost for take-off, combat or supersonic dash, at the cost of
+                burning fuel very fast.{note ? ` ${note}` : ""}
+              </p>
               <NumberField
                 label={`Afterburner exit temperature ${outSymbol}`}
                 value={config[tempKey]}
