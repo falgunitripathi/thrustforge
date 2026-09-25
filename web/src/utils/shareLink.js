@@ -2,6 +2,7 @@ import { defaultEngineConfig } from "../physics/engine.js";
 
 const STRING_KEYS = new Set(["compressor_type", "turbine_type", "nozzle_type"]);
 const INT_KEYS = new Set(["n_compressor_stages", "n_turbine_stages"]);
+const BOOL_KEYS = new Set(["afterburner_on"]);
 
 /**
  * Shareable configuration links — Phase 3, item 02.
@@ -39,6 +40,8 @@ export function configFromSearchParams(params) {
     const raw = params.get(key);
     if (STRING_KEYS.has(key)) {
       patch[key] = raw;
+    } else if (BOOL_KEYS.has(key)) {
+      if (raw === "true" || raw === "false") patch[key] = raw === "true";
     } else if (INT_KEYS.has(key)) {
       const n = parseInt(raw, 10);
       if (Number.isFinite(n)) patch[key] = n;

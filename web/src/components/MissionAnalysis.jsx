@@ -130,7 +130,7 @@ export default function MissionAnalysis({ config }) {
         const r = solveEngine({
           ...config, altitude_m: seg.altitude_m, mach_flight: seg.mach_flight, T04: T04_target,
         });
-        const mdotF = r.performance.f * config.mdot_a;
+        const mdotF = (r.performance.f_total ?? r.performance.f) * config.mdot_a;
         return {
           ...seg, tStart, tEnd, valid: true,
           thrust: r.performance.thrust,
@@ -204,9 +204,11 @@ export default function MissionAnalysis({ config }) {
         </p>
       ) : (
         <p className="section-note">
-          This configuration doesn't support off-design matching (v1 needs
-          an axial compressor, a convergent nozzle, and a design point whose
-          nozzle chokes) — {designPoint.reason} Falling back to re-solving a
+          This configuration can&rsquo;t be matched off-design (that needs an
+          axial compressor, a convergent nozzle, no lit afterburner, and a
+          design point whose nozzle chokes) —{" "}
+          {designPoint.reason.replace(/^lock_?[dD]esign_?[pP]oint:\s*/, "").replace(/\s*\(v1\)/, "")}{" "}
+          Falling back to re-solving a
           fresh design cycle at each segment's flight condition and
           throttle; air mass flow stays fixed at the configured value rather
           than being matched. Fuel burn and distance are integrated segment

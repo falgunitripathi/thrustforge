@@ -245,6 +245,12 @@ def lock_design_point(cfg: EngineConfig) -> DesignPoint:
             f"axial-compressor design point (got compressor_type={cfg.compressor_type!r}) "
             f"— the generic compressor map is shaped for an axial stage-stack."
         )
+    if getattr(cfg, "afterburner_on", False):
+        raise OffDesignError(
+            "lock_design_point: off-design matching (v1) doesn't model a lit "
+            "afterburner (the nozzle throat would have to open up to keep the "
+            "turbine's operating point, a variable-nozzle problem not modelled here)."
+        )
     if cfg.nozzle_type != "convergent":
         raise OffDesignError(
             f"lock_design_point: off-design matching (v1) only supports a "

@@ -33,6 +33,7 @@ function flatten(result) {
       T01_out: result.turbine.T01_out,
       type: result.turbine.type,
     },
+    afterburner: result.afterburner,
     nozzle: result.nozzle,
     performance: result.performance,
     stations: stationsFlat,

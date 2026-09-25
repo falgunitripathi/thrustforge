@@ -8,7 +8,7 @@ import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
 import FuelComparison from "./FuelComparison.jsx";
 
-const TURBOFAN_STATION_ORDER = ["a", "2", "10", "3", "4", "5", "6", "7", "9", "11"];
+const TURBOFAN_STATION_ORDER = ["a", "2", "10", "3", "4", "5", "6", "7", "8", "9", "11"];  // 8 only with the afterburner lit
 const TURBOFAN_STATION_LABELS = {
   a: "a — freestream",
   "2": "2 — fan/LPC inlet",
@@ -18,6 +18,7 @@ const TURBOFAN_STATION_LABELS = {
   "5": "5 — combustor exit (TIT)",
   "6": "6 — HPT exit",
   "7": "7 — LPT exit",
+  "8": "8 — afterburner exit",
   "9": "9 — hot nozzle exit",
   "11": "11 — cold nozzle exit",
 };
@@ -42,7 +43,7 @@ const STATION_TERMS = [
  * turbojet's compressor/turbine, so there's no per-stage breakdown to
  * show.
  */
-export default function TurbofanResultsPanel({ result, config }) {
+export default function TurbofanResultsPanel({ result, config, onToggleAfterburner }) {
   const { performance, hot_nozzle, cold_nozzle, stations } = result;
 
   return (
@@ -59,7 +60,7 @@ export default function TurbofanResultsPanel({ result, config }) {
         <AtmosphereReadout config={config} result={result} />
       </section>
 
-      <TurbofanEngineDiagram config={config} result={result} />
+      <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
 
       <ExpandableSection
         title="Station analysis"

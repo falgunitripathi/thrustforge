@@ -299,13 +299,13 @@ function App() {
           ) : engineType === "turboshaft" ? (
             <TurboshaftResultsPanel result={result} config={turboshaftConfig} />
           ) : engineType === "turbofan" ? (
-            <TurbofanResultsPanel result={result} config={turbofanConfig} />
+            <TurbofanResultsPanel result={result} config={turbofanConfig} onToggleAfterburner={(on) => patchTurbofanConfig({ afterburner_on: on })} />
           ) : engineType === "propfan" ? (
             <PropfanResultsPanel result={result} config={propfanConfig} />
           ) : engineType === "scramjet" ? (
             <ScramjetResultsPanel result={result} config={scramjetConfig} />
           ) : engineType === "turboramjet" ? (
-            <TurboramjetResultsPanel result={result} config={turboramjetConfig} />
+            <TurboramjetResultsPanel result={result} config={turboramjetConfig} onToggleAfterburner={(on) => patchTurboramjetConfig({ afterburner_on: on })} />
           ) : engineType === "ramjet" ? (
             <RamjetResultsPanel result={result} config={ramjetConfig} />
           ) : (
@@ -315,6 +315,7 @@ function App() {
               savedConfigs={savedConfigs}
               onSaveConfig={saveConfig}
               onRemoveConfig={removeConfig}
+              onToggleAfterburner={(on) => patchConfig({ afterburner_on: on })}
             />
           )}
           </Suspense>

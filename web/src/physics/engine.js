@@ -78,6 +78,10 @@ export function defaultEngineConfig() {
     n_turbine_stages: 1,
 
     // --- Nozzle ---
+    // Afterburner (NPTEL p.291-296) — off by default = the plain turbojet.
+    afterburner_on: false,
+    T06_ab: 2000.0,
+    delta_p_ab_pct: 0.05,
     nozzle_type: "convergent", // "convergent" | "conv-di"
     nozzle_exit_mach_design: null, // required if "conv-di"
 
@@ -120,7 +124,7 @@ export function solveEngine(cfg) {
   const result = {
     config: cfg,
     atmosphere: {}, intake: {}, compressor: {}, combustor: {},
-    shaft: {}, turbine: {}, nozzle: {}, performance: {}, stations: {},
+    shaft: {}, turbine: {}, afterburner: {}, nozzle: {}, performance: {}, stations: {},
   };
 
   const R_c = cfg.cp_c * (cfg.gamma_c - 1.0) / cfg.gamma_c;
@@ -227,40 +231,66 @@ export function solveEngine(cfg) {
     throw new Error(`Unknown turbine_type: ${cfg.turbine_type}`);
   }
 
-  // --- Step 7: Nozzle (§8) ---
-  const p_c = criticalPressure(p05, cfg.eta_N, cfg.gamma_h);
+  // --- Step 6b: Afterburner (NPTEL p.291-296) --- see engine.py.
+  let fab, T06, p06;
+  if (cfg.afterburner_on) {
+    if (!(cfg.T06_ab > T05)) {
+      throw new Error(
+        `solveEngine: the afterburner exit temperature T06 = ${cfg.T06_ab.toFixed(0)} K must ` +
+        `be above the turbine exit temperature T05 = ${T05.toFixed(0)} K — an afterburner ` +
+        `can only add heat. Raise T06 or turn the afterburner off.`
+      );
+    }
+    const abDenom = cfg.eta_b * cfg.Q_R - cfg.cp_h * cfg.T06_ab;
+    if (!(abDenom > 0)) {
+      throw new Error(
+        "solveEngine: the afterburner exit temperature is too high for this fuel — even " +
+        "burning it perfectly can't heat the gas that much. Lower T06."
+      );
+    }
+    fab = (1.0 + f) * (cfg.cp_h * cfg.T06_ab - cfg.cp_h * T05) / abDenom;
+    T06 = cfg.T06_ab;
+    p06 = p05 * (1.0 - cfg.delta_p_ab_pct);
+  } else {
+    fab = 0.0; T06 = T05; p06 = p05;
+  }
+  const f_total = f + fab;
+  result.afterburner = { on: !!cfg.afterburner_on, fab, T05, p05, T06, p06 };
+
+  // --- Step 7: Nozzle (§8) --- expands from station 6 (= 5, AB off).
+  const p_c = criticalPressure(p06, cfg.eta_N, cfg.gamma_h);
   const choked = isChoked(p_c, p_a);
   let V_exit, p_exit, T_exit;
   if (choked) {
-    T_exit = chokedExitTemperature(T05, cfg.gamma_h);
+    T_exit = chokedExitTemperature(T06, cfg.gamma_h);
     V_exit = chokedExitVelocity(T_exit, cfg.gamma_h, R_h);
     p_exit = p_c;
   } else {
-    V_exit = unchokedExitVelocity(T05, p_a, p05, cfg.eta_N, cfg.gamma_h, cfg.cp_h);
+    V_exit = unchokedExitVelocity(T06, p_a, p06, cfg.eta_N, cfg.gamma_h, cfg.cp_h);
     p_exit = p_a;
-    T_exit = T05 - V_exit ** 2 / (2.0 * cfg.cp_h); // for rho_exit below
+    T_exit = T06 - V_exit ** 2 / (2.0 * cfg.cp_h); // for rho_exit below
   }
 
   const rho_exit = p_exit / (R_h * T_exit);
-  // Ae/mdot_a from mass continuity (mdot_exit = mdot_a*(1+f) = rho*Ae*V):
+  // Ae/mdot_a from mass continuity (mdot_exit = mdot_a*(1+f+fab) = rho*Ae*V):
   // this lets specific thrust/TSFC be reported per unit mass flow without
   // requiring an assumed absolute engine size (see engine.py module note).
-  const Ae_over_mdot_a = (1.0 + f) / (rho_exit * V_exit);
+  const Ae_over_mdot_a = (1.0 + f_total) / (rho_exit * V_exit);
   const A_exit = Ae_over_mdot_a * cfg.mdot_a;
 
-  const T_val = nozzleThrust(cfg.mdot_a, f, V_exit, V_flight, p_exit, p_a, A_exit);
+  const T_val = nozzleThrust(cfg.mdot_a, f_total, V_exit, V_flight, p_exit, p_a, A_exit);
   result.nozzle = { choked, p_c, p_exit, T_exit, V_exit, rho_exit, A_exit };
 
-  // --- Step 8: Overall performance (§9) ---
-  const sp_thrust = perfSpecificThrust(f, V_exit, V_flight, A_exit, cfg.mdot_a, p_exit, p_a);
-  const tsfc_val = perfTsfc(f, sp_thrust);
-  const eta_th = (V_flight > 0 || f > 0) ? thermalEfficiency(f, V_exit, V_flight, cfg.Q_R) : null;
+  // --- Step 8: Overall performance (§9) --- (1+f+fab), (f+fab): NPTEL p.296.
+  const sp_thrust = perfSpecificThrust(f_total, V_exit, V_flight, A_exit, cfg.mdot_a, p_exit, p_a);
+  const tsfc_val = perfTsfc(f_total, sp_thrust);
+  const eta_th = (V_flight > 0 || f_total > 0) ? thermalEfficiency(f_total, V_exit, V_flight, cfg.Q_R) : null;
   const eta_p = V_flight > 0 ? propulsiveEfficiency(V_flight, V_exit) : 0.0;
   const eta_0 = eta_th !== null ? overallEfficiencyFromComponents(eta_th, eta_p) : null;
   result.performance = {
     thrust: T_val, specific_thrust: sp_thrust, tsfc: tsfc_val,
     eta_thermal: eta_th, eta_propulsive: eta_p, eta_overall: eta_0,
-    f,
+    f, f_ab: fab, f_total,
   };
 
   // --- Key-station table (for a "Station Analysis" view) ---
@@ -270,6 +300,7 @@ export function solveEngine(cfg) {
     "3": new Station("3", T03, p03, cfg.gamma_c, cfg.cp_c, R_c, 0.0),
     "4": new Station("4", cfg.T04, p04, cfg.gamma_h, cfg.cp_h, R_h, 0.0),
     "5": new Station("5", T05, p05, cfg.gamma_h, cfg.cp_h, R_h, 0.0),
+    ...(cfg.afterburner_on ? { "6": new Station("6", T06, p06, cfg.gamma_h, cfg.cp_h, R_h, 0.0) } : {}),
     // Station 9 (nozzle exit) is built FROM its already-known static state
     // (T_exit, p_exit, V_exit — all already loss-aware, computed in the
     // §8 nozzle step above), not from (T05, p05, V_exit) — see

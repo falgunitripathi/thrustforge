@@ -3,6 +3,8 @@ import NumberField from "./NumberField.jsx";
 import SelectField from "./SelectField.jsx";
 import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
+import AfterburnerSection from "./AfterburnerSection.jsx";
+import { solveTurboramjet } from "../physics/turboramjet.js";
 import { fmt } from "../utils/format.js";
 
 function Section({ title, defaultOpen = false, advanced = false, children }) {
@@ -134,32 +136,20 @@ export default function TurboramjetConfigForm({ config, result, onChange, onRese
           step={10}
           hint="K — T04 = gas temperature entering the turbine, limited by what the turbine blades can survive. The fuel-air ratio f is solved from it."
         />
-        <SelectField
-          label="Afterburner"
-          value={config.afterburner_on ? "on" : "off"}
-          onChange={(v) => onChange({ afterburner_on: v === "on" })}
-          options={[
-            { value: "on", label: "On (reheat lit)" },
-            { value: "off", label: "Off" },
-          ]}
-        />
-        {config.afterburner_on && (
-          <NumberField
-            label="Afterburner exit temperature T06"
-            value={config.T06_ab}
-            onChange={(v) => onChange({ T06_ab: v })}
-            min={1000}
-            max={2400}
-            step={10}
-            hint="K — a second burner after the turbine re-heats the gas to T06 before the nozzle. There's no turbine downstream, so it can run much hotter than T04. Extra fuel: f_ab = (1+f)·(Cp_h·T06 − Cp_h·T05)/(η_b·Q_R − Cp_h·T06). More thrust, but a lot more fuel."
-          />
-        )}
         {tj && (
           <p className="section-note">
             Compressor delivers <strong>T03 = {fmt(tj.T03, 0)} K</strong>; turbine exit <strong>T05 = {fmt(tj.T05, 0)} K</strong>.
           </p>
         )}
       </Section>
+
+      <AfterburnerSection
+        config={config}
+        result={result}
+        onChange={onChange}
+        solve={solveTurboramjet}
+        note="On a turboramjet it only works while the turbojet leg is running (below the switch Mach, or in 'Both' mode); the ramjet has its own burner."
+      />
 
       <Section title="Ramjet leg">
         <NumberField
@@ -211,9 +201,6 @@ export default function TurboramjetConfigForm({ config, result, onChange, onRese
           <NumberField label="Combustor Δp loss" value={config.delta_p_cc_pct}
             onChange={(v) => onChange({ delta_p_cc_pct: v })} min={0} max={0.2} step={0.005}
             hint="fraction — pressure lost in the main and ramjet combustors: p_out = p_in·(1 − Δp)." />
-          <NumberField label="Afterburner Δp loss" value={config.delta_p_ab_pct}
-            onChange={(v) => onChange({ delta_p_ab_pct: v })} min={0} max={0.2} step={0.005}
-            hint="fraction — p06 = p05·(1 − Δp_ab), only when the afterburner is on." />
           <NumberField label="Nozzle efficiency η_N" value={config.eta_N}
             onChange={(v) => onChange({ eta_N: v })} min={0.5} max={1.0} step={0.01}
             hint="η_N = nozzle efficiency, both nozzles. Both are fully expanded to outside air pressure." />

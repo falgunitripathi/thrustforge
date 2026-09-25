@@ -69,6 +69,7 @@ function nozzleExplanation(nozzle, ambientPressure) {
  */
 export default function PerformanceSummary({ performance, nozzle, ambientPressure }) {
   const tsfcHr = tsfcPerHour(performance.tsfc);
+  const abOn = performance.f_ab > 0;
   const anyFlagged = [performance.eta_thermal, performance.eta_propulsive, performance.eta_overall].some(
     (v) => v !== null && v !== undefined && (v < 0 || v > 1)
   );
@@ -78,7 +79,7 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         <FormulaLabel
           className="perf-label"
           label="Thrust"
-          formula="T = mdot_a·[(1+f)·V_exit − V_flight] + (p_exit − p_a)·A_exit (Ref §8/§9). The pressure term is zero except when the nozzle is choked (or, for a C-D nozzle, off-design)."
+          formula="T = mdot_a·[(1+f+f_ab)·V_exit − V_flight] + (p_exit − p_a)·A_exit (Ref §8/§9). f_ab = afterburner fuel-air ratio (0 with the afterburner off). The pressure term is zero except when the nozzle is choked (or, for a C-D nozzle, off-design)."
         />
         <Stat value={performance.thrust} digits={1} unit="N" />
       </div>
@@ -86,7 +87,7 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         <FormulaLabel
           className="perf-label"
           label="Specific thrust"
-          formula="T/mdot_a = [(1+f)·V_exit − V_flight] + (A_exit/mdot_a)·(p_exit − p_a) (Ref §9) — thrust per unit air mass flow rate, independent of mdot_a by definition. Change mdot_a on the left and plain Thrust scales with it; this and TSFC don't, on purpose."
+          formula="T/mdot_a = [(1+f+f_ab)·V_exit − V_flight] + (A_exit/mdot_a)·(p_exit − p_a) (Ref §9) — thrust per unit air mass flow rate, independent of mdot_a by definition. Change mdot_a on the left and plain Thrust scales with it; this and TSFC don't, on purpose."
         />
         <Stat value={performance.specific_thrust} digits={2} unit="N·s/kg" />
       </div>
@@ -94,7 +95,7 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         <FormulaLabel
           className="perf-label"
           label="TSFC"
-          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = f / (T/mdot_a) (Ref §9) — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
+          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = (f + f_ab) / (T/mdot_a) (Ref §9), counting the afterburner's fuel too — fuel consumption per unit thrust, also independent of mdot_a by definition, same reason as specific thrust."
         />
         <Stat value={tsfcHr} digits={3} unit="kg/(N·h)" />
       </div>
@@ -106,11 +107,21 @@ export default function PerformanceSummary({ performance, nozzle, ambientPressur
         />
         <Stat value={performance.f} digits={4} />
       </div>
+      {abOn && (
+        <div className="perf-card">
+          <FormulaLabel
+            className="perf-label"
+            label="Afterburner fuel f_ab"
+            formula="f_ab = (1+f)·(Cp_h·T06A − Cp_h·T05) / (η_b·Q_R − Cp_h·T06A) — the extra fuel burned in the afterburner per kg of air, from its energy balance (1+f)·Cp·T05 + η_b·f_ab·Q_R = (1+f+f_ab)·Cp·T06A."
+          />
+          <Stat value={performance.f_ab} digits={4} />
+        </div>
+      )}
       <div className="perf-card">
         <FormulaLabel
           className="perf-label"
           label="Thermal efficiency"
-          formula="η_th = [(1+f)·V_exit²/2 − V_flight²/2] / (f·Q_R) (Ref §9) — propulsive-jet kinetic energy gained per unit fuel energy released."
+          formula="η_th = [(1+f+f_ab)·V_exit²/2 − V_flight²/2] / ((f+f_ab)·Q_R) (Ref §9) — propulsive-jet kinetic energy gained per unit fuel energy released."
         />
         <PctStat value={performance.eta_thermal} />
       </div>

@@ -352,3 +352,22 @@ export function StationTrendChart({ title, stations, values, unit, color, decima
     </div>
   );
 }
+
+/** Clickable afterburner on/off pill for a diagram toolbar (turbojet, turbofan). */
+export function AfterburnerToggle({ config, onToggle }) {
+  if (!onToggle) return null;
+  const on = !!config.afterburner_on;
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      className={`ed-ab-toggle${on ? " ed-ab-toggle-on" : ""}`}
+      onClick={() => onToggle(!on)}
+      title={on ? "Turn the afterburner off" : "Light the afterburner"}
+    >
+      {on ? "🔥 Afterburner ON" : "Afterburner OFF"}
+    </button>
+  );
+}
+

@@ -73,6 +73,13 @@ class EngineConfig:
     turbine_type: str = "axial"              # "axial" | "radial"
     n_turbine_stages: int = 1
 
+    # --- Afterburner (NPTEL p.291-296, single-spool turbojet) --- Off by
+    # default, so the engine is exactly the plain turbojet; when lit, the
+    # gas is re-heated to T06_ab between the turbine and the nozzle.
+    afterburner_on: bool = False
+    T06_ab: float = 2000.0                   # K, T06A = Tmax (no turbine downstream)
+    delta_p_ab_pct: float = 0.05             # p06 = p05*(1 - dp_ab%) — NOT IN SOURCE numerically
+
     # --- Nozzle ---
     nozzle_type: str = "convergent"          # "convergent" | "conv-di"
     nozzle_exit_mach_design: Optional[float] = None  # required if "conv-di"
@@ -108,6 +115,7 @@ class EngineResult:
     combustor: dict = field(default_factory=dict)
     shaft: dict = field(default_factory=dict)
     turbine: dict = field(default_factory=dict)
+    afterburner: dict = field(default_factory=dict)
     nozzle: dict = field(default_factory=dict)
     performance: dict = field(default_factory=dict)
     stations: dict = field(default_factory=dict)  # key stations -> Station
@@ -217,40 +225,70 @@ def solve_engine(cfg: EngineConfig) -> EngineResult:
     else:
         raise ValueError(f"Unknown turbine_type: {cfg.turbine_type!r}")
 
-    # --- Step 7: Nozzle (§8) ---
-    p_c = critical_pressure(p05, cfg.eta_N, cfg.gamma_h)
+    # --- Step 6b: Afterburner (NPTEL p.291-296) ---
+    # Lit: T06A = Tmax, p06 = p05(1 - dp_ab%), and the energy balance
+    # (1+f)Cp5*T05 + eta_b*fab*Q_R = (1+f+fab)Cp6*T06A gives
+    # fab = (1+f)(Cp6*T06A - Cp5*T05)/(eta_b*Q_R - Cp6*T06A), with
+    # Cp5 = Cp6 = cp_h. Off: the engine is the plain turbojet (no AB duct,
+    # so no duct loss either — T06 = T05, p06 = p05).
+    if cfg.afterburner_on:
+        if not (cfg.T06_ab > T05):
+            raise ValueError(
+                f"solve_engine: the afterburner exit temperature T06 = {cfg.T06_ab:.0f} K must "
+                f"be above the turbine exit temperature T05 = {T05:.0f} K — an afterburner "
+                f"can only add heat. Raise T06 or turn the afterburner off."
+            )
+        ab_denom = cfg.eta_b * cfg.Q_R - cfg.cp_h * cfg.T06_ab
+        if not (ab_denom > 0):
+            raise ValueError(
+                "solve_engine: the afterburner exit temperature is too high for this fuel — even "
+                "burning it perfectly can't heat the gas that much. Lower T06."
+            )
+        fab = (1.0 + f) * (cfg.cp_h * cfg.T06_ab - cfg.cp_h * T05) / ab_denom
+        T06 = cfg.T06_ab
+        p06 = p05 * (1.0 - cfg.delta_p_ab_pct)
+    else:
+        fab, T06, p06 = 0.0, T05, p05
+    f_total = f + fab
+    result.afterburner = {"on": cfg.afterburner_on, "fab": fab, "T05": T05, "p05": p05,
+                          "T06": T06, "p06": p06}
+
+    # --- Step 7: Nozzle (§8) --- expands from station 6 (= 5 with the
+    # afterburner off).
+    p_c = critical_pressure(p06, cfg.eta_N, cfg.gamma_h)
     choked = is_choked(p_c, p_a)
     if choked:
-        T_exit = choked_exit_temperature(T05, cfg.gamma_h)
+        T_exit = choked_exit_temperature(T06, cfg.gamma_h)
         V_exit = choked_exit_velocity(T_exit, cfg.gamma_h, R_h)
         p_exit = p_c
     else:
-        V_exit = unchoked_exit_velocity(T05, p_a, p05, cfg.eta_N, cfg.gamma_h, cfg.cp_h)
+        V_exit = unchoked_exit_velocity(T06, p_a, p06, cfg.eta_N, cfg.gamma_h, cfg.cp_h)
         p_exit = p_a
-        T_exit = T05 - V_exit ** 2 / (2.0 * cfg.cp_h)  # for rho_exit below
+        T_exit = T06 - V_exit ** 2 / (2.0 * cfg.cp_h)  # for rho_exit below
 
     rho_exit = p_exit / (R_h * T_exit)
-    # Ae/mdot_a from mass continuity (mdot_exit = mdot_a*(1+f) = rho*Ae*V):
+    # Ae/mdot_a from mass continuity (mdot_exit = mdot_a*(1+f+fab) = rho*Ae*V):
     # this lets specific thrust/TSFC be reported per unit mass flow without
     # requiring an assumed absolute engine size (see engine.py module note).
-    Ae_over_mdot_a = (1.0 + f) / (rho_exit * V_exit)
+    Ae_over_mdot_a = (1.0 + f_total) / (rho_exit * V_exit)
     A_exit = Ae_over_mdot_a * cfg.mdot_a
 
-    T_val = nozzle_thrust(cfg.mdot_a, f, V_exit, V_flight, p_exit, p_a, A_exit)
+    T_val = nozzle_thrust(cfg.mdot_a, f_total, V_exit, V_flight, p_exit, p_a, A_exit)
     result.nozzle = {"choked": choked, "p_c": p_c, "p_exit": p_exit,
                       "T_exit": T_exit, "V_exit": V_exit, "rho_exit": rho_exit,
                       "A_exit": A_exit}
 
     # --- Step 8: Overall performance (§9) ---
-    sp_thrust = perf_specific_thrust(f, V_exit, V_flight, A_exit, cfg.mdot_a, p_exit, p_a)
-    tsfc_val = perf_tsfc(f, sp_thrust)
-    eta_th = thermal_efficiency(f, V_exit, V_flight, cfg.Q_R) if V_flight > 0 or f > 0 else None
+    # (1+f+fab) and (f+fab) throughout — NPTEL p.296's T/mdot_a and TSFC.
+    sp_thrust = perf_specific_thrust(f_total, V_exit, V_flight, A_exit, cfg.mdot_a, p_exit, p_a)
+    tsfc_val = perf_tsfc(f_total, sp_thrust)
+    eta_th = thermal_efficiency(f_total, V_exit, V_flight, cfg.Q_R) if V_flight > 0 or f_total > 0 else None
     eta_p = propulsive_efficiency(V_flight, V_exit) if V_flight > 0 else 0.0
     eta_0 = overall_efficiency_from_components(eta_th, eta_p) if eta_th is not None else None
     result.performance = {
         "thrust": T_val, "specific_thrust": sp_thrust, "tsfc": tsfc_val,
         "eta_thermal": eta_th, "eta_propulsive": eta_p, "eta_overall": eta_0,
-        "f": f,
+        "f": f, "f_ab": fab, "f_total": f_total,
     }
 
     # --- Key-station table (for a "Station Analysis" view) ---
@@ -260,6 +298,8 @@ def solve_engine(cfg: EngineConfig) -> EngineResult:
         "3": Station("3", T03, p03, cfg.gamma_c, cfg.cp_c, R_c, V=0.0),
         "4": Station("4", cfg.T04, p04, cfg.gamma_h, cfg.cp_h, R_h, V=0.0),
         "5": Station("5", T05, p05, cfg.gamma_h, cfg.cp_h, R_h, V=0.0),
+        **({"6": Station("6", T06, p06, cfg.gamma_h, cfg.cp_h, R_h, V=0.0)}
+           if cfg.afterburner_on else {}),
         # Station 9 (nozzle exit) is built FROM its already-known static
         # state (T_exit, p_exit, V_exit — all already loss-aware, computed
         # in the §8 nozzle step above), not from (T05, p05, V_exit) — see

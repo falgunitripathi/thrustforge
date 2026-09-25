@@ -38,7 +38,7 @@ const STATION_TERMS = [
  * exist (both in "Both" mode). No T-s / p-v charts: those hard-code the
  * turbojet page's station set and can't show two parallel legs.
  */
-export default function TurboramjetResultsPanel({ result, config }) {
+export default function TurboramjetResultsPanel({ result, config, onToggleAfterburner }) {
   const order = ALL_ORDER.filter((k) => result.stations[k]);
   return (
     <div className="results-panel">
@@ -53,7 +53,7 @@ export default function TurboramjetResultsPanel({ result, config }) {
         <AtmosphereReadout config={config} result={result} />
       </section>
 
-      <TurboramjetEngineDiagram config={config} result={result} />
+      <TurboramjetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
 
       <TurboramjetMachSweep config={config} />
 

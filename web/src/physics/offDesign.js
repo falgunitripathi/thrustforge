@@ -237,6 +237,13 @@ export function lockDesignPoint(cfg) {
       `— the generic compressor map is shaped for an axial stage-stack.`
     );
   }
+  if (cfg.afterburner_on) {
+    throw new OffDesignError(
+      "lockDesignPoint: off-design matching (v1) doesn't model a lit afterburner " +
+      "(the nozzle throat would have to open up to keep the turbine's operating " +
+      "point, a variable-nozzle problem not modelled here)."
+    );
+  }
   if (cfg.nozzle_type !== "convergent") {
     throw new OffDesignError(
       `lockDesignPoint: off-design matching (v1) only supports a convergent ` +

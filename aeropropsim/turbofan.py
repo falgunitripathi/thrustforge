@@ -6,8 +6,8 @@ turbojet, and a bypass (cold) stream that goes straight from the fan to
 its own cold nozzle.
 
 Ref: `reference/turbofan.md` §2-3 (two-spool unmixed baseline; this
-module does not implement the mixed-flow, afterburning, geared, or
-three-spool variants also described there — see that file for the
+module does not implement the mixed-flow, geared, or three-spool
+variants also described there — see that file for the
 source material behind all of them), compiled from NPTEL "Introduction
 to Airbreathing Propulsion". This is the single biggest gap in the
 project's source material to date: bypass ratio, fan pressure ratio,
@@ -33,6 +33,15 @@ since the choking/exit-velocity physics is identical either side.
 lambda1/lambda2 (the source's undefined turbine-work "conversion
 factor" — reference/turbofan.md judgment call #1) default to 1.0, same
 resolution already used for this ambiguity elsewhere in the project.
+Afterburner (optional, off by default): re-heats the CORE stream in the
+jet pipe between the LPT exit (7) and the hot nozzle (8), using the
+turbojet afterburner's energy balance (NPTEL p.291-296) with stations
+relabelled 5->7, 6->8. The source's own afterburning turbofan (§6) is
+the MIXED-flow layout, where fan and core air are merged before one
+afterburner; this unmixed model has no mixer, so only the core is
+re-heated. With the afterburner lit its pressure loss delta_p_ab_pct
+replaces the plain jet-pipe loss.
+
 Bleed air (b) is not modelled here (Phase 2 extension, same status as
 the turbojet's own unmodelled bleed in engine.py).
 """
@@ -100,6 +109,11 @@ class TurbofanConfig:
     # mdot_a*(1+beta) = total inducted flow).
     mdot_a: float = 1.0
 
+    # --- Afterburner (core stream, jet pipe 7 -> 8) --- off by default.
+    afterburner_on: bool = False
+    T08_ab: float = 2000.0         # K, afterburner exit temperature (T08A)
+    delta_p_ab_pct: float = 0.05   # replaces the jet-pipe loss when lit
+
     # --- Intake --- shared with the turbojet.
     eta_d: float = C.DEFAULTS["eta_d"]
 
@@ -122,6 +136,7 @@ class TurbofanResult:
     hpt: dict = field(default_factory=dict)
     lpt: dict = field(default_factory=dict)
     hot_nozzle: dict = field(default_factory=dict)
+    afterburner: dict = field(default_factory=dict)
     cold_nozzle: dict = field(default_factory=dict)
     performance: dict = field(default_factory=dict)
     stations: dict = field(default_factory=dict)
@@ -202,9 +217,30 @@ def solve_turbofan(cfg: TurbofanConfig) -> TurbofanResult:
     p07 = p07_over_p06 * p06
     result.lpt = {"T07": T07, "p07": p07, "T07_over_T06": T07_over_T06}
 
-    # --- Jet pipe loss ---
-    T08 = T07
-    p08 = p07 * (1.0 - cfg.delta_p_jetpipe)
+    # --- Jet pipe (7 -> 8): plain duct, or the afterburner when lit ---
+    if cfg.afterburner_on:
+        if not (cfg.T08_ab > T07):
+            raise ValueError(
+                f"solve_turbofan: the afterburner exit temperature T08 = {cfg.T08_ab:.0f} K must "
+                f"be above the low-pressure turbine exit temperature T07 = {T07:.0f} K — an "
+                f"afterburner can only add heat. Raise T08 or turn the afterburner off."
+            )
+        ab_denom = cfg.eta_b * cfg.Q_R - cfg.cp_h * cfg.T08_ab
+        if not (ab_denom > 0):
+            raise ValueError(
+                "solve_turbofan: the afterburner exit temperature is too high for this fuel — even "
+                "burning it perfectly can't heat the gas that much. Lower T08."
+            )
+        fab = (1.0 + f) * (cfg.cp_h * cfg.T08_ab - cfg.cp_h * T07) / ab_denom
+        T08 = cfg.T08_ab
+        p08 = p07 * (1.0 - cfg.delta_p_ab_pct)
+    else:
+        fab = 0.0
+        T08 = T07
+        p08 = p07 * (1.0 - cfg.delta_p_jetpipe)
+    f_total = f + fab
+    result.afterburner = {"on": cfg.afterburner_on, "fab": fab, "T07": T07, "p07": p07,
+                          "T08": T08, "p08": p08}
 
     # --- Hot nozzle (reuses aeropropsim/nozzle.py exactly, as the
     # turbojet does) ---
@@ -219,7 +255,7 @@ def solve_turbofan(cfg: TurbofanConfig) -> TurbofanResult:
         p9 = p_a
         T9 = T08 - V9 ** 2 / (2.0 * cfg.cp_h)
     rho9 = p9 / (R_h * T9)
-    A9 = (1.0 + f) * cfg.mdot_a / (rho9 * V9)
+    A9 = (1.0 + f_total) * cfg.mdot_a / (rho9 * V9)
     result.hot_nozzle = {"choked": choked_hot, "p_exit": p9, "T_exit": T9,
                           "V_exit": V9, "rho_exit": rho9, "A_exit": A9}
 
@@ -244,16 +280,17 @@ def solve_turbofan(cfg: TurbofanConfig) -> TurbofanResult:
     # --- Combined two-stream thrust and TSFC (Ref §3) — each stream's
     # thrust reuses nozzle.thrust() exactly (f=0 for the bypass stream,
     # which carries no fuel), then summed. ---
-    T_hot = nozzle_thrust(cfg.mdot_a, f, V9, V_flight, p9, p_a, A9)
+    T_hot = nozzle_thrust(cfg.mdot_a, f_total, V9, V_flight, p9, p_a, A9)
     T_cold = nozzle_thrust(mdot_cold, 0.0, V11, V_flight, p11, p_a, A11)
     T_total = T_hot + T_cold
     sp_thrust = T_total / cfg.mdot_a  # T/mdot_a, matching the source's own metric
-    tsfc_val = perf_tsfc(f, sp_thrust)
-    mdot_f = f * cfg.mdot_a
+    tsfc_val = perf_tsfc(f_total, sp_thrust)
+    mdot_f = f_total * cfg.mdot_a
     eta_0 = (T_total * V_flight / (mdot_f * cfg.Q_R)) if (mdot_f > 0 and V_flight > 0) else None
     result.performance = {
         "thrust": T_total, "thrust_hot": T_hot, "thrust_cold": T_cold,
         "specific_thrust": sp_thrust, "tsfc": tsfc_val, "f": f,
+        "f_ab": fab, "f_total": f_total,
         "eta_overall": eta_0, "beta": cfg.beta,
     }
 
@@ -272,6 +309,8 @@ def solve_turbofan(cfg: TurbofanConfig) -> TurbofanResult:
         "5": Station("5", cfg.T05, p05, cfg.gamma_h, cfg.cp_h, R_h, V=0.0),
         "6": Station("6", T06, p06, cfg.gamma_h, cfg.cp_h, R_h, V=0.0),
         "7": Station("7", T07, p07, cfg.gamma_h, cfg.cp_h, R_h, V=0.0),
+        **({"8": Station("8", T08, p08, cfg.gamma_h, cfg.cp_h, R_h, V=0.0)}
+           if cfg.afterburner_on else {}),
         "9": Station.from_static("9", T9, p9, V9, cfg.gamma_h, cfg.cp_h, R_h),
         "11": Station.from_static("11", T11, p11, V11, cfg.gamma_c, cfg.cp_c, R_c),
     }

@@ -23,6 +23,7 @@ def flatten(result):
         "hpt": result.hpt,
         "lpt": result.lpt,
         "hot_nozzle": result.hot_nozzle,
+        "afterburner": result.afterburner,
         "cold_nozzle": result.cold_nozzle,
         "performance": result.performance,
         "stations": stations_flat,

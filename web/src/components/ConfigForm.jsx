@@ -5,6 +5,8 @@ import CompressorSection from "./CompressorSection.jsx";
 import CombustorSection from "./CombustorSection.jsx";
 import TurbineSection from "./TurbineSection.jsx";
 import NozzleSection from "./NozzleSection.jsx";
+import AfterburnerSection from "./AfterburnerSection.jsx";
+import { solveEngine } from "../physics/engine.js";
 import AdvancedSection from "./AdvancedSection.jsx";
 import FuelSection from "./FuelSection.jsx";
 import ReportExport from "./ReportExport.jsx";
@@ -73,6 +75,7 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />
       <TurbineSection config={config} onChange={onChange} />
+      <AfterburnerSection config={config} result={result} onChange={onChange} solve={solveEngine} />
       <NozzleSection config={config} onChange={onChange} />
       <fieldset className="config-section">
         <legend>

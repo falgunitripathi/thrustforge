@@ -4,7 +4,7 @@ import { fmt, fmtKPa } from "../utils/format.js";
 import { stationHeatColor } from "../utils/heatColor.js";
 import {
   StageBars, RadialWheel, FanBlades, FlowStreak, FlowMarquee, HousingFlange,
-  InspectToolbar, Clickable, StationReadout, PartCard, StationTrendChart,
+  InspectToolbar, Clickable, StationReadout, PartCard, StationTrendChart, AfterburnerToggle,
 } from "./engineDiagramParts.jsx";
 
 /**
@@ -61,6 +61,20 @@ const STATIONS = [
   { key: "5", x: SECTION.turbine.x1, name: "Turbine exit", seq: 5 },
   { key: "9", x: SECTION.nozzle.x1, name: "Nozzle exit", seq: 6 },
 ];
+
+// With the afterburner lit, the jet pipe behind the turbine becomes the
+// afterburner and the nozzle shortens; station 6 (afterburner exit) fills
+// the gap the numbering reserves for it.
+const AB_SECTION = { x0: SECTION.nozzle.x0, x1: 770 };
+const NOZZLE_AB = { x0: 770, x1: SECTION.nozzle.x1 };
+const STATIONS_AB = [
+  ...STATIONS.slice(0, 5),
+  { key: "6", x: AB_SECTION.x1, name: "Afterburner exit", seq: 6 },
+  { key: "9", x: SECTION.nozzle.x1, name: "Nozzle exit", seq: 7 },
+];
+function stationsFor(config) {
+  return config.afterburner_on ? STATIONS_AB : STATIONS;
+}
 
 // The upper-half casing silhouette, as (x, yOffsetFromCenterline) control
 // points — bulging out around the compressor and turbine, tapering at
@@ -154,6 +168,20 @@ function partDetails(kind, result, config) {
             : []),
         ],
       };
+    case "afterburner": {
+      const ab = result.afterburner;
+      return {
+        title: ab.on ? "Afterburner (lit)" : "Afterburner (off)",
+        rows: ab.on
+          ? [
+              ["Temperature T05 → T06", `${fmt(ab.T05, 1)} K → ${fmt(ab.T06, 1)} K`],
+              ["Extra fuel-air ratio f_ab", fmt(ab.fab, 4)],
+              ["Total fuel-air ratio f + f_ab", fmt(result.performance.f_total, 4)],
+              ["Pressure p05 → p06", `${fmtKPa(ab.p05, 1)} kPa → ${fmtKPa(ab.p06, 1)} kPa`],
+            ]
+          : [["Status", "Off — switch it on in the Afterburner section or with the button above the diagram."]],
+      };
+    }
     case "nozzle":
       return {
         title: "Nozzle",
@@ -191,6 +219,9 @@ function stationDetails(key, name, seq, st) {
 function Diagram({ config, result, idSuffix }) {
   const { stations, compressor, turbine } = result;
   const [selected, setSelected] = useState(null);
+  const ab = !!config.afterburner_on;
+  const STATIONS = stationsFor(config);
+  const NOZZLE = ab ? NOZZLE_AB : SECTION.nozzle;
 
   const isAxialCompressor = config.compressor_type === "axial";
   const isAxialTurbine = config.turbine_type === "axial";
@@ -200,14 +231,19 @@ function Diagram({ config, result, idSuffix }) {
   const compressorMid = (SECTION.compressor.x0 + SECTION.compressor.x1) / 2;
   const combustorMid = (SECTION.combustor.x0 + SECTION.combustor.x1) / 2;
   const turbineMid = (SECTION.turbine.x0 + SECTION.turbine.x1) / 2;
-  const nozzleMid = (SECTION.nozzle.x0 + SECTION.nozzle.x1) / 2;
+  const nozzleMid = (NOZZLE.x0 + NOZZLE.x1) / 2;
+  const abMid = (AB_SECTION.x0 + AB_SECTION.x1) / 2;
   const PART_MIDPOINTS = {
     intake: intakeMid,
     compressor: compressorMid,
     combustor: combustorMid,
     turbine: turbineMid,
+    afterburner: abMid,
     nozzle: nozzleMid,
   };
+  const partButtons = ab
+    ? [...PART_BUTTONS.slice(0, 4), { kind: "afterburner", label: "Afterburner" }, PART_BUTTONS[4]]
+    : PART_BUTTONS;
 
   const tValues = STATIONS.map((s) => stations[s.key].T0);
   const tMin = Math.min(...tValues);
@@ -250,7 +286,7 @@ function Diagram({ config, result, idSuffix }) {
 
   return (
     <div className="ed-diagram-wrap">
-      <InspectToolbar parts={PART_BUTTONS} activeKind={selected?.kind ?? null} onSelect={selectPartByKind} />
+      <InspectToolbar parts={partButtons} activeKind={selected?.kind ?? null} onSelect={selectPartByKind} />
       <div className="engine-diagram-scroll" onClick={handleWrapperClick}>
       <div className="engine-diagram-viewport" style={{ width: TOTAL_W }}>
       <svg
@@ -395,22 +431,49 @@ function Diagram({ config, result, idSuffix }) {
             )}
           </Clickable>
 
+          {ab && (
+            <Clickable onSelect={() => selectPart("afterburner", abMid)} label="Afterburner — click for values">
+              <rect x={AB_SECTION.x0} y={CENTERLINE_Y - 40} width={AB_SECTION.x1 - AB_SECTION.x0} height="80" fill="transparent" />
+              <rect
+                x={AB_SECTION.x0}
+                y={CENTERLINE_Y - 32}
+                width={AB_SECTION.x1 - AB_SECTION.x0}
+                height="64"
+                rx="6"
+                className="ed-combustor"
+              />
+              {/* Fuel spray bars, a V-gutter flame holder, then the flame */}
+              {[8, 18, 28].map((dy) => (
+                <circle key={dy} cx={AB_SECTION.x0 + 10} cy={CENTERLINE_Y + dy} r="1.8" fill="var(--ed-flame)" />
+              ))}
+              <path
+                d={`M ${AB_SECTION.x0 + 28} ${CENTERLINE_Y + 8} L ${AB_SECTION.x0 + 20} ${CENTERLINE_Y + 13} L ${AB_SECTION.x0 + 28} ${CENTERLINE_Y + 18}`}
+                fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinejoin="round"
+              />
+              <path
+                d={`M ${AB_SECTION.x0 + 32} ${CENTERLINE_Y + 20}
+                    q 9 -22 18 0 q 9 -28 18 0 q 9 -22 18 0 q 9 -16 18 0 q 8 -12 16 0`}
+                className="ed-flame"
+              />
+            </Clickable>
+          )}
+
           <Clickable onSelect={() => selectPart("nozzle", nozzleMid)} label="Nozzle — click for values">
             <rect
-              x={SECTION.nozzle.x0}
+              x={NOZZLE.x0}
               y={CENTERLINE_Y - 40}
-              width={SECTION.nozzle.x1 - SECTION.nozzle.x0}
+              width={NOZZLE.x1 - NOZZLE.x0}
               height="80"
               fill="transparent"
             />
             {isConvDi ? (
               <polygon
-                points={`${SECTION.nozzle.x0},${CENTERLINE_Y - 30} ${nozzleMid},${CENTERLINE_Y - 7} ${SECTION.nozzle.x1},${CENTERLINE_Y - 20} ${SECTION.nozzle.x1},${CENTERLINE_Y + 20} ${nozzleMid},${CENTERLINE_Y + 7} ${SECTION.nozzle.x0},${CENTERLINE_Y + 30}`}
+                points={`${NOZZLE.x0},${CENTERLINE_Y - 30} ${nozzleMid},${CENTERLINE_Y - 7} ${NOZZLE.x1},${CENTERLINE_Y - 20} ${NOZZLE.x1},${CENTERLINE_Y + 20} ${nozzleMid},${CENTERLINE_Y + 7} ${NOZZLE.x0},${CENTERLINE_Y + 30}`}
                 className="ed-nozzle"
               />
             ) : (
               <polygon
-                points={`${SECTION.nozzle.x0},${CENTERLINE_Y - 30} ${SECTION.nozzle.x1},${CENTERLINE_Y - 12} ${SECTION.nozzle.x1},${CENTERLINE_Y + 12} ${SECTION.nozzle.x0},${CENTERLINE_Y + 30}`}
+                points={`${NOZZLE.x0},${CENTERLINE_Y - 30} ${NOZZLE.x1},${CENTERLINE_Y - 12} ${NOZZLE.x1},${CENTERLINE_Y + 12} ${NOZZLE.x0},${CENTERLINE_Y + 30}`}
                 className="ed-nozzle"
               />
             )}
@@ -476,6 +539,8 @@ function Diagram({ config, result, idSuffix }) {
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
             leftPct={((s.x + MARGIN) / TOTAL_W) * 100}
+            // Station 6 sits between 5 and 9, closer than a label is wide.
+            top={s.key === "6" ? 70 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}
@@ -489,24 +554,24 @@ function Diagram({ config, result, idSuffix }) {
         station marker, to see its numbers spelled out in plain English.
         Flow runs left to right: near-white and cool at the intake, warming
         to red through the compressor and combustor, cooling back down
-        through the turbine and nozzle. Compressor: {compressor.type}.
-        Turbine: {turbine.type}.
+        through the turbine
+        {ab ? ", then re-heated to its hottest in the afterburner before the nozzle" : " and nozzle"}.
+        Compressor: {compressor.type}. Turbine: {turbine.type}.
       </p>
       <p className="section-note">
         Each station marker shows &ldquo;Step 1&rdquo; through
-        &ldquo;Step 6&rdquo; in simple flow order. The St. a/2/3/4/5/9
-        labels underneath are the standard gas-turbine station numbers from
-        the textbook this project is built from (Cohen, Rogers &amp;
-        Saravanamuttoo) — they intentionally skip 6, 7, and 8, which that
-        convention reserves for an afterburner/reheat section this model
-        doesn&rsquo;t include, so 5 is followed by 9 rather than 6.
+        &ldquo;Step {STATIONS.length}&rdquo; in simple flow order. The St.
+        labels underneath are the standard gas-turbine station numbers
+        {ab
+          ? ": station 6 is the afterburner exit, the slot that numbering reserves for it."
+          : ", which skip 6, 7 and 8 because they're reserved for an afterburner — switch it on to see station 6 appear."}
       </p>
       </div>
     </div>
   );
 }
 
-export default function EngineDiagram({ config, result }) {
+export default function EngineDiagram({ config, result, onToggleAfterburner }) {
   const [expanded, setExpanded] = useState(false);
   const titleId = useId();
   const closeButtonRef = useRef(null);
@@ -546,6 +611,7 @@ export default function EngineDiagram({ config, result }) {
       <div className="engine-diagram">
         <div className="engine-diagram-toolbar">
           <span className="engine-diagram-title">Live engine cutaway</span>
+          <AfterburnerToggle config={config} onToggle={onToggleAfterburner} />
           <button type="button" ref={triggerRef} className="ed-expand-button" aria-haspopup="dialog" onClick={openModal}>
             ⤢ Expand
           </button>
@@ -583,16 +649,16 @@ export default function EngineDiagram({ config, result }) {
             <div className="ed-trends">
               <StationTrendChart
                 title="Stagnation temperature across stations"
-                stations={STATIONS}
-                values={STATIONS.map((s) => result.stations[s.key].T0)}
+                stations={stationsFor(config)}
+                values={stationsFor(config).map((s) => result.stations[s.key].T0)}
                 unit="K"
                 color="#ff6f61"
                 decimals={0}
               />
               <StationTrendChart
                 title="Stagnation pressure across stations"
-                stations={STATIONS}
-                values={STATIONS.map((s) => result.stations[s.key].p0 / 1000)}
+                stations={stationsFor(config)}
+                values={stationsFor(config).map((s) => result.stations[s.key].p0 / 1000)}
                 unit="kPa"
                 color="#2a78d6"
                 decimals={0}

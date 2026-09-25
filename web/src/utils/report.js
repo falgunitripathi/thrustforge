@@ -115,6 +115,7 @@ export function buildReportHtml(config, result) {
   <tr><td>Compressor</td><td>${esc(describeCompressor(config))}</td></tr>
   <tr><td>Turbine inlet temperature (TIT)</td><td>${fmt(config.T04, 0)} K</td></tr>
   <tr><td>Turbine</td><td>${esc(describeTurbine(config))}</td></tr>
+  <tr><td>Afterburner</td><td>${config.afterburner_on ? `lit, T06 = ${fmt(config.T06_ab, 0)} K, Δp ${fmt(config.delta_p_ab_pct * 100, 1)}%` : "off"}</td></tr>
   <tr><td>Nozzle</td><td>${esc(describeNozzle(config))}</td></tr>
   <tr><td>Air mass flow rate</td><td>${fmt(config.mdot_a, 2)} kg/s</td></tr>
 </table>
@@ -138,6 +139,7 @@ export function buildReportHtml(config, result) {
   <div class="perf-cell"><span class="label">Specific thrust</span><span class="value">${fmt(performance.specific_thrust, 2)} N&middot;s/kg</span></div>
   <div class="perf-cell"><span class="label">TSFC</span><span class="value">${fmt(tsfcHr, 3)} kg/(N&middot;h)</span></div>
   <div class="perf-cell"><span class="label">Fuel-air ratio f</span><span class="value">${fmt(performance.f, 4)}</span></div>
+  ${performance.f_ab > 0 ? `<div class="perf-cell"><span class="label">Afterburner fuel f_ab</span><span class="value">${fmt(performance.f_ab, 4)}</span></div>` : ""}
   <div class="perf-cell"><span class="label">Thermal efficiency</span><span class="value">${performance.eta_thermal !== null ? fmt(performance.eta_thermal * 100, 1) + "%" : "—"}</span></div>
   <div class="perf-cell"><span class="label">Propulsive efficiency</span><span class="value">${performance.eta_propulsive !== null ? fmt(performance.eta_propulsive * 100, 1) + "%" : "—"}</span></div>
   <div class="perf-cell"><span class="label">Overall efficiency</span><span class="value">${performance.eta_overall !== null ? fmt(performance.eta_overall * 100, 1) + "%" : "—"}</span></div>
@@ -171,7 +173,7 @@ export function buildReportHtml(config, result) {
 
 <h2>Assumptions</h2>
 <ul>
-  <li>Single design point, single-spool turbojet — no bypass/afterburner (turbofan/afterburner modeling is reserved for a later phase).</li>
+  <li>Single design point, single-spool turbojet with an optional afterburner (no bypass stream).</li>
   <li>Ideal-gas, calorically-perfect cold and hot sections with distinct constant γ/Cp on each side of the combustor (no continuous gas-property variation with temperature).</li>
   <li>Combustor fuel-air ratio uses this project's full energy-balance formula by default (see the in-app Validation panel for how this compares with a common textbook's simplified linear estimate).</li>
   <li>Choked-nozzle exit temperature uses the eta_N-independent rigorous formula by default (an alternate, textbook-matching convention is documented and used only for that validation check).</li>

@@ -52,7 +52,7 @@ export default function TurbofanPerformanceSummary({ performance, hotNozzle, col
         <FormulaLabel
           className="perf-label"
           label="TSFC"
-          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = f / (T/mdot_a) (§3) — same definition as the turbojet's, using total thrust and core-stream fuel-air ratio."
+          formula="TSFC = Thrust-Specific Fuel Consumption. TSFC = (f + f_ab) / (T/mdot_a) (§3) — same definition as the turbojet's, using total thrust and all the core-stream fuel (f_ab = afterburner fuel, 0 when it's off)."
         />
         <Stat value={performance.tsfc} digits={6} unit="kg/(N·s)" />
       </div>
@@ -64,6 +64,16 @@ export default function TurbofanPerformanceSummary({ performance, hotNozzle, col
         />
         <Stat value={performance.f} digits={4} />
       </div>
+      {performance.f_ab > 0 && (
+        <div className="perf-card">
+          <FormulaLabel
+            className="perf-label"
+            label="Afterburner fuel f_ab"
+            formula="f_ab = (1+f)·(Cp_h·T08A − Cp_h·T07) / (η_b·Q_R − Cp_h·T08A) — extra fuel burned in the core-stream afterburner per kg of core air, from its energy balance. TSFC above counts it: TSFC = (f + f_ab)/(T/mdot_a)."
+          />
+          <Stat value={performance.f_ab} digits={4} />
+        </div>
+      )}
       <div className="perf-card">
         <FormulaLabel
           className="perf-label"

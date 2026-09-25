@@ -4,6 +4,7 @@ import { fmt, fmtKPa } from "../utils/format.js";
 import { stationHeatColor } from "../utils/heatColor.js";
 import {
   FlowStreak, FlowMarquee, InspectToolbar, Clickable, StationReadout, PartCard, StationTrendChart,
+  AfterburnerToggle,
 } from "./engineDiagramParts.jsx";
 
 /**
@@ -414,7 +415,7 @@ function Diagram({ config, result, idSuffix }) {
   );
 }
 
-export default function TurboramjetEngineDiagram({ config, result }) {
+export default function TurboramjetEngineDiagram({ config, result, onToggleAfterburner }) {
   const [expanded, setExpanded] = useState(false);
   const titleId = useId();
   const closeButtonRef = useRef(null);
@@ -457,6 +458,7 @@ export default function TurboramjetEngineDiagram({ config, result }) {
       <div className="engine-diagram">
         <div className="engine-diagram-toolbar">
           <span className="engine-diagram-title">Live engine cutaway</span>
+          <AfterburnerToggle config={config} onToggle={onToggleAfterburner} />
           <button type="button" ref={triggerRef} className="ed-expand-button" aria-haspopup="dialog" onClick={openModal}>
             ⤢ Expand
           </button>

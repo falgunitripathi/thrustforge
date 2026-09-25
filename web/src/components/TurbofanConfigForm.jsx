@@ -7,6 +7,8 @@ import TurbofanCombustorSection from "./TurbofanCombustorSection.jsx";
 import TurbofanAdvancedSection from "./TurbofanAdvancedSection.jsx";
 import FuelSection from "./FuelSection.jsx";
 import FormulasExport from "./FormulasExport.jsx";
+import AfterburnerSection from "./AfterburnerSection.jsx";
+import { solveTurbofan } from "../physics/turbofan.js";
 
 /**
  * The full turbofan configuration form — same layout/pattern as the
@@ -45,6 +47,18 @@ export default function TurbofanConfigForm({ config, result, onChange, onReset, 
       <FanSection config={config} onChange={onChange} />
       <CoreCompressorsSection config={config} onChange={onChange} />
       <TurbofanCombustorSection config={config} onChange={onChange} />
+      <AfterburnerSection
+        config={config}
+        result={result}
+        onChange={onChange}
+        solve={solveTurbofan}
+        tempKey="T08_ab"
+        outSymbol="T08"
+        inSymbol="T07"
+        pOut="p08"
+        pIn="p07"
+        note="Here it re-heats the core (hot) stream in the jet pipe after the low-pressure turbine; the bypass air is untouched. Real afterburning fighter turbofans usually mix the two streams first and burn in the mixed flow — best paired with a low bypass ratio (about 0.3-1)."
+      />
       <fieldset className="config-section">
         <legend>
           <button type="button" className="disclosure" aria-expanded={massFlowOpen} onClick={() => setMassFlowOpen(!massFlowOpen)}>

@@ -2,13 +2,14 @@ import { useState } from "react";
 import { fmt, fmtKPa } from "../utils/format.js";
 import FormulaModal from "./FormulaModal.jsx";
 
-const DEFAULT_STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
+const DEFAULT_STATION_ORDER = ["a", "2", "3", "4", "5", "6", "9"];  // 6 only with the afterburner lit
 const DEFAULT_STATION_LABELS = {
   a: "a — freestream",
   "2": "2 — compressor inlet",
   "3": "3 — compressor exit",
   "4": "4 — combustor exit (TIT)",
   "5": "5 — turbine exit",
+  "6": "6 — afterburner exit",
   "9": "9 — nozzle exit",
 };
 
@@ -75,9 +76,8 @@ export default function StationTable({
           </tr>
         </thead>
         <tbody>
-          {stationOrder.map((key, i) => {
+          {stationOrder.filter((key) => stations[key]).map((key, i) => {
             const st = stations[key];
-            if (!st) return null;
             return (
               <tr key={key}>
                 <td>{i + 1}</td>

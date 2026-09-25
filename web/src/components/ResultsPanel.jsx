@@ -54,7 +54,7 @@ const STAGE_TERMS = [
  * architecture choices (axial/centrifugal, blade tip speed) alongside the
  * solved numbers.
  */
-export default function ResultsPanel({ result, config, savedConfigs, onSaveConfig, onRemoveConfig }) {
+export default function ResultsPanel({ result, config, savedConfigs, onSaveConfig, onRemoveConfig, onToggleAfterburner }) {
   const { performance, nozzle, compressor, turbine, stations } = result;
 
   return (
@@ -72,7 +72,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
       </section>
 
       <Suspense fallback={<SectionSkeleton title="Live engine cutaway" />}>
-        <EngineDiagram config={config} result={result} />
+        <EngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       </Suspense>
 
       <ExpandableSection

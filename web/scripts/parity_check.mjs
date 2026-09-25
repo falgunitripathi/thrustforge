@@ -59,6 +59,17 @@ const ABS_TOL = 1e-9;
 
 const SCENARIOS = [
   {
+    name: "afterburner lit, static sea-level take-off",
+    overrides: { afterburner_on: true, T06_ab: 1900.0, mdot_a: 60.0 },
+  },
+  {
+    name: "afterburner lit, supersonic cruise M2, 11 km, 8-stage axial",
+    overrides: {
+      altitude_m: 11000, mach_flight: 2.0, n_compressor_stages: 8, pi_c: 8.0,
+      T04: 1500.0, afterburner_on: true, T06_ab: 2100.0, delta_p_ab_pct: 0.06,
+    },
+  },
+  {
     name: "default config (sea level, static)",
     overrides: {},
   },
@@ -184,6 +195,8 @@ const TURBOSHAFT_SCENARIOS = [
 // cruise point, a low-bypass/high-FPR point, and a static (M=0) point.
 // ---------------------------------------------------------------------------
 const TURBOFAN_SCENARIOS = [
+  { name: "turbofan: afterburner lit, low bypass, M1.6", overrides: { beta: 0.5, mach_flight: 1.6, afterburner_on: true, T08_ab: 2050.0 } },
+  { name: "turbofan: afterburner lit, static take-off", overrides: { beta: 0.8, mach_flight: 0.0, altitude_m: 0, afterburner_on: true, delta_p_ab_pct: 0.07 } },
   { name: "turbofan: cruise, medium bypass", overrides: { altitude_m: 10000, mach_flight: 0.8, beta: 5.0, pi_f: 1.65, pi_LPC: 1.5, pi_HPC: 12.0, T05: 1500.0, mdot_a: 50.0 } },
   { name: "turbofan: low bypass, high fan PR", overrides: { altitude_m: 3000, mach_flight: 0.3, beta: 1.5, pi_f: 2.2, pi_LPC: 1.8, pi_HPC: 10.0, T05: 1600.0, mdot_a: 30.0 } },
   { name: "turbofan: static (M=0), high bypass", overrides: { altitude_m: 0, mach_flight: 0.0, beta: 8.0, pi_f: 1.5, pi_LPC: 1.3, pi_HPC: 14.0, T05: 1450.0, mdot_a: 80.0 } },

@@ -74,6 +74,30 @@ const TURBOJET_FORMULAS = [
     ],
   },
   {
+    section: "Afterburner (optional)",
+    entries: [
+      {
+        label: "Afterburner off",
+        formula: "T06 = T05,  p06 = p05,  f_ab = 0",
+        note: "The engine is exactly the plain turbojet; the nozzle expands from station 5.",
+      },
+      {
+        label: "Afterburner lit",
+        formula: "T06 = T06A (the cycle's maximum temperature),  p06 = p05·(1 - delta_p_ab)",
+        note: "No turbine blades downstream, so T06A can be far above the turbine inlet temperature.",
+      },
+      {
+        label: "Afterburner energy balance",
+        formula: "(1+f)·Cp_h·T05 + eta_b·f_ab·Q_R = (1+f+f_ab)·Cp_h·T06A",
+      },
+      {
+        label: "Afterburner fuel-air ratio",
+        formula: "f_ab = (1+f)·(Cp_h·T06A - Cp_h·T05) / (eta_b·Q_R - Cp_h·T06A)",
+        note: "The nozzle then expands from station 6 instead of 5, with mass flow mdot_a·(1+f+f_ab).",
+      },
+    ],
+  },
+  {
     section: "Nozzle",
     entries: [
       {
@@ -94,10 +118,10 @@ const TURBOJET_FORMULAS = [
   {
     section: "Overall performance",
     entries: [
-      { label: "Thrust", formula: "T = mdot_a·[(1+f)·V_exit - V_flight] + A_exit·(p_exit-p_a)" },
-      { label: "Specific thrust", formula: "T/mdot_a = [(1+f)·V_exit - V_flight] + (A_exit/mdot_a)·(p_exit-p_a)" },
-      { label: "TSFC (Thrust-Specific Fuel Consumption)", formula: "TSFC = f / (T/mdot_a)" },
-      { label: "Thermal efficiency", formula: "eta_th = [(1+f)·V_exit^2/2 - V_flight^2/2] / (f·Q_R)" },
+      { label: "Thrust", formula: "T = mdot_a·[(1+f+f_ab)·V_exit - V_flight] + A_exit·(p_exit-p_a)", note: "f_ab = 0 with the afterburner off." },
+      { label: "Specific thrust", formula: "T/mdot_a = [(1+f+f_ab)·V_exit - V_flight] + (A_exit/mdot_a)·(p_exit-p_a)" },
+      { label: "TSFC (Thrust-Specific Fuel Consumption)", formula: "TSFC = (f + f_ab) / (T/mdot_a)" },
+      { label: "Thermal efficiency", formula: "eta_th = [(1+f+f_ab)·V_exit^2/2 - V_flight^2/2] / ((f+f_ab)·Q_R)" },
       { label: "Propulsive efficiency", formula: "eta_p = 2·(V_flight/V_exit) / (1 + V_flight/V_exit)" },
       { label: "Overall efficiency", formula: "eta_0 = eta_th · eta_p = T·V_flight / (mdot_f·Q_R)" },
     ],
@@ -240,10 +264,21 @@ const TURBOFAN_FORMULAS = [
     ],
   },
   {
+    section: "Jet pipe / afterburner (core stream, 7 -> 8)",
+    entries: [
+      { label: "Afterburner off", formula: "T08 = T07,  p08 = p07·(1 - delta_p_jetpipe),  f_ab = 0" },
+      {
+        label: "Afterburner lit",
+        formula: "T08 = T08A,  p08 = p07·(1 - delta_p_ab),  f_ab = (1+f)·(Cp_h·T08A - Cp_h·T07) / (eta_b·Q_R - Cp_h·T08A)",
+        note: "The turbojet afterburner's energy balance applied to the core stream. Only the core is re-heated: this model's streams stay unmixed (the source's afterburning turbofan mixes them first).",
+      },
+    ],
+  },
+  {
     section: "Hot & cold (fan) nozzles",
     entries: [
       { label: "Choking / exit velocity", formula: "Same choking-check formulas as the turbojet's nozzle, applied separately to each stream" },
-      { label: "Hot-stream thrust", formula: "T_hot = mdot_a·[(1+f)·V9 - V_flight] + A9·(p9-p_a)" },
+      { label: "Hot-stream thrust", formula: "T_hot = mdot_a·[(1+f+f_ab)·V9 - V_flight] + A9·(p9-p_a)" },
       { label: "Cold-stream thrust", formula: "T_cold = beta·mdot_a·[V11 - V_flight] + A11·(p11-p_a)" },
       { label: "Total thrust", formula: "T_total = T_hot + T_cold" },
     ],
@@ -251,7 +286,7 @@ const TURBOFAN_FORMULAS = [
   {
     section: "Overall performance",
     entries: [
-      { label: "TSFC", formula: "TSFC = f / (T_total/mdot_a)" },
+      { label: "TSFC", formula: "TSFC = (f + f_ab) / (T_total/mdot_a)" },
       {
         label: "Overall efficiency",
         formula: "eta_0 = T_total·V_flight / (mdot_f·Q_R)",

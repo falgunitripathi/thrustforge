@@ -1,7 +1,7 @@
 import { fmt } from "../utils/format.js";
 import { resolveLabelOffsets } from "../utils/labelPlacement.js";
 
-const STATION_ORDER = ["a", "2", "3", "4", "5", "9"];
+const STATION_ORDER = ["a", "2", "3", "4", "5", "6", "9"];  // 6 only when the afterburner is lit
 
 const WIDTH = 580;
 const HEIGHT = 380;

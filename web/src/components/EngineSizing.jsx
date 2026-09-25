@@ -21,7 +21,7 @@ export default function EngineSizing({ config, result }) {
   const scale = valid ? targetThrust / currentThrust : null;
   const requiredMdotA = valid ? config.mdot_a * scale : null;
   const requiredAExit = valid ? result.nozzle.A_exit * scale : null;
-  const requiredMdotF = valid ? result.performance.f * requiredMdotA : null;
+  const requiredMdotF = valid ? (result.performance.f_total ?? result.performance.f) * requiredMdotA : null;
 
   return (
     <ExpandableSection

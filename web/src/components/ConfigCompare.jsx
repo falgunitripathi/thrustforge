@@ -54,6 +54,7 @@ export default function ConfigCompare({ savedConfigs, onSave, onRemove }) {
       "Pressure ratio / U2": s.config.compressor_type === "axial" ? s.config.pi_c : s.config.centrifugal_U2,
       "Turbine type": s.config.turbine_type,
       "T04 (K)": s.config.T04,
+      "Afterburner": s.config.afterburner_on ? `on, T06 ${s.config.T06_ab} K` : "off",
       "Thrust (N)": s.result.performance.thrust,
       "TSFC (kg/(N·h))": tsfcPerHour(s.result.performance.tsfc),
       "Overall efficiency": s.result.performance.eta_overall,
@@ -81,6 +82,7 @@ export default function ConfigCompare({ savedConfigs, onSave, onRemove }) {
                   <th>Compressor</th>
                   <th>Turbine</th>
                   <th>T04 (K)</th>
+                  <th>Afterburner</th>
                   <th>Thrust (N)</th>
                   <th>TSFC (kg/(N·h))</th>
                   <th>Overall η</th>
@@ -96,6 +98,7 @@ export default function ConfigCompare({ savedConfigs, onSave, onRemove }) {
                     <td>{describeCompressor(s.config)}</td>
                     <td>{s.config.turbine_type}</td>
                     <td>{fmt(s.config.T04, 0)}</td>
+                    <td>{s.config.afterburner_on ? `on, ${fmt(s.config.T06_ab, 0)} K` : "off"}</td>
                     <td>{fmt(s.result.performance.thrust, 1)}</td>
                     <td>{fmt(tsfcPerHour(s.result.performance.tsfc), 3)}</td>
                     <td>

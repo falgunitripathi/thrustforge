@@ -75,3 +75,34 @@ def test_turbofan_higher_T05_raises_thrust():
     low = solve_turbofan(_default_config(T05=1300.0))
     high = solve_turbofan(_default_config(T05=1700.0))
     assert high.performance["thrust"] > low.performance["thrust"]
+
+
+# --- Afterburner (core stream, jet pipe 7 -> 8) --------------------------
+
+def test_turbofan_afterburner_off_matches_plain_engine():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    plain = solve_turbofan(TurbofanConfig())
+    off = solve_turbofan(TurbofanConfig(afterburner_on=False, T08_ab=2200.0))
+    assert off.performance["thrust"] == plain.performance["thrust"]
+    assert off.performance["f_ab"] == 0.0 and "8" not in off.stations
+
+
+def test_turbofan_afterburner_energy_balance_and_gain():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    cfg = TurbofanConfig(beta=0.5, mach_flight=1.6, afterburner_on=True, T08_ab=2000.0)
+    r = solve_turbofan(cfg)
+    f, fab, ab = r.performance["f"], r.performance["f_ab"], r.afterburner
+    lhs = (1 + f) * cfg.cp_h * ab["T07"] + cfg.eta_b * fab * cfg.Q_R
+    rhs = (1 + f + fab) * cfg.cp_h * ab["T08"]
+    assert lhs == pytest.approx(rhs, rel=1e-12)
+    assert ab["p08"] == pytest.approx(ab["p07"] * (1 - cfg.delta_p_ab_pct))
+    plain = solve_turbofan(TurbofanConfig(beta=0.5, mach_flight=1.6))
+    assert r.performance["thrust_hot"] > plain.performance["thrust_hot"]
+    assert r.performance["thrust_cold"] == pytest.approx(plain.performance["thrust_cold"])
+    assert r.performance["tsfc"] > plain.performance["tsfc"]
+
+
+def test_turbofan_afterburner_colder_than_lpt_exit_raises():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    with pytest.raises(ValueError, match="afterburner exit temperature"):
+        solve_turbofan(TurbofanConfig(afterburner_on=True, T08_ab=700.0))

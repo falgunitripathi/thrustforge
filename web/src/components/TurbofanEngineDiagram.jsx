@@ -5,6 +5,7 @@ import { stationHeatColor } from "../utils/heatColor.js";
 import {
   FanBlades, FlowStreak, FlowMarquee, HousingFlange,
   InspectToolbar, Clickable, StationReadout, PartCard, StationTrendChart,
+  AfterburnerToggle,
 } from "./engineDiagramParts.jsx";
 
 /**
@@ -68,7 +69,19 @@ const BYPASS_STATIONS = [
   { key: "11", x: SECTION.coldNozzle.x1 + 70, name: "Cold nozzle exit", seq: 10 },
 ];
 const ALL_STATIONS = [...CORE_STATIONS, ...BYPASS_STATIONS].sort((a, b) => a.seq - b.seq);
-const TOTAL_STEPS = ALL_STATIONS.length;
+
+// Afterburner lit: the jet pipe after the LPT becomes the afterburner
+// (7 -> 8) and the hot nozzle shortens; station 8 appears between 7 and 9.
+const AB_SECTION = { x0: SECTION.hotNozzle.x0, x1: 780 };
+const HOT_NOZZLE_AB = { x0: 780, x1: SECTION.hotNozzle.x1 };
+const AB_STATION = { key: "8", x: AB_SECTION.x1, name: "Afterburner exit", seq: 8.5 };
+function coreStationsFor(ab) {
+  return ab ? [...CORE_STATIONS, AB_STATION].sort((a, b) => a.seq - b.seq) : CORE_STATIONS;
+}
+function allStationsFor(ab) {
+  const list = ab ? [...ALL_STATIONS, AB_STATION].sort((a, b) => a.seq - b.seq) : ALL_STATIONS;
+  return list.map((s, i) => ({ ...s, seq: i + 1 }));
+}
 
 const CASING_TOP = [
   [4, -30], [40, -70], [150, -78], [262, -95], [352, -100], [392, -80],
@@ -101,6 +114,11 @@ const PART_BUTTONS = [
   { kind: "lpt", label: "LPT" },
   { kind: "hotNozzle", label: "Hot nozzle" },
   { kind: "coldNozzle", label: "Cold nozzle" },
+];
+const PART_BUTTONS_AB = [
+  ...PART_BUTTONS.slice(0, 7),
+  { kind: "afterburner", label: "Afterburner" },
+  ...PART_BUTTONS.slice(7),
 ];
 
 function partDetails(kind, result) {
@@ -150,6 +168,15 @@ function partDetails(kind, result) {
         ["Exit stagnation temperature", `${fmt(lpt.T07, 1)} K`],
         ["Exit stagnation pressure", `${fmtKPa(lpt.p07, 1)} kPa`],
       ] };
+    case "afterburner": {
+      const ab = result.afterburner;
+      return { title: "Afterburner (core stream, lit)", rows: [
+        ["Temperature T07 → T08", `${fmt(ab.T07, 1)} K → ${fmt(ab.T08, 1)} K`],
+        ["Extra fuel-air ratio f_ab", fmt(ab.fab, 4)],
+        ["Total fuel-air ratio f + f_ab", fmt(performance.f_total, 4)],
+        ["Pressure p07 → p08", `${fmtKPa(ab.p07, 1)} kPa → ${fmtKPa(ab.p08, 1)} kPa`],
+      ] };
+    }
     case "hotNozzle":
       return { title: "Hot nozzle (core stream)", rows: [
         ["Status", hot_nozzle.choked ? "Choked" : "Unchoked (fully expanded)"],
@@ -188,6 +215,10 @@ function stationDetails(key, name, seq, st) {
 function Diagram({ result, idSuffix }) {
   const { stations } = result;
   const [selected, setSelected] = useState(null);
+  const ab = !!result.afterburner?.on;
+  const HOT = ab ? HOT_NOZZLE_AB : SECTION.hotNozzle;
+  const CORE = coreStationsFor(ab);
+  const ALL = allStationsFor(ab);
 
   const intakeMid = (SECTION.intake.x0 + SECTION.intake.x1) / 2;
   const fanMid = (SECTION.fan.x0 + SECTION.fan.x1) / 2;
@@ -196,18 +227,19 @@ function Diagram({ result, idSuffix }) {
   const combustorMid = (SECTION.combustor.x0 + SECTION.combustor.x1) / 2;
   const hptMid = (SECTION.hpt.x0 + SECTION.hpt.x1) / 2;
   const lptMid = (SECTION.lpt.x0 + SECTION.lpt.x1) / 2;
-  const hotNozzleMid = (SECTION.hotNozzle.x0 + SECTION.hotNozzle.x1) / 2;
+  const hotNozzleMid = (HOT.x0 + HOT.x1) / 2;
+  const abMid = (AB_SECTION.x0 + AB_SECTION.x1) / 2;
   const coldNozzleMid = (SECTION.coldNozzle.x0 + SECTION.coldNozzle.x1) / 2;
   const PART_MIDPOINTS = {
     intake: intakeMid, fan: fanMid, lpc: lpcMid, hpc: hpcMid,
     combustor: combustorMid, hpt: hptMid, lpt: lptMid,
-    hotNozzle: hotNozzleMid, coldNozzle: coldNozzleMid,
+    hotNozzle: hotNozzleMid, coldNozzle: coldNozzleMid, afterburner: abMid,
   };
 
-  const coreTValues = CORE_STATIONS.map((s) => stations[s.key].T0);
+  const coreTValues = CORE.map((s) => stations[s.key].T0);
   const tMin = Math.min(...coreTValues, stations["10"].T0, stations["11"].T0);
   const tMax = Math.max(...coreTValues, stations["10"].T0, stations["11"].T0);
-  const coreGradientStops = CORE_STATIONS.map((s) => {
+  const coreGradientStops = CORE.map((s) => {
     const offset = ((s.x - CORE_FLOW_X0) / (CORE_FLOW_X1 - CORE_FLOW_X0)) * 100;
     return <stop key={s.key} offset={`${offset}%`} stopColor={stationHeatColor(stations[s.key].T0, tMin, tMax)} />;
   });
@@ -245,7 +277,7 @@ function Diagram({ result, idSuffix }) {
 
   return (
     <div className="ed-diagram-wrap">
-      <InspectToolbar parts={PART_BUTTONS} activeKind={selected?.kind ?? null} onSelect={selectPartByKind} />
+      <InspectToolbar parts={ab ? PART_BUTTONS_AB : PART_BUTTONS} activeKind={selected?.kind ?? null} onSelect={selectPartByKind} />
       <div className="engine-diagram-scroll" onClick={handleWrapperClick}>
       <div className="engine-diagram-viewport" style={{ width: TOTAL_W }}>
       <svg
@@ -330,10 +362,24 @@ function Diagram({ result, idSuffix }) {
             <FanBlades cx={lptMid} cy={CORE_Y} r={17} count={8} className="ed-fan-turbine" dur="1.4s" />
           </Clickable>
 
+          {ab && (
+            <Clickable onSelect={() => selectPart("afterburner", abMid)} label="Afterburner — click for values">
+              <rect x={AB_SECTION.x0} y={CORE_Y - 30} width={AB_SECTION.x1 - AB_SECTION.x0} height="60" fill="transparent" />
+              <rect x={AB_SECTION.x0} y={CORE_Y - 22} width={AB_SECTION.x1 - AB_SECTION.x0} height="44" rx="5" className="ed-combustor" />
+              {[6, 14].map((dy) => (
+                <circle key={dy} cx={AB_SECTION.x0 + 8} cy={CORE_Y + dy} r="1.6" fill="var(--ed-flame)" />
+              ))}
+              <path
+                d={`M ${AB_SECTION.x0 + 16} ${CORE_Y + 16} q 7 -16 14 0 q 7 -20 14 0 q 7 -16 14 0 q 7 -12 14 0 q 6 -9 12 0`}
+                className="ed-flame"
+              />
+            </Clickable>
+          )}
+
           <Clickable onSelect={() => selectPart("hotNozzle", hotNozzleMid)} label="Hot nozzle — click for values">
-            <rect x={SECTION.hotNozzle.x0} y={CORE_Y - 30} width={SECTION.hotNozzle.x1 - SECTION.hotNozzle.x0} height="60" fill="transparent" />
+            <rect x={HOT.x0} y={CORE_Y - 30} width={HOT.x1 - HOT.x0} height="60" fill="transparent" />
             <polygon
-              points={`${SECTION.hotNozzle.x0},${CORE_Y - 20} ${SECTION.hotNozzle.x1},${CORE_Y - 9} ${SECTION.hotNozzle.x1},${CORE_Y + 9} ${SECTION.hotNozzle.x0},${CORE_Y + 20}`}
+              points={`${HOT.x0},${CORE_Y - 20} ${HOT.x1},${CORE_Y - 9} ${HOT.x1},${CORE_Y + 9} ${HOT.x0},${CORE_Y + 20}`}
               className="ed-nozzle"
             />
           </Clickable>
@@ -371,8 +417,8 @@ function Diagram({ result, idSuffix }) {
           )}
         </g>
 
-        {ALL_STATIONS.map((s) => {
-          const yMid = BYPASS_STATIONS.includes(s) ? BYPASS_Y : CORE_Y;
+        {ALL.map((s) => {
+          const yMid = BYPASS_STATIONS.some((b) => b.key === s.key) ? BYPASS_Y : CORE_Y;
           return (
             <line key={s.key} x1={s.x} y1={yMid - 30} x2={s.x} y2={CORE_Y + 58} className="ed-guide" />
           );
@@ -380,7 +426,7 @@ function Diagram({ result, idSuffix }) {
       </svg>
 
       <div className="station-readouts" style={{ width: TOTAL_W }}>
-        {ALL_STATIONS.map((s, i) => (
+        {ALL.map((s, i) => (
           <StationReadout
             key={s.key}
             station={s.key}
@@ -413,7 +459,7 @@ function Diagram({ result, idSuffix }) {
       </p>
       <p className="section-note">
         Each marker shows &ldquo;Step 1&rdquo; through
-        &ldquo;Step {TOTAL_STEPS}&rdquo; in simple flow
+        &ldquo;Step {ALL.length}&rdquo; in simple flow
         order, interleaving both streams by where they physically sit —
         station 10 (fan exit) comes right after station 2, and station
         11 (cold nozzle exit) comes last, alongside station 9.
@@ -423,7 +469,7 @@ function Diagram({ result, idSuffix }) {
   );
 }
 
-export default function TurbofanEngineDiagram({ config, result }) {
+export default function TurbofanEngineDiagram({ config, result, onToggleAfterburner }) {
   const [expanded, setExpanded] = useState(false);
   const titleId = useId();
   const closeButtonRef = useRef(null);
@@ -462,6 +508,7 @@ export default function TurbofanEngineDiagram({ config, result }) {
       <div className="engine-diagram">
         <div className="engine-diagram-toolbar">
           <span className="engine-diagram-title">Live engine cutaway</span>
+          <AfterburnerToggle config={config} onToggle={onToggleAfterburner} />
           <button type="button" ref={triggerRef} className="ed-expand-button" aria-haspopup="dialog" onClick={openModal}>
             ⤢ Expand
           </button>
@@ -485,16 +532,16 @@ export default function TurbofanEngineDiagram({ config, result }) {
             <div className="ed-trends">
               <StationTrendChart
                 title="Stagnation temperature across stations"
-                stations={ALL_STATIONS}
-                values={ALL_STATIONS.map((s) => result.stations[s.key].T0)}
+                stations={allStationsFor(!!result.afterburner?.on)}
+                values={allStationsFor(!!result.afterburner?.on).map((s) => result.stations[s.key].T0)}
                 unit="K"
                 color="#ff6f61"
                 decimals={0}
               />
               <StationTrendChart
                 title="Stagnation pressure across stations"
-                stations={ALL_STATIONS}
-                values={ALL_STATIONS.map((s) => result.stations[s.key].p0 / 1000)}
+                stations={allStationsFor(!!result.afterburner?.on)}
+                values={allStationsFor(!!result.afterburner?.on).map((s) => result.stations[s.key].p0 / 1000)}
                 unit="kPa"
                 color="#2a78d6"
                 decimals={0}

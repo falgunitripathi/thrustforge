@@ -14,7 +14,8 @@ export default function FuelSection({ engineType, config, result, onChange }) {
   const fuel = selectedFuel(engineType, config);
   const selectValue = fuel ? fuel.id : "custom";
 
-  const f = result?.performance?.f;
+  // Total fuel (incl. any afterburner) sets the exhaust's overall mixture.
+  const f = result?.performance?.f_total ?? result?.performance?.f;
   const phi = fuel && Number.isFinite(f) ? f / fuel.f_stoich : null;
 
   function choose(id) {

@@ -49,6 +49,10 @@ export function defaultTurbofanConfig() {
     eta_n1: DEFAULTS.eta_N,
     eta_fn: DEFAULTS.eta_N,
     mdot_a: 1.0,
+    // Afterburner (core stream, jet pipe 7 -> 8) — off by default.
+    afterburner_on: false,
+    T08_ab: 2000.0,
+    delta_p_ab_pct: 0.05,
     eta_d: DEFAULTS.eta_d,
     gamma_c: GAMMA_C,
     cp_c: CP_C,
@@ -69,7 +73,7 @@ function compressorStep(T_in, p_in, pi, eta, gamma) {
 export function solveTurbofan(cfg) {
   const result = {
     config: cfg, atmosphere: {}, intake: {}, fan: {}, lpc: {}, hpc: {},
-    combustor: {}, hpt: {}, lpt: {}, hot_nozzle: {}, cold_nozzle: {},
+    combustor: {}, hpt: {}, lpt: {}, hot_nozzle: {}, afterburner: {}, cold_nozzle: {},
     performance: {}, stations: {},
   };
   const R_c = cfg.cp_c * (cfg.gamma_c - 1.0) / cfg.gamma_c;
@@ -120,9 +124,33 @@ export function solveTurbofan(cfg) {
   const p07 = p07_over_p06 * p06;
   result.lpt = { T07, p07, T07_over_T06 };
 
-  // --- Jet pipe loss ---
-  const T08 = T07;
-  const p08 = p07 * (1.0 - cfg.delta_p_jetpipe);
+  // --- Jet pipe (7 -> 8): plain duct, or the afterburner when lit ---
+  let fab, T08, p08;
+  if (cfg.afterburner_on) {
+    if (!(cfg.T08_ab > T07)) {
+      throw new Error(
+        `solveTurbofan: the afterburner exit temperature T08 = ${cfg.T08_ab.toFixed(0)} K must ` +
+        `be above the low-pressure turbine exit temperature T07 = ${T07.toFixed(0)} K — an ` +
+        `afterburner can only add heat. Raise T08 or turn the afterburner off.`
+      );
+    }
+    const abDenom = cfg.eta_b * cfg.Q_R - cfg.cp_h * cfg.T08_ab;
+    if (!(abDenom > 0)) {
+      throw new Error(
+        "solveTurbofan: the afterburner exit temperature is too high for this fuel — even " +
+        "burning it perfectly can't heat the gas that much. Lower T08."
+      );
+    }
+    fab = (1.0 + f) * (cfg.cp_h * cfg.T08_ab - cfg.cp_h * T07) / abDenom;
+    T08 = cfg.T08_ab;
+    p08 = p07 * (1.0 - cfg.delta_p_ab_pct);
+  } else {
+    fab = 0.0;
+    T08 = T07;
+    p08 = p07 * (1.0 - cfg.delta_p_jetpipe);
+  }
+  const f_total = f + fab;
+  result.afterburner = { on: !!cfg.afterburner_on, fab, T07, p07, T08, p08 };
 
   // --- Hot nozzle (reuses nozzle.js exactly, as the turbojet does) ---
   const p_c_hot = criticalPressure(p08, cfg.eta_n1, cfg.gamma_h);
@@ -138,7 +166,7 @@ export function solveTurbofan(cfg) {
     T9 = T08 - V9 ** 2 / (2.0 * cfg.cp_h);
   }
   const rho9 = p9 / (R_h * T9);
-  const A9 = (1.0 + f) * cfg.mdot_a / (rho9 * V9);
+  const A9 = (1.0 + f_total) * cfg.mdot_a / (rho9 * V9);
   result.hot_nozzle = { choked: chokedHot, p_exit: p9, T_exit: T9, V_exit: V9, rho_exit: rho9, A_exit: A9 };
 
   // --- Cold (fan) nozzle — same nozzle.js functions, cold-side properties ---
@@ -160,16 +188,16 @@ export function solveTurbofan(cfg) {
   result.cold_nozzle = { choked: chokedCold, p_exit: p11, T_exit: T11, V_exit: V11, rho_exit: rho11, A_exit: A11 };
 
   // --- Combined two-stream thrust and TSFC ---
-  const T_hot = nozzleThrust(cfg.mdot_a, f, V9, V_flight, p9, p_a, A9);
+  const T_hot = nozzleThrust(cfg.mdot_a, f_total, V9, V_flight, p9, p_a, A9);
   const T_cold = nozzleThrust(mdotCold, 0.0, V11, V_flight, p11, p_a, A11);
   const T_total = T_hot + T_cold;
   const sp_thrust = T_total / cfg.mdot_a;
-  const tsfc_val = perfTsfc(f, sp_thrust);
-  const mdot_f = f * cfg.mdot_a;
+  const tsfc_val = perfTsfc(f_total, sp_thrust);
+  const mdot_f = f_total * cfg.mdot_a;
   const eta_0 = (mdot_f > 0 && V_flight > 0) ? (T_total * V_flight / (mdot_f * cfg.Q_R)) : null;
   result.performance = {
     thrust: T_total, thrust_hot: T_hot, thrust_cold: T_cold,
-    specific_thrust: sp_thrust, tsfc: tsfc_val, f, eta_overall: eta_0, beta: cfg.beta,
+    specific_thrust: sp_thrust, tsfc: tsfc_val, f, f_ab: fab, f_total, eta_overall: eta_0, beta: cfg.beta,
   };
 
   // --- Key-station table: a, 2, 10, 3, 4, 5, 6, 7, 9, 11 ---
@@ -182,6 +210,7 @@ export function solveTurbofan(cfg) {
     "5": new Station("5", cfg.T05, p05, cfg.gamma_h, cfg.cp_h, R_h, 0.0),
     "6": new Station("6", T06, p06, cfg.gamma_h, cfg.cp_h, R_h, 0.0),
     "7": new Station("7", T07, p07, cfg.gamma_h, cfg.cp_h, R_h, 0.0),
+    ...(cfg.afterburner_on ? { "8": new Station("8", T08, p08, cfg.gamma_h, cfg.cp_h, R_h, 0.0) } : {}),
     "9": Station.fromStatic("9", T9, p9, V9, cfg.gamma_h, cfg.cp_h, R_h),
     "11": Station.fromStatic("11", T11, p11, V11, cfg.gamma_c, cfg.cp_c, R_c),
   };
