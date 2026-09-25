@@ -19,7 +19,7 @@
 
 .app-subtitle {
   margin: 0 auto;
-  max-width: 68ch;
+  max-width: none;
   color: var(--text-muted);
   font-size: 14.5px;
   line-height: 1.55;
@@ -28,7 +28,7 @@
 .engine-type-tabs {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
   margin-top: 16px;
 }
@@ -2343,7 +2343,7 @@ button.field-label.formula-trigger:focus-visible {
 .variant-tabs {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 6px;
   margin-top: 10px;

@@ -228,9 +228,8 @@ function App() {
       <header className="app-header">
         <h1>ThrustForge</h1>
         <p className="app-subtitle">
-          Build a jet engine, one number at a time. Change anything on the
-          left — altitude, pressure ratio, turbine type — and watch the
-          whole engine cycle re-solve instantly, right here in your browser.
+          Build a jet engine, one number at a time — change anything on the left and watch the whole
+          cycle re-solve instantly.
         </p>
         <div className="engine-type-tabs" role="tablist" aria-label="Engine type">
           {ENGINE_TYPES.map((t) => (
