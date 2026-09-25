@@ -22,23 +22,33 @@ export default function FanSection({ config, onChange }) {
       </legend>
       {open && (
         <>
-          <NumberField
-            label="Bypass ratio β"
-            value={config.beta}
-            onChange={(v) => onChange({ beta: v })}
-            min={0.5}
-            max={15}
-            step={0.5}
-            hint="mdot_cold/mdot_hot (§2) — how much air goes around the core vs. through it. ~5 is typical for a medium-bypass turbofan."
-          />
+          {config.layout === "mixed" ? (
+            <p className="section-note">
+              Bypass ratio β is <strong>solved</strong> in the mixed-flow layout: the bypass air has to reach the
+              mixer at the same pressure as the core gas, so the fan pressure ratio decides how much air can go
+              around the core.
+            </p>
+          ) : (
+            <NumberField
+              label="Bypass ratio β"
+              value={config.beta}
+              onChange={(v) => onChange({ beta: v })}
+              min={0.5}
+              max={15}
+              step={0.5}
+              hint="mdot_cold/mdot_hot (§2) — how much air goes around the core vs. through it. ~5 is typical for a medium-bypass turbofan; geared engines run about 12."
+            />
+          )}
           <NumberField
             label="Fan pressure ratio π_f"
             value={config.pi_f}
             onChange={(v) => onChange({ pi_f: v })}
             min={1.1}
-            max={3.0}
+            max={config.layout === "mixed" ? 6.0 : 3.0}
             step={0.05}
-            hint="p010 = p02·π_f (§3). High-bypass fans typically run 1.4–1.8."
+            hint={config.layout === "mixed"
+              ? "p010 = p02·π_f (§3). Low-bypass fighter fans run about 3–4.5; a higher fan ratio leaves less room for bypass air at the mixer."
+              : "p010 = p02·π_f (§3). High-bypass fans typically run 1.4–1.8."}
           />
           <NumberField
             label="Fan efficiency η_f"

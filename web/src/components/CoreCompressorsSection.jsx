@@ -15,13 +15,13 @@ export default function CoreCompressorsSection({ config, onChange }) {
     <fieldset className="config-section">
       <legend>
         <button type="button" className="disclosure" aria-expanded={open} onClick={() => setOpen(!open)}>
-          {open ? "▾" : "▸"} LPC &amp; HPC
+          {open ? "▾" : "▸"} {config.layout === "three_spool" ? "IPC & HPC" : "LPC & HPC"}
         </button>
       </legend>
       {open && (
         <>
           <NumberField
-            label="LPC (booster) pressure ratio π_LPC"
+            label={config.layout === "three_spool" ? "IPC pressure ratio π_IPC" : "LPC (booster) pressure ratio π_LPC"}
             value={config.pi_LPC}
             onChange={(v) => onChange({ pi_LPC: v })}
             min={1.0}
@@ -30,7 +30,7 @@ export default function CoreCompressorsSection({ config, onChange }) {
             hint="LPC = Low-Pressure Compressor, a.k.a. the 'booster' — the compression stage right after the fan, on the same (slower) shaft as the fan. p03 = p010·π_LPC (§3)."
           />
           <NumberField
-            label="LPC efficiency η_LPC"
+            label={config.layout === "three_spool" ? "IPC efficiency η_IPC" : "LPC efficiency η_LPC"}
             value={config.eta_LPC}
             onChange={(v) => onChange({ eta_LPC: v })}
             min={0.7}

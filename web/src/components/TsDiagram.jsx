@@ -25,8 +25,8 @@ const MARGIN = { top: 24, right: 34, bottom: 52, left: 68 };
  * the exact s values straddling the combustor are illustrative, not a
  * rigorous mixed-gas property calculation.
  */
-export default function TsDiagram({ stations }) {
-  const points = STATION_ORDER
+export default function TsDiagram({ stations, order = STATION_ORDER }) {
+  const points = order
     .filter((key) => stations[key])
     .map((key) => {
       const st = stations[key];

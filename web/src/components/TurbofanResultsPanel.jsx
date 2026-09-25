@@ -9,7 +9,17 @@ import Glossary from "./Glossary.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
 import FuelComparison from "./FuelComparison.jsx";
 
-const TURBOFAN_STATION_ORDER = ["a", "2", "10", "3", "4", "5", "6", "7", "8", "9", "11"];  // 8 only with the afterburner lit
+// Order and labels per layout; only stations present in the result are shown.
+const STATION_ORDER = {
+  unmixed: ["a", "2", "10", "3", "4", "5", "6", "7", "8", "9", "11"],
+  geared: ["a", "2", "10", "3", "4", "5", "6", "7", "9", "11"],
+  three_spool: ["a", "2", "10", "3", "4", "5", "6", "7", "8", "9", "11"],
+  mixed: ["a", "2", "10", "3", "4", "5", "6", "7", "8", "11", "9"],
+};
+const LABEL_OVERRIDES = {
+  three_spool: { "2": "2 — fan inlet", "3": "3 — IPC exit", "7": "7 — IPT exit", "8": "8 — LPT exit" },
+  mixed: { "8": "8 — mixer exit (bypass + core)", "11": "11 — afterburner exit", "9": "9 — nozzle exit" },
+};
 const TURBOFAN_STATION_LABELS = {
   a: "a — freestream",
   "2": "2 — fan/LPC inlet",
@@ -46,13 +56,15 @@ const STATION_TERMS = [
  */
 export default function TurbofanResultsPanel({ result, config, onToggleAfterburner }) {
   const { performance, hot_nozzle, cold_nozzle, stations } = result;
+  const layout = config.layout || "unmixed";
+  const labels = { ...TURBOFAN_STATION_LABELS, ...LABEL_OVERRIDES[layout] };
 
   return (
     <div className="results-panel">
-      <EngineIntro engineType="turbofan" />
+      <EngineIntro engineType={layout === "unmixed" ? "turbofan" : `turbofan_${layout}`} />
       <section>
         <h2>Overall performance</h2>
-        <TurbofanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} coldNozzle={cold_nozzle} />
+        <TurbofanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} coldNozzle={cold_nozzle} layout={layout} />
       </section>
       <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>
@@ -67,9 +79,9 @@ export default function TurbofanResultsPanel({ result, config, onToggleAfterburn
 
       <ExpandableSection
         title="Station analysis"
-        summary="Stagnation and static properties (T0, p0, T, p, M, V, ρ, h, h0) at every station — ten stations here (a, 2, 10, 3, 4, 5, 6, 7, 9, 11), the source's own numbering for this engine, a genuinely different set from the turbojet's a,2,3,4,5,9. Expand to view."
+        summary="Stagnation and static properties (T0, p0, T, p, M, V, ρ, h, h0) at every station of this layout, in the source's own numbering for turbofans. Expand to view."
       >
-        <StationTable stations={stations} stationOrder={TURBOFAN_STATION_ORDER} stationLabels={TURBOFAN_STATION_LABELS} />
+        <StationTable stations={stations} stationOrder={STATION_ORDER[layout]} stationLabels={labels} />
         <Glossary terms={STATION_TERMS} />
       </ExpandableSection>
 

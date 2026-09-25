@@ -15,8 +15,8 @@ const MARGIN = { top: 24, right: 34, bottom: 52, left: 68 };
  * of T vs. s. Static (not stagnation) properties are used throughout,
  * since v = 1/ρ is only meaningful for the static state.
  */
-export default function PvDiagram({ stations }) {
-  const points = STATION_ORDER
+export default function PvDiagram({ stations, order = STATION_ORDER }) {
+  const points = order
     .filter((key) => stations[key])
     .map((key) => {
       const st = stations[key];

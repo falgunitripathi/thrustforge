@@ -106,3 +106,63 @@ def test_turbofan_afterburner_colder_than_lpt_exit_raises():
     from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
     with pytest.raises(ValueError, match="afterburner exit temperature"):
         solve_turbofan(TurbofanConfig(afterburner_on=True, T08_ab=700.0))
+
+
+
+# --- Layout variants: geared, three-spool, mixed-flow --------------------
+
+def test_geared_gearbox_loss_takes_more_lpt_work():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    plain = solve_turbofan(TurbofanConfig())
+    geared = solve_turbofan(TurbofanConfig(layout="geared", eta_gb=0.98))
+    assert geared.lpt["T07"] < plain.lpt["T07"]
+    ideal_gear = solve_turbofan(TurbofanConfig(layout="geared", eta_gb=1.0))
+    assert ideal_gear.performance["thrust"] == pytest.approx(plain.performance["thrust"], rel=1e-12)
+
+
+def test_three_spool_balances_each_spool():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    cfg = TurbofanConfig(layout="three_spool", beta=8.0)
+    r = solve_turbofan(cfg)
+    f = r.performance["f"]
+    ipt = cfg.lambda3 * cfg.eta_m3 * (1 + f) * cfg.cp_h * (r.hpt["T06"] - r.ipt["T07"])
+    lpt = cfg.lambda2 * cfg.eta_m2 * (1 + f) * cfg.cp_h * (r.ipt["T07"] - r.lpt["T08"])
+    assert ipt == pytest.approx(cfg.cp_c * (r.lpc["T03"] - r.fan["T010"]), rel=1e-12)
+    assert lpt == pytest.approx((1 + cfg.beta) * cfg.cp_c * (r.fan["T010"] - r.intake["T02"]), rel=1e-12)
+    assert {"7", "8", "11"} <= set(r.stations)
+
+
+def test_mixed_flow_solves_beta_for_equal_pressure_and_conserves_enthalpy():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    cfg = TurbofanConfig(layout="mixed", pi_f=3.0, pi_LPC=1.0)
+    r = solve_turbofan(cfg)
+    mx = r.mixer
+    assert r.lpt["p07"] == pytest.approx(mx["p03p"], rel=1e-9)
+    beta, f = mx["beta"], r.performance["f"]
+    lhs = beta * cfg.cp_c * r.fan["T010"] + (1 + f) * cfg.cp_h * r.lpt["T07"]
+    assert lhs == pytest.approx((1 + f + beta) * mx["cp8"] * mx["T08"], rel=1e-12)
+    assert mx["p08"] == pytest.approx(cfg.r_mix * r.lpt["p07"])
+    assert r.cold_nozzle == {} and "11" not in r.stations
+
+
+def test_mixed_flow_afterburner_adds_thrust():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    base = dict(layout="mixed", pi_f=3.0, pi_LPC=1.0, mach_flight=1.5)
+    dry = solve_turbofan(TurbofanConfig(**base))
+    wet = solve_turbofan(TurbofanConfig(**base, afterburner_on=True))
+    assert wet.performance["thrust"] > 1.3 * dry.performance["thrust"]
+    assert wet.performance["tsfc"] > dry.performance["tsfc"]
+    assert "11" in wet.stations
+
+
+def test_mixed_flow_fan_too_high_raises():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    with pytest.raises(ValueError, match="too high for the core to match"):
+        solve_turbofan(TurbofanConfig(layout="mixed", pi_f=9.0, pi_LPC=1.0))
+
+
+def test_afterburner_rejected_on_geared_and_three_spool():
+    from aeropropsim.turbofan import TurbofanConfig, solve_turbofan
+    for lay in ("geared", "three_spool"):
+        with pytest.raises(ValueError, match="only modelled for the unmixed and mixed"):
+            solve_turbofan(TurbofanConfig(layout=lay, afterburner_on=True))

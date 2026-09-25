@@ -6,6 +6,7 @@ import { solvePropfan } from "../physics/propfan.js";
 import { solveScramjet } from "../physics/scramjet.js";
 import { solveRamjet } from "../physics/ramjet.js";
 import { solveTurboramjet } from "../physics/turboramjet.js";
+import { solveTwinSpoolTurbojet } from "../physics/twinSpoolTurbojet.js";
 import { fuelsForEngine, selectedFuel } from "../utils/fuels.js";
 import { fmt, tsfcPerHour } from "../utils/format.js";
 import ExpandableSection from "./ExpandableSection.jsx";
@@ -13,7 +14,7 @@ import { explainError } from "../utils/errorText.js";
 
 const SOLVERS = {
   turbojet: solveEngine, turboprop: solveTurboprop, turboshaft: solveTurboshaft,
-  turbofan: solveTurbofan, propfan: solvePropfan, ramjet: solveRamjet, turboramjet: solveTurboramjet, scramjet: solveScramjet,
+  turbofan: solveTurbofan, propfan: solvePropfan, ramjet: solveRamjet, turboramjet: solveTurboramjet, turbojet2: solveTwinSpoolTurbojet, scramjet: solveScramjet,
 };
 
 const THRUST = { label: "Thrust (N)", get: (p) => fmt(p.thrust, 1) };
@@ -25,6 +26,7 @@ const METRICS = {
   propfan: [THRUST, TSFC],
   ramjet: [THRUST, TSFC],
   turboramjet: [THRUST, TSFC],
+  turbojet2: [THRUST, TSFC],
   turboshaft: [
     { label: "Load power (kW)", get: (p) => fmt(p.Pload_W / 1000, 1) },
     { label: "SFC (kg/kWh)", get: (p) => fmt(p.SFC_kg_per_kWh, 3) },

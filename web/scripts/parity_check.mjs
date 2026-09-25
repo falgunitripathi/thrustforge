@@ -48,6 +48,8 @@ const PY_RAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_ramjet_result.py"
 const JS_RAMJET_SCRIPT = path.join(__dirname, "dump_ramjet_result.mjs");
 const PY_TURBORAMJET_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_turboramjet_result.py");
 const JS_TURBORAMJET_SCRIPT = path.join(__dirname, "dump_turboramjet_result.mjs");
+const PY_TWIN_SPOOL_SCRIPT = path.join(REPO_ROOT, "scripts", "dump_twin_spool_turbojet_result.py");
+const JS_TWIN_SPOOL_SCRIPT = path.join(__dirname, "dump_twin_spool_turbojet_result.mjs");
 
 // Relative tolerance for numeric comparisons. Floating-point arithmetic
 // order can differ subtly between Python and JS (both are IEEE-754
@@ -195,6 +197,10 @@ const TURBOSHAFT_SCENARIOS = [
 // cruise point, a low-bypass/high-FPR point, and a static (M=0) point.
 // ---------------------------------------------------------------------------
 const TURBOFAN_SCENARIOS = [
+  { name: "turbofan: geared, beta 12, fan 1.4", overrides: { layout: "geared", beta: 12, pi_f: 1.4, eta_gb: 0.985 } },
+  { name: "turbofan: three-spool, beta 8", overrides: { layout: "three_spool", beta: 8, pi_f: 1.5, pi_LPC: 5.0, pi_HPC: 5.0, eta_IPT: 0.88 } },
+  { name: "turbofan: mixed, fan 3, cruise", overrides: { layout: "mixed", pi_f: 3.0, pi_LPC: 1.0 } },
+  { name: "turbofan: mixed + afterburner, M1.5", overrides: { layout: "mixed", pi_f: 3.0, pi_LPC: 1.0, mach_flight: 1.5, afterburner_on: true, T08_ab: 2050, r_mix: 0.97, delta_p_duct: 0.02 } },
   { name: "turbofan: afterburner lit, low bypass, M1.6", overrides: { beta: 0.5, mach_flight: 1.6, afterburner_on: true, T08_ab: 2050.0 } },
   { name: "turbofan: afterburner lit, static take-off", overrides: { beta: 0.8, mach_flight: 0.0, altitude_m: 0, afterburner_on: true, delta_p_ab_pct: 0.07 } },
   { name: "turbofan: cruise, medium bypass", overrides: { altitude_m: 10000, mach_flight: 0.8, beta: 5.0, pi_f: 1.65, pi_LPC: 1.5, pi_HPC: 12.0, T05: 1500.0, mdot_a: 50.0 } },
@@ -262,6 +268,15 @@ const TURBORAMJET_SCENARIOS = [
   { name: "turboramjet: ramjet at M0 — expected error in both", overrides: { mode: "ramjet", mach_flight: 0 }, expectError: true },
   { name: "turboramjet: cold afterburner — expected error in both", overrides: { mach_flight: 1.0, T06_ab: 900.0 }, expectError: true },
   { name: "turboramjet: dual beta 1 — expected error in both", overrides: { mode: "dual", beta: 1.0 }, expectError: true },
+];
+
+const TWIN_SPOOL_SCENARIOS = [
+  { name: "twin-spool turbojet: default cruise", overrides: {} },
+  { name: "twin-spool turbojet: static sea level, big", overrides: { altitude_m: 0, mach_flight: 0, mdot_a: 80.0 } },
+  { name: "twin-spool turbojet: afterburner lit, M2", overrides: { mach_flight: 2.0, afterburner_on: true, T08_ab: 2100.0 } },
+  { name: "twin-spool turbojet: lambda 1, high PR", overrides: { lambda1: 1.0, lambda2: 1.0, pi_LPC: 5.0, pi_HPC: 4.5, T05: 1500.0 } },
+  { name: "twin-spool turbojet: compressors too hot — expected error in both", overrides: { mach_flight: 3.0, pi_LPC: 8, pi_HPC: 6 }, expectError: true },
+  { name: "twin-spool turbojet: cold afterburner — expected error in both", overrides: { afterburner_on: true, T08_ab: 900 }, expectError: true },
 ];
 
 function runPython(script, overridesOrArgs) {
@@ -608,6 +623,7 @@ function main() {
     [SCRAMJET_SCENARIOS, PY_SCRAMJET_SCRIPT, JS_SCRAMJET_SCRIPT],
     [RAMJET_SCENARIOS, PY_RAMJET_SCRIPT, JS_RAMJET_SCRIPT],
     [TURBORAMJET_SCENARIOS, PY_TURBORAMJET_SCRIPT, JS_TURBORAMJET_SCRIPT],
+    [TWIN_SPOOL_SCENARIOS, PY_TWIN_SPOOL_SCRIPT, JS_TWIN_SPOOL_SCRIPT],
   ]) {
     for (const scenario of scenarios) {
       totalScenarios += 1;

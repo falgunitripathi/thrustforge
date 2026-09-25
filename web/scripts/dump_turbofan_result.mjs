@@ -25,6 +25,8 @@ function flatten(result) {
     hot_nozzle: result.hot_nozzle,
     afterburner: result.afterburner,
     cold_nozzle: result.cold_nozzle,
+    ipt: result.ipt,
+    mixer: result.mixer,
     performance: result.performance,
     stations: stationsFlat,
   };

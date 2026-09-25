@@ -294,6 +294,46 @@ const TURBOFAN_FORMULAS = [
       },
     ],
   },
+  {
+    section: "Geared layout (reduction gearbox to the fan)",
+    entries: [
+      {
+        label: "LP spool with gearbox",
+        formula: "(1+beta)·Cp_c·(T010-T02) + Cp_c·(T03-T010) = eta_gb·lambda2·eta_m2·(1+f)·Cp_h·(T06-T07)",
+        note: "The gearbox loses a share of the LP turbine's work on the way to the fan and LPC, so the turbine has to take more out of the gas.",
+      },
+    ],
+  },
+  {
+    section: "Three-spool layout (fan / IPC / HPC on separate shafts)",
+    entries: [
+      { label: "HP spool", formula: "Cp_c·(T04-T03) = lambda1·eta_m1·(1+f)·Cp_h·(T05-T06)" },
+      { label: "IP spool", formula: "Cp_c·(T03-T010) = lambda3·eta_m3·(1+f)·Cp_h·(T06-T07)", note: "The IP turbine drives the IP compressor (the 'LPC' step)." },
+      { label: "LP spool (fan only)", formula: "(1+beta)·Cp_c·(T010-T02) = lambda2·eta_m2·(1+f)·Cp_h·(T07-T08)" },
+      { label: "Hot nozzle inlet", formula: "T0 = T08,  p0 = p08·(1 - delta_p_jetpipe)" },
+    ],
+  },
+  {
+    section: "Mixed-flow layout (one nozzle)",
+    entries: [
+      {
+        label: "Mixing condition (sets the bypass ratio)",
+        formula: "p03' = p07,  p03' = p010·(1 - delta_p_duct)",
+        note: "With the fan pressure ratio chosen, beta is solved (bisection) so the bypass air and core gas meet the mixer at the same pressure.",
+      },
+      { label: "LP spool", formula: "(1+beta)·Cp_c·(T010-T02) + Cp_c·(T03-T010) = lambda2·eta_m2·(1+f)·Cp_h·(T06-T07)" },
+      { label: "Mixed-gas properties", formula: "Cp8 = [(1+f)·Cp_h + beta·Cp_c]/(1+f+beta),  R8 = [(1+f)·R_h + beta·R_c]/(1+f+beta),  gamma8 = Cp8/(Cp8 - R8)" },
+      { label: "Mixing energy balance", formula: "beta·Cp_c·T03' + (1+f)·Cp_h·T07 = (1+f+beta)·Cp8·T08" },
+      { label: "Mixing pressure loss", formula: "p08 = r_m·p07,  r_m ≈ 0.98" },
+      {
+        label: "Afterburner after the mixer",
+        formula: "f_ab = (Cp_h·T011 - Cp8·T08) / (eta_b·Q_R - Cp_h·T011),  p011 = p08·(1 - delta_p_ab)",
+        note: "f_ab per kg of mixed gas, so the exhaust is (1+f+beta)·(1+f_ab) per kg of core air.",
+      },
+      { label: "Thrust", formula: "T = mdot_a·[(1+f+beta)·(1+f_ab)·V9 - (1+beta)·V] + A9·(p9 - p_a)" },
+      { label: "TSFC", formula: "TSFC = [f + f_ab·(1+f+beta)] / (T/mdot_a)" },
+    ],
+  },
 ];
 
 const PROPFAN_FORMULAS = [
@@ -377,6 +417,52 @@ const PROPFAN_FORMULAS = [
         formula: "eta_P = T_total·V_flight / (T_total·V_flight + 0.5·mdot_a·[(ue_n-V_flight)^2 + beta·(ue_UDF-V_flight)^2])",
       },
       { label: "Overall efficiency", formula: "eta_0 = T_total·V_flight / (mdot_f·Q_R)" },
+    ],
+  },
+];
+
+// Two-spool turbojet — NPTEL double-spool turbojet.
+const TWIN_SPOOL_FORMULAS = [
+  SHARED_INTAKE,
+  {
+    section: "LP and HP compressors",
+    entries: [
+      { label: "LP compressor", formula: "p03 = pi_LPC·p02,  T03 = T02·[1 + (pi_LPC^((gamma_c-1)/gamma_c) - 1)/eta_LPC]" },
+      { label: "HP compressor", formula: "p04 = pi_HPC·p03,  T04 = T03·[1 + (pi_HPC^((gamma_c-1)/gamma_c) - 1)/eta_HPC]" },
+    ],
+  },
+  {
+    section: "Combustor",
+    entries: [
+      { label: "Fuel-air ratio", formula: "f = [(Cp_h/Cp_c)·(T05/T04) - 1] / [eta_b·Q_R/(Cp_c·T04) - (Cp_h/Cp_c)·(T05/T04)]" },
+      { label: "Pressure loss", formula: "p05 = p04·(1 - delta_p_cc)" },
+    ],
+  },
+  {
+    section: "HP and LP turbines (one per spool)",
+    entries: [
+      { label: "HP spool", formula: "Cp_c·(T04-T03) = lambda1·(1+f)·eta_m1·Cp_h·(T05-T06)", note: "The HP turbine drives only the HP compressor." },
+      { label: "LP spool", formula: "Cp_c·(T03-T02) = lambda2·(1+f)·eta_m2·Cp_h·(T06-T07)", note: "The LP turbine drives only the LP compressor." },
+      { label: "Turbine pressure ratios", formula: "p06/p05 = [1 - (T05-T06)/(eta_HPT·T05)]^(gamma_h/(gamma_h-1)),  p07/p06 = [1 - (T06-T07)/(eta_LPT·T06)]^(gamma_h/(gamma_h-1))" },
+    ],
+  },
+  {
+    section: "Jet pipe / afterburner",
+    entries: [
+      { label: "Afterburner off", formula: "T08 = T07,  p08 = p07" },
+      { label: "Afterburner lit", formula: "T08A = Tmax,  p08A = p07·(1 - delta_p_ab),  f_ab = (1+f)·(Cp_h·T08A - Cp_h·T07) / (eta_b·Q_R - Cp_h·T08A)" },
+    ],
+  },
+  {
+    section: "Nozzle and performance",
+    entries: [
+      { label: "Choking check", formula: "p_c = p08·[1 - (1/eta_N)·(gamma_h-1)/(gamma_h+1)]^(gamma_h/(gamma_h-1)); choked if p_c >= p_a" },
+      { label: "Exit velocity", formula: "unchoked: V9 = sqrt(2·Cp_h·eta_N·T08·[1 - (p_a/p08)^((gamma_h-1)/gamma_h)]);  choked: T9 = 2·T08/(gamma_h+1), V9 = sqrt(gamma_h·R·T9)" },
+      { label: "Specific thrust", formula: "T/mdot_a = [(1+f+f_ab)·V9 - V] + (A9/mdot_a)·(p9 - p_a)" },
+      { label: "TSFC", formula: "TSFC = (f + f_ab) / (T/mdot_a)" },
+      { label: "Propulsive efficiency", formula: "eta_p = T·V / [T·V + (1/2)·mdot_e·(V9 - V)^2]" },
+      { label: "Thermal efficiency", formula: "eta_th = [T·V + (1/2)·mdot_e·(V9 - V)^2] / (mdot_f·Q_R)" },
+      { label: "Overall efficiency", formula: "eta_o = eta_p·eta_th" },
     ],
   },
 ];
@@ -621,9 +707,10 @@ export const DEFAULT_VALUE_CONSTANTS = [
 
 export const ENGINE_FORMULAS = {
   turbojet: { name: "Turbojet", sections: TURBOJET_FORMULAS },
+  turbojet2: { name: "Two-spool turbojet", sections: TWIN_SPOOL_FORMULAS },
   turboprop: { name: "Turboprop", sections: TURBOPROP_FORMULAS },
   turboshaft: { name: "Turboshaft", sections: TURBOSHAFT_FORMULAS },
-  turbofan: { name: "Turbofan (two-spool, unmixed)", sections: TURBOFAN_FORMULAS },
+  turbofan: { name: "Turbofan (unmixed, mixed-flow, geared and three-spool layouts)", sections: TURBOFAN_FORMULAS },
   propfan: { name: "Propfan (three-spool, unducted fan)", sections: PROPFAN_FORMULAS },
   turboramjet: { name: "Turboramjet (turbine-based combined cycle)", sections: TURBORAMJET_FORMULAS },
   ramjet: { name: "Ramjet", sections: RAMJET_FORMULAS },
