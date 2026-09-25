@@ -50,10 +50,12 @@ export default function TurbofanResultsPanel({ result, config, onToggleAfterburn
   return (
     <div className="results-panel">
       <EngineIntro engineType="turbofan" />
-      <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>
         <h2>Overall performance</h2>
         <TurbofanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} coldNozzle={cold_nozzle} />
+      </section>
+      <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
+      <section>
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight

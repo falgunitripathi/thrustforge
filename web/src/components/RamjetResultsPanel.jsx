@@ -42,10 +42,12 @@ export default function RamjetResultsPanel({ result, config }) {
   return (
     <div className="results-panel">
       <EngineIntro engineType="ramjet" />
-      <RamjetEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <RamjetPerformanceSummary performance={performance} intake={intake} nozzle={nozzle} />
+      </section>
+      <RamjetEngineDiagram config={config} result={result} />
+      <section>
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight Mach number — the free air the intake

@@ -61,12 +61,14 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
   return (
     <div className="results-panel">
       <EngineIntro engineType="turbojet" />
+      <section>
+        <h2>Overall performance</h2>
+        <PerformanceSummary performance={performance} nozzle={nozzle} ambientPressure={stations.a.p} />
+      </section>
       <Suspense fallback={<SectionSkeleton title="Live engine cutaway" />}>
         <EngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       </Suspense>
       <section>
-        <h2>Overall performance</h2>
-        <PerformanceSummary performance={performance} nozzle={nozzle} ambientPressure={stations.a.p} />
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight

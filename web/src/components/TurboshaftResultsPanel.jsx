@@ -53,10 +53,12 @@ export default function TurboshaftResultsPanel({ result, config }) {
   return (
     <div className="results-panel">
       <EngineIntro engineType="turboshaft" />
-      <TurboshaftEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <TurboshaftPerformanceSummary shaft={shaft} performance={performance} />
+      </section>
+      <TurboshaftEngineDiagram config={config} result={result} />
+      <section>
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight

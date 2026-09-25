@@ -44,10 +44,12 @@ export default function TurboramjetResultsPanel({ result, config, onToggleAfterb
   return (
     <div className="results-panel">
       <EngineIntro engineType="turboramjet" />
-      <TurboramjetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>
         <h2>Overall performance</h2>
         <TurboramjetPerformanceSummary result={result} />
+      </section>
+      <TurboramjetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
+      <section>
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight Mach number — the free air the shared

@@ -47,10 +47,12 @@ export default function TurbopropResultsPanel({ result, config }) {
   return (
     <div className="results-panel">
       <EngineIntro engineType="turboprop" />
-      <TurbopropEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <TurbopropPerformanceSummary performance={performance} propeller={propeller} />
+      </section>
+      <TurbopropEngineDiagram config={config} result={result} />
+      <section>
         <h3>Atmosphere at this altitude</h3>
         <p className="section-note">
           ISA troposphere values at the configured altitude and flight
