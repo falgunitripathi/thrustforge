@@ -423,10 +423,8 @@ function App() {
 
       <footer className="app-footer">
         <p>
-          ThrustForge — an educational jet-engine simulator. Every number is
-          worked out live in your browser from textbook propulsion equations;
-          use &ldquo;Download formulas&rdquo; in the left panel to see every
-          equation an engine uses.
+          ThrustForge — an educational jet-engine simulator, solved live in your browser from textbook
+          propulsion equations. Use &ldquo;Download formulas&rdquo; to see every equation.
         </p>
       </footer>
     </div>
