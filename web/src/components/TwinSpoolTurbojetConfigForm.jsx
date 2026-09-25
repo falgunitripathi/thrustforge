@@ -128,19 +128,6 @@ export default function TwinSpoolTurbojetConfigForm({ config, result, onChange, 
         )}
       </Section>
 
-      <AfterburnerSection
-        config={config}
-        result={result}
-        onChange={onChange}
-        solve={solveTwinSpoolTurbojet}
-        tempKey="T08_ab"
-        outSymbol="T08"
-        inSymbol="T07"
-        pOut="p08"
-        pIn="p07"
-        note="Here it sits in the jet pipe after the LP turbine, as on Concorde's Olympus 593."
-      />
-
       <Section title="Mass flow">
         <NumberField
           label="Air mass flow rate"
@@ -153,6 +140,18 @@ export default function TwinSpoolTurbojetConfigForm({ config, result, onChange, 
         />
       </Section>
 
+      <AfterburnerSection
+        config={config}
+        result={result}
+        onChange={onChange}
+        solve={solveTwinSpoolTurbojet}
+        tempKey="T08_ab"
+        outSymbol="T08"
+        inSymbol="T07"
+        pOut="p08"
+        pIn="p07"
+        note="Here it sits in the jet pipe after the LP turbine, as on Concorde's Olympus 593."
+      />
       <FuelSection engineType="turbojet2" config={config} result={result} onChange={onChange} />
 
       <Section title="Engine quality: efficiencies & gas properties" advanced>

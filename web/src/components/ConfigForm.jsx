@@ -75,7 +75,6 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />
       <TurbineSection config={config} onChange={onChange} />
-      <AfterburnerSection config={config} result={result} onChange={onChange} solve={solveEngine} />
       <NozzleSection config={config} onChange={onChange} />
       <fieldset className="config-section">
         <legend>
@@ -95,6 +94,7 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
           />
         )}
       </fieldset>
+      <AfterburnerSection config={config} result={result} onChange={onChange} solve={solveEngine} />
       <FuelSection engineType="turbojet" config={config} result={result} onChange={onChange} />
       <AdvancedSection config={config} onChange={onChange} />
       {result && <ReportExport config={config} result={result} />}

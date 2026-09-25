@@ -143,14 +143,6 @@ export default function TurboramjetConfigForm({ config, result, onChange, onRese
         )}
       </Section>
 
-      <AfterburnerSection
-        config={config}
-        result={result}
-        onChange={onChange}
-        solve={solveTurboramjet}
-        note="On a turboramjet it only works while the turbojet leg is running (below the switch Mach, or in 'Both' mode); the ramjet has its own burner."
-      />
-
       <Section title="Ramjet leg">
         <NumberField
           label="Ramjet combustor exit temperature T09"
@@ -175,6 +167,13 @@ export default function TurboramjetConfigForm({ config, result, onChange, onRese
         />
       </Section>
 
+      <AfterburnerSection
+        config={config}
+        result={result}
+        onChange={onChange}
+        solve={solveTurboramjet}
+        note="On a turboramjet it only works while the turbojet leg is running (below the switch Mach, or in 'Both' mode); the ramjet has its own burner."
+      />
       <FuelSection engineType="turboramjet" config={config} result={result} onChange={onChange} />
 
       <Section title="Engine quality: efficiencies & gas properties" advanced>

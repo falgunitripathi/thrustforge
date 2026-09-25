@@ -49,6 +49,24 @@ export default function TurbofanConfigForm({ config, result, onChange, onReset, 
       <CoreCompressorsSection config={config} onChange={onChange} />
       <TurbofanCombustorSection config={config} onChange={onChange} />
       <TurbofanLayoutSection config={config} onChange={onChange} />
+      <fieldset className="config-section">
+        <legend>
+          <button type="button" className="disclosure" aria-expanded={massFlowOpen} onClick={() => setMassFlowOpen(!massFlowOpen)}>
+            {massFlowOpen ? "▾" : "▸"} Mass flow
+          </button>
+        </legend>
+        {massFlowOpen && (
+          <NumberField
+            label="Core air mass flow rate"
+            value={config.mdot_a}
+            onChange={(v) => onChange({ mdot_a: v })}
+            min={0.01}
+            max={2000}
+            step={1}
+            hint="kg/s — the CORE (hot-stream) mass flow; the bypass stream is β× this. Scales absolute thrust; specific thrust/TSFC/efficiencies are independent of it."
+          />
+        )}
+      </fieldset>
       {config.layout === "mixed" ? (
         <AfterburnerSection
           config={config}
@@ -76,24 +94,6 @@ export default function TurbofanConfigForm({ config, result, onChange, onReset, 
           note="Here it re-heats the core (hot) stream in the jet pipe after the low-pressure turbine; the bypass air is untouched. Real afterburning fighter turbofans usually mix the two streams first — try the Mixed-flow layout."
         />
       ) : null}
-      <fieldset className="config-section">
-        <legend>
-          <button type="button" className="disclosure" aria-expanded={massFlowOpen} onClick={() => setMassFlowOpen(!massFlowOpen)}>
-            {massFlowOpen ? "▾" : "▸"} Mass flow
-          </button>
-        </legend>
-        {massFlowOpen && (
-          <NumberField
-            label="Core air mass flow rate"
-            value={config.mdot_a}
-            onChange={(v) => onChange({ mdot_a: v })}
-            min={0.01}
-            max={2000}
-            step={1}
-            hint="kg/s — the CORE (hot-stream) mass flow; the bypass stream is β× this. Scales absolute thrust; specific thrust/TSFC/efficiencies are independent of it."
-          />
-        )}
-      </fieldset>
       <FuelSection engineType="turbofan" config={config} result={result} onChange={onChange} />
       <TurbofanAdvancedSection config={config} onChange={onChange} />
       <FormulasExport engineType="turbofan" />
