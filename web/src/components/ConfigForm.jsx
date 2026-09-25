@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CopyLinkButton from "./CopyLinkButton.jsx";
 import NumberField from "./NumberField.jsx";
 import FlightConditionsSection from "./FlightConditionsSection.jsx";
 import CompressorSection from "./CompressorSection.jsx";
@@ -11,7 +12,6 @@ import AdvancedSection from "./AdvancedSection.jsx";
 import FuelSection from "./FuelSection.jsx";
 import ReportExport from "./ReportExport.jsx";
 import FormulasExport from "./FormulasExport.jsx";
-import { buildShareUrl } from "../utils/shareLink.js";
 
 /**
  * The full engine-configuration form: flight condition, compressor,
@@ -23,38 +23,15 @@ import { buildShareUrl } from "../utils/shareLink.js";
  * patch to merge in, mirroring the parent's state-update pattern.
  */
 export default function ConfigForm({ config, result, onChange, onReset, onCollapse }) {
-  const [copied, setCopied] = useState(false);
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
-  // Phase 3 — shareable configuration links: every field here already
-  // lives in the URL's query string (see utils/shareLink.js + App.jsx),
-  // so "copy link" just needs to grab the current address bar value.
-  const copyShareLink = async () => {
-    const url = buildShareUrl(config);
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard access can be blocked (permissions, insecure context);
-      // fall back to a prompt the user can copy from by hand.
-      try {
-        window.prompt("Copy this link:", url);
-      } catch {
-        // Some embedded browsers block prompt() too; the address bar
-        // already holds the same link, so there's nothing more to do.
-      }
-    }
-  };
 
   return (
     <div className="config-form">
       <div className="config-form-header">
         <h2>Engine configuration</h2>
         <div className="config-form-actions">
-          <button type="button" className="reset-button" onClick={copyShareLink}>
-            {copied ? "Link copied!" : "Copy shareable link"}
-          </button>
+          <CopyLinkButton />
           <button type="button" className="reset-button" onClick={onReset}>
             Reset to defaults
           </button>

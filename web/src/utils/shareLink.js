@@ -1,47 +1,44 @@
 import { defaultEngineConfig } from "../physics/engine.js";
 
-const STRING_KEYS = new Set(["compressor_type", "turbine_type", "nozzle_type"]);
-const INT_KEYS = new Set(["n_compressor_stages", "n_turbine_stages"]);
-const BOOL_KEYS = new Set(["afterburner_on"]);
-
 /**
- * Shareable configuration links — Phase 3, item 02.
+ * Shareable configuration links for every engine.
  *
- * Every `EngineConfig` field (physics/engine.js `defaultEngineConfig`) is a
- * plain number, string, or null, so the whole config round-trips through
- * URL query params with no backend: only fields that differ from the
- * default are written, which keeps a typical link short (most designs
- * only touch a handful of values) and lets a link missing a field — an
- * older link, or one someone hand-edited — fall back to that field's
- * current default instead of breaking.
+ * A link carries `engine=<type>` (left out for the turbojet, so links made
+ * before other engines existed still open the same way) plus only the
+ * fields that differ from that engine's default config — short links, and
+ * a link missing a field (older, or hand-edited) falls back to the default
+ * instead of breaking. Each value is parsed back using the type of the
+ * default it replaces (number, string or boolean).
  */
-export function configToSearchParams(config) {
-  const defaults = defaultEngineConfig();
+export const ENGINE_PARAM = "engine";
+const INT_KEYS = new Set(["n_compressor_stages", "n_turbine_stages"]);
+
+export function configToSearchParams(config, defaults = defaultEngineConfig()) {
   const params = new URLSearchParams();
   for (const key of Object.keys(defaults)) {
     const value = config[key];
     if (value === null || value === undefined) continue;
+    if (typeof value === "number" && !Number.isFinite(value)) continue;
     if (value === defaults[key]) continue;
     params.set(key, String(value));
   }
   return params;
 }
 
-/** Inverse of `configToSearchParams` — returns a partial config patch,
- *  meant to be spread over `defaultEngineConfig()` (or merged into it),
- *  never a full config on its own. Unknown keys and unparseable numbers
- *  are silently skipped rather than throwing, since this only ever reads
- *  a URL someone could have hand-edited. */
-export function configFromSearchParams(params) {
-  const defaults = defaultEngineConfig();
+/** Inverse of `configToSearchParams` — a partial config patch to spread
+ *  over the engine's defaults. Unknown keys and unparseable values are
+ *  skipped rather than throwing, since this only ever reads a URL someone
+ *  could have hand-edited. */
+export function configFromSearchParams(params, defaults = defaultEngineConfig()) {
   const patch = {};
   for (const key of Object.keys(defaults)) {
     if (!params.has(key)) continue;
     const raw = params.get(key);
-    if (STRING_KEYS.has(key)) {
-      patch[key] = raw;
-    } else if (BOOL_KEYS.has(key)) {
+    const def = defaults[key];
+    if (typeof def === "boolean") {
       if (raw === "true" || raw === "false") patch[key] = raw === "true";
+    } else if (typeof def === "string") {
+      patch[key] = raw;
     } else if (INT_KEYS.has(key)) {
       const n = parseInt(raw, 10);
       if (Number.isFinite(n)) patch[key] = n;
@@ -53,12 +50,13 @@ export function configFromSearchParams(params) {
   return patch;
 }
 
-/** The current page URL, with the query string replaced by exactly the
- *  config's non-default fields — this is both "the link to copy" and
- *  "the URL the address bar should already show" (App.jsx keeps the two
- *  in sync via history.replaceState as the config changes). */
-export function buildShareUrl(config) {
-  const query = configToSearchParams(config).toString();
+/** The link to this engine and design — also what the address bar shows
+ *  (App.jsx keeps the two in sync with history.replaceState). */
+export function buildShareUrl(config, { engineType = "turbojet", defaults = defaultEngineConfig() } = {}) {
+  const params = configToSearchParams(config, defaults);
+  const query = engineType === "turbojet"
+    ? params.toString()
+    : `${ENGINE_PARAM}=${encodeURIComponent(engineType)}${params.toString() ? `&${params.toString()}` : ""}`;
   const base = `${window.location.origin}${window.location.pathname}`;
   return query ? `${base}?${query}` : base;
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CopyLinkButton from "./CopyLinkButton.jsx";
 import NumberField from "./NumberField.jsx";
 import SelectField from "./SelectField.jsx";
 import FuelSection from "./FuelSection.jsx";
@@ -37,6 +38,7 @@ export default function RamjetConfigForm({ config, result, onChange, onReset, on
       <div className="config-form-header">
         <h2>Engine configuration</h2>
         <div className="config-form-actions">
+          <CopyLinkButton />
           <button type="button" className="reset-button" onClick={onReset}>
             Reset to defaults
           </button>

@@ -8,7 +8,7 @@ import { defaultScramjetConfig, solveScramjet } from "./physics/scramjet.js";
 import { defaultRamjetConfig, solveRamjet } from "./physics/ramjet.js";
 import { defaultTurboramjetConfig, solveTurboramjet } from "./physics/turboramjet.js";
 import { defaultTwinSpoolTurbojetConfig, solveTwinSpoolTurbojet } from "./physics/twinSpoolTurbojet.js";
-import { buildShareUrl, configFromSearchParams } from "./utils/shareLink.js";
+import { buildShareUrl, configFromSearchParams, ENGINE_PARAM } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
 import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
@@ -80,15 +80,40 @@ function tabGroup(engineType) {
 // any recognized query param overrides that one field of the default
 // config, so a link missing a field (or an older link, from before some
 // field existed) still falls back sanely instead of breaking.
-function initialConfig() {
+// Every engine's default config, keyed by engine type: what a share link's
+// changed fields are measured against.
+const ENGINE_DEFAULTS = {
+  turbojet: defaultEngineConfig,
+  turbojet2: defaultTwinSpoolTurbojetConfig,
+  turboprop: defaultTurbopropConfig,
+  turboshaft: defaultTurboshaftConfig,
+  turbofan: defaultTurbofanConfig,
+  propfan: defaultPropfanConfig,
+  turboramjet: defaultTurboramjetConfig,
+  ramjet: defaultRamjetConfig,
+  scramjet: defaultScramjetConfig,
+};
+
+function linkedEngine() {
+  const e = new URLSearchParams(window.location.search).get(ENGINE_PARAM);
+  return e && ENGINE_DEFAULTS[e] ? e : "turbojet";
+}
+
+// The config an engine opens with: the link's settings if the link is for
+// this engine, otherwise its defaults.
+function initialConfigFor(engineType) {
   const params = new URLSearchParams(window.location.search);
-  const patch = configFromSearchParams(params);
-  // A shared link encodes its changes relative to the physics defaults,
-  // so it must be rebuilt on those; a plain visit opens at cruise instead.
-  // Only real config keys count: unrelated params (?utm_…, cache-busters)
-  // must not turn a plain visit into a static ground run.
-  const base = Object.keys(patch).length ? defaultEngineConfig() : startingTurbojetConfig();
-  return { ...base, ...patch };
+  const defaults = ENGINE_DEFAULTS[engineType]();
+  if (linkedEngine() !== engineType) {
+    return engineType === "turbojet" ? startingTurbojetConfig() : defaults;
+  }
+  const patch = configFromSearchParams(params, defaults);
+  // A link's changes are relative to the physics defaults, so it's rebuilt
+  // on those; a plain turbojet visit opens at cruise instead. Only real
+  // config keys count: unrelated params (?utm_…, cache-busters) must not
+  // turn a plain visit into a static ground run.
+  if (engineType === "turbojet" && !Object.keys(patch).length) return startingTurbojetConfig();
+  return { ...defaults, ...patch };
 }
 
 // What a first-time visitor sees: a realistic cruise point (10 km,
@@ -126,17 +151,17 @@ function App() {
   // Which engine's cycle is being configured — each engine type keeps its
   // own independent config, so switching back and forth never loses what
   // was dialed in on the other one.
-  const [engineType, setEngineType] = useState("turbojet");
-  const [config, setConfig] = useState(initialConfig);
-  const [turbopropConfig, setTurbopropConfig] = useState(defaultTurbopropConfig);
-  const [turboshaftConfig, setTurboshaftConfig] = useState(defaultTurboshaftConfig);
-  const [turbofanConfig, setTurbofanConfig] = useState(defaultTurbofanConfig);
-  const [propfanConfig, setPropfanConfig] = useState(defaultPropfanConfig);
-  const [scramjetConfig, setScramjetConfig] = useState(defaultScramjetConfig);
-  const [ramjetConfig, setRamjetConfig] = useState(defaultRamjetConfig);
-  const [turboramjetConfig, setTurboramjetConfig] = useState(defaultTurboramjetConfig);
-  const [twinSpoolConfig, setTwinSpoolConfig] = useState(defaultTwinSpoolTurbojetConfig);
-  const [turbojetVariant, setTurbojetVariant] = useState("turbojet");
+  const [engineType, setEngineType] = useState(linkedEngine);
+  const [config, setConfig] = useState(() => initialConfigFor("turbojet"));
+  const [turbopropConfig, setTurbopropConfig] = useState(() => initialConfigFor("turboprop"));
+  const [turboshaftConfig, setTurboshaftConfig] = useState(() => initialConfigFor("turboshaft"));
+  const [turbofanConfig, setTurbofanConfig] = useState(() => initialConfigFor("turbofan"));
+  const [propfanConfig, setPropfanConfig] = useState(() => initialConfigFor("propfan"));
+  const [scramjetConfig, setScramjetConfig] = useState(() => initialConfigFor("scramjet"));
+  const [ramjetConfig, setRamjetConfig] = useState(() => initialConfigFor("ramjet"));
+  const [turboramjetConfig, setTurboramjetConfig] = useState(() => initialConfigFor("turboramjet"));
+  const [twinSpoolConfig, setTwinSpoolConfig] = useState(() => initialConfigFor("turbojet2"));
+  const [turbojetVariant, setTurbojetVariant] = useState(() => (linkedEngine() === "turbojet2" ? "turbojet2" : "turbojet"));
   const [savedConfigs, setSavedConfigs] = useState(loadSavedConfigs);
   // The whole left configuration sidebar can be tucked away to free up
   // width for the results column — separate from each section's own
@@ -167,17 +192,19 @@ function App() {
     ...prev, ...TURBOFAN_LAYOUT_DEFAULTS[layout], layout,
   }));
 
-  // Keep the address bar itself as a live, shareable link to the current
-  // turbojet configuration — replaceState (not pushState) so tweaking a
-  // slider doesn't spam the browser's back-button history. Shareable
-  // links aren't wired up for the turboprop config yet (Phase 3's
-  // shareLink util is keyed to EngineConfig's own field set) — the
-  // turboprop form has no "Copy shareable link" button, so nothing
-  // implies it works.
+  // Keep the address bar a live, shareable link to the open engine and its
+  // settings — replaceState (not pushState) so tweaking a value doesn't
+  // spam the back-button history. "Copy shareable link" copies this URL.
+  const currentConfig = {
+    turbojet: config, turbojet2: twinSpoolConfig, turboprop: turbopropConfig,
+    turboshaft: turboshaftConfig, turbofan: turbofanConfig, propfan: propfanConfig,
+    turboramjet: turboramjetConfig, ramjet: ramjetConfig, scramjet: scramjetConfig,
+  }[engineType];
   useEffect(() => {
-    if (engineType !== "turbojet") return;
-    window.history.replaceState(null, "", buildShareUrl(config));
-  }, [config, engineType]);
+    window.history.replaceState(null, "", buildShareUrl(currentConfig, {
+      engineType, defaults: ENGINE_DEFAULTS[engineType](),
+    }));
+  }, [currentConfig, engineType]);
 
   // Persist saved configurations across reloads. Every save/remove writes
   // straight through, so a refresh (or a link opened later) sees exactly
