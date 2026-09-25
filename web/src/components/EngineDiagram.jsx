@@ -539,8 +539,9 @@ function Diagram({ config, result, idSuffix }) {
             T0={stations[s.key].T0}
             p0={stations[s.key].p0}
             leftPct={((s.x + MARGIN) / TOTAL_W) * 100}
-            // Station 6 sits between 5 and 9, closer than a label is wide.
-            top={s.key === "6" ? 70 : 0}
+            // Stations 3 and 4 (and 5, 6, 9 with the afterburner) sit closer
+            // together than their labels are wide, so 4 and 6 drop a row.
+            top={s.key === "4" || s.key === "6" ? 70 : 0}
             onSelect={() => selectStation(s)}
           />
         ))}
