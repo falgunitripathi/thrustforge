@@ -1,4 +1,5 @@
 import RamjetPerformanceSummary from "./RamjetPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import RamjetEngineDiagram from "./RamjetEngineDiagram.jsx";
 import RamjetMachSweep from "./RamjetMachSweep.jsx";
@@ -40,6 +41,8 @@ export default function RamjetResultsPanel({ result, config }) {
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="ramjet" />
+      <RamjetEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <RamjetPerformanceSummary performance={performance} intake={intake} nozzle={nozzle} />
@@ -50,8 +53,6 @@ export default function RamjetResultsPanel({ result, config }) {
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <RamjetEngineDiagram config={config} result={result} />
 
       <RamjetMachSweep config={config} />
 

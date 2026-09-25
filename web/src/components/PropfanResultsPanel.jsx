@@ -1,4 +1,5 @@
 import PropfanPerformanceSummary from "./PropfanPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import PropfanEngineDiagram from "./PropfanEngineDiagram.jsx";
 import StationTable from "./StationTable.jsx";
@@ -68,6 +69,8 @@ export default function PropfanResultsPanel({ result, config }) {
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="propfan" />
+      <PropfanEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <PropfanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} />
@@ -79,8 +82,6 @@ export default function PropfanResultsPanel({ result, config }) {
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <PropfanEngineDiagram config={config} result={result} />
 
       <ExpandableSection
         title="Station analysis"

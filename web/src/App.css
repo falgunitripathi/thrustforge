@@ -2214,3 +2214,93 @@ button.field-label.formula-trigger:focus-visible {
     transition: none;
   }
 }
+
+/* --- Engine intro card (EngineIntro) --- */
+.engine-intro {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 14px;
+  background: var(--accent-bg);
+}
+
+.engine-intro-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.engine-intro-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.engine-intro-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.engine-intro-name {
+  margin: 0;
+  font-size: 17px;
+  color: var(--text-h);
+}
+
+.engine-intro-tagline {
+  margin: 1px 0 0;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.engine-intro-toggle {
+  flex: none;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.engine-intro-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+.engine-intro-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.engine-intro-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.engine-intro-chip strong {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.engine-intro-chip-speed {
+  border-style: dashed;
+  color: var(--text);
+}
+
+.engine-intro-what {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 78ch;
+}

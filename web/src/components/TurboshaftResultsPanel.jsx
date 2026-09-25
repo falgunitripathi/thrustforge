@@ -1,4 +1,5 @@
 import TurboshaftPerformanceSummary from "./TurboshaftPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import TurboshaftEngineDiagram from "./TurboshaftEngineDiagram.jsx";
 import StationTable from "./StationTable.jsx";
@@ -51,6 +52,8 @@ export default function TurboshaftResultsPanel({ result, config }) {
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="turboshaft" />
+      <TurboshaftEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <TurboshaftPerformanceSummary shaft={shaft} performance={performance} />
@@ -63,8 +66,6 @@ export default function TurboshaftResultsPanel({ result, config }) {
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <TurboshaftEngineDiagram config={config} result={result} />
 
       <ExpandableSection
         title="Station analysis"

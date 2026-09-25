@@ -1,4 +1,5 @@
 import TurbofanPerformanceSummary from "./TurbofanPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import TurbofanEngineDiagram from "./TurbofanEngineDiagram.jsx";
 import StationTable from "./StationTable.jsx";
@@ -48,6 +49,8 @@ export default function TurbofanResultsPanel({ result, config, onToggleAfterburn
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="turbofan" />
+      <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>
         <h2>Overall performance</h2>
         <TurbofanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} coldNozzle={cold_nozzle} />
@@ -59,8 +62,6 @@ export default function TurbofanResultsPanel({ result, config, onToggleAfterburn
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
 
       <ExpandableSection
         title="Station analysis"

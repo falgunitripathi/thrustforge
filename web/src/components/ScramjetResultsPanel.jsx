@@ -1,4 +1,5 @@
 import ScramjetPerformanceSummary from "./ScramjetPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import ScramjetEngineDiagram from "./ScramjetEngineDiagram.jsx";
 import StationTable from "./StationTable.jsx";
@@ -46,6 +47,8 @@ export default function ScramjetResultsPanel({ result, config }) {
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="scramjet" />
+      <ScramjetEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <ScramjetPerformanceSummary performance={performance} combustor={combustor} intake={intake} />
@@ -58,8 +61,6 @@ export default function ScramjetResultsPanel({ result, config }) {
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <ScramjetEngineDiagram config={config} result={result} />
 
       <ExpandableSection
         title="Station analysis"

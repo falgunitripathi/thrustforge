@@ -1,4 +1,5 @@
 import TurbopropPerformanceSummary from "./TurbopropPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import TurbopropEngineDiagram from "./TurbopropEngineDiagram.jsx";
 import StationTable from "./StationTable.jsx";
@@ -45,6 +46,8 @@ export default function TurbopropResultsPanel({ result, config }) {
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="turboprop" />
+      <TurbopropEngineDiagram config={config} result={result} />
       <section>
         <h2>Overall performance</h2>
         <TurbopropPerformanceSummary performance={performance} propeller={propeller} />
@@ -56,8 +59,6 @@ export default function TurbopropResultsPanel({ result, config }) {
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <TurbopropEngineDiagram config={config} result={result} />
 
       <ExpandableSection
         title="Station analysis"

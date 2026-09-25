@@ -20,6 +20,7 @@ import TurboramjetConfigForm from "./components/TurboramjetConfigForm.jsx";
 import SectionSkeleton from "./components/SectionSkeleton.jsx";
 import ResultsErrorBoundary from "./components/ResultsErrorBoundary.jsx";
 import { explainError } from "./utils/errorText.js";
+import { ENGINE_INFO } from "./utils/engineInfo.js";
 import "./App.css";
 
 // Every engine except the default turbojet loads its results panel on
@@ -51,8 +52,20 @@ const ENGINE_TYPES = [
 // config, so a link missing a field (or an older link, from before some
 // field existed) still falls back sanely instead of breaking.
 function initialConfig() {
-  const patch = configFromSearchParams(new URLSearchParams(window.location.search));
-  return { ...defaultEngineConfig(), ...patch };
+  const params = new URLSearchParams(window.location.search);
+  const patch = configFromSearchParams(params);
+  // A shared link encodes its changes relative to the physics defaults,
+  // so it must be rebuilt on those; a plain visit opens at cruise instead.
+  const base = [...params.keys()].length ? defaultEngineConfig() : startingTurbojetConfig();
+  return { ...base, ...patch };
+}
+
+// What a first-time visitor sees: a realistic cruise point (10 km,
+// Mach 0.8) with an 8-stage compressor, rather than the physics default's
+// static ground run, whose propulsive/overall efficiency is 0% (no flight
+// speed, no useful work) and reads as a bug on first sight.
+function startingTurbojetConfig() {
+  return { ...defaultEngineConfig(), altitude_m: 10000, mach_flight: 0.8, n_compressor_stages: 8 };
 }
 
 // localStorage can throw (Safari private mode, disabled storage, quota),
@@ -98,7 +111,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const patchConfig = (patch) => setConfig((prev) => ({ ...prev, ...patch }));
-  const resetConfig = () => setConfig(defaultEngineConfig());
+  const resetConfig = () => setConfig(startingTurbojetConfig());
   const patchTurbopropConfig = (patch) => setTurbopropConfig((prev) => ({ ...prev, ...patch }));
   const resetTurbopropConfig = () => setTurbopropConfig(defaultTurbopropConfig());
   const patchTurboshaftConfig = (patch) => setTurboshaftConfig((prev) => ({ ...prev, ...patch }));
@@ -187,6 +200,7 @@ function App() {
               aria-selected={engineType === t.value}
               className={`engine-type-tab${engineType === t.value ? " engine-type-tab-active" : ""}`}
               onClick={() => setEngineType(t.value)}
+              title={ENGINE_INFO[t.value]?.tagline}
             >
               {t.label}
             </button>

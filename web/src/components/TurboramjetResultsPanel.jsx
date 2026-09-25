@@ -1,4 +1,5 @@
 import TurboramjetPerformanceSummary from "./TurboramjetPerformanceSummary.jsx";
+import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import TurboramjetEngineDiagram from "./TurboramjetEngineDiagram.jsx";
 import TurboramjetMachSweep from "./TurboramjetMachSweep.jsx";
@@ -42,6 +43,8 @@ export default function TurboramjetResultsPanel({ result, config, onToggleAfterb
   const order = ALL_ORDER.filter((k) => result.stations[k]);
   return (
     <div className="results-panel">
+      <EngineIntro engineType="turboramjet" />
+      <TurboramjetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>
         <h2>Overall performance</h2>
         <TurboramjetPerformanceSummary result={result} />
@@ -52,8 +55,6 @@ export default function TurboramjetResultsPanel({ result, config, onToggleAfterb
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <TurboramjetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
 
       <TurboramjetMachSweep config={config} />
 

@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import EngineIntro from "./EngineIntro.jsx";
 import PerformanceSummary from "./PerformanceSummary.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
 import StationTable from "./StationTable.jsx";
@@ -59,6 +60,10 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
 
   return (
     <div className="results-panel">
+      <EngineIntro engineType="turbojet" />
+      <Suspense fallback={<SectionSkeleton title="Live engine cutaway" />}>
+        <EngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
+      </Suspense>
       <section>
         <h2>Overall performance</h2>
         <PerformanceSummary performance={performance} nozzle={nozzle} ambientPressure={stations.a.p} />
@@ -70,10 +75,6 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
         </p>
         <AtmosphereReadout config={config} result={result} />
       </section>
-
-      <Suspense fallback={<SectionSkeleton title="Live engine cutaway" />}>
-        <EngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
-      </Suspense>
 
       <ExpandableSection
         title="Station analysis"
