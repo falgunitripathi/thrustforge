@@ -56,7 +56,9 @@ function initialConfig() {
   const patch = configFromSearchParams(params);
   // A shared link encodes its changes relative to the physics defaults,
   // so it must be rebuilt on those; a plain visit opens at cruise instead.
-  const base = [...params.keys()].length ? defaultEngineConfig() : startingTurbojetConfig();
+  // Only real config keys count: unrelated params (?utm_…, cache-busters)
+  // must not turn a plain visit into a static ground run.
+  const base = Object.keys(patch).length ? defaultEngineConfig() : startingTurbojetConfig();
   return { ...base, ...patch };
 }
 
