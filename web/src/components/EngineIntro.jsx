@@ -2,10 +2,10 @@ import { useState } from "react";
 import { ENGINE_INFO } from "../utils/engineInfo.js";
 
 /**
- * "What is this engine?" card at the top of each engine's results. Compact
- * by default (name, tagline, real engines and speed as chips) so the live
- * diagram right below stays on the first screen; "What is it?" opens the
- * plain-language description.
+ * "What is this engine?" card at the top of each engine's results. Closed
+ * by default it's one clickable bar (name + tagline); clicking anywhere on
+ * it opens the real engines that use it, its speed range and a plain-
+ * language description.
  */
 export default function EngineIntro({ engineType }) {
   const info = ENGINE_INFO[engineType];
@@ -13,29 +13,33 @@ export default function EngineIntro({ engineType }) {
   if (!info) return null;
 
   return (
-    <section className="engine-intro" aria-label={`About the ${info.name}`}>
-      <div className="engine-intro-head">
+    <section className={`engine-intro${open ? " engine-intro-open" : ""}`} aria-label={`About the ${info.name}`}>
+      <button type="button" className="engine-intro-head" onClick={() => setOpen(!open)} aria-expanded={open}>
         <span className="engine-intro-icon" aria-hidden="true">{info.icon}</span>
-        <div className="engine-intro-titles">
-          <h2 className="engine-intro-name">{info.name}</h2>
-          <p className="engine-intro-tagline">{info.tagline}</p>
+        <span className="engine-intro-titles">
+          <span className="engine-intro-name">{info.name}</span>
+          <span className="engine-intro-tagline">{info.tagline}</span>
+        </span>
+        <span className="engine-intro-toggle" aria-hidden="true">
+          {open ? "Hide ▴" : "What is it? ▾"}
+        </span>
+      </button>
+      {open && (
+        <div className="engine-intro-body">
+          <p className="engine-intro-what">{info.what}</p>
+          <ul className="engine-intro-chips" aria-label="Where it's used and its speed range">
+            {info.usedIn.map((u) => {
+              const [engine, where] = u.split(" — ");
+              return (
+                <li key={u} className="engine-intro-chip" title={u}>
+                  <strong>{where || engine}</strong>{where ? <span> · {engine}</span> : null}
+                </li>
+              );
+            })}
+            <li className="engine-intro-chip engine-intro-chip-speed">{info.speed}</li>
+          </ul>
         </div>
-        <button type="button" className="engine-intro-toggle" onClick={() => setOpen(!open)} aria-expanded={open}>
-          {open ? "Hide" : "What is it?"}
-        </button>
-      </div>
-      <ul className="engine-intro-chips" aria-label="Where it's used and its speed range">
-        {info.usedIn.map((u) => {
-          const [engine, where] = u.split(" — ");
-          return (
-            <li key={u} className="engine-intro-chip" title={u}>
-              <strong>{where || engine}</strong>{where ? <span> · {engine}</span> : null}
-            </li>
-          );
-        })}
-        <li className="engine-intro-chip engine-intro-chip-speed">{info.speed}</li>
-      </ul>
-      {open && <p className="engine-intro-what">{info.what}</p>}
+      )}
     </section>
   );
 }
