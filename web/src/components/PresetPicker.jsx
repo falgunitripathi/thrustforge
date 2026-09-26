@@ -25,10 +25,6 @@ export default function PresetPicker({ presets, active, result, onLoad, onClear 
       </legend>
       {expanded && (
       <>
-      <p className="section-note">
-        You&rsquo;re building your own engine — every setting below is yours to change. If you like, load a
-        real engine&rsquo;s settings as a starting point instead and see how close the model gets to it.
-      </p>
       <label className="field">
         <span className="field-label">Starting point</span>
         <select
