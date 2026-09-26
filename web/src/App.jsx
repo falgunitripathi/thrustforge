@@ -39,6 +39,7 @@ const RamjetResultsPanel = lazy(() => import("./components/RamjetResultsPanel.js
 const TurboramjetResultsPanel = lazy(() => import("./components/TurboramjetResultsPanel.jsx"));
 const TwinSpoolTurbojetResultsPanel = lazy(() => import("./components/TwinSpoolTurbojetResultsPanel.jsx"));
 const EngineComparison = lazy(() => import("./components/EngineComparison.jsx"));
+const WhichEngineWins = lazy(() => import("./components/WhichEngineWins.jsx"));
 
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -481,6 +482,7 @@ function App() {
             <div className="results-panel results-panel-tools">
               <h2>Compare engines</h2>
               <EngineComparison currentKey={engineKey(engineType, currentConfig)} configs={configsByType} result={result} />
+              <WhichEngineWins configs={configsByType} />
             </div>
           )}
           </Suspense>

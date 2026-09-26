@@ -2550,3 +2550,84 @@ button.field-label.formula-trigger:focus-visible {
   font-size: 14px;
   color: var(--text-h);
 }
+
+/* --- Which engine wins? --- */
+
+.wins-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 6px;
+}
+
+.wins-line {
+  fill: none;
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.wins-label {
+  font-size: 11px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--bg-panel);
+  stroke-width: 3px;
+}
+
+.wins-band-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  fill: #fff;
+}
+
+.wins-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.wins-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.wins-toggle-on {
+  color: var(--text-h);
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.wins-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wins-toggle:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.wins-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.wins-toggle:not(.wins-toggle-on) .wins-swatch {
+  opacity: 0.35;
+}
+
+.wins-bands {
+  margin-top: 4px;
+}
