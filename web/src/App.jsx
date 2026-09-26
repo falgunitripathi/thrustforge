@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { defaultEngineConfig, solveEngine } from "./physics/engine.js";
 import { defaultTurbopropConfig, solveTurboprop } from "./physics/turboprop.js";
 import { defaultTurboshaftConfig, solveTurboshaft } from "./physics/turboshaft.js";
@@ -12,7 +12,9 @@ import { buildShareUrl, configFromSearchParams, ENGINE_PARAM } from "./utils/sha
 import ConfigForm from "./components/ConfigForm.jsx";
 import PresetPicker from "./components/PresetPicker.jsx";
 import { PRESETS, presetKey } from "./utils/presets.js";
-import { TURBOFAN_LAYOUT_DEFAULTS, engineKey } from "./utils/engineRegistry.js";
+import { TURBOFAN_LAYOUT_DEFAULTS, ENGINE_BY_KEY, engineKey } from "./utils/engineRegistry.js";
+import { CHALLENGES } from "./utils/challenges.js";
+import { ChallengeBanner, ChallengesDialog } from "./components/Challenges.jsx";
 import ResultsPanel from "./components/ResultsPanel.jsx";
 import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
 import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
@@ -41,9 +43,30 @@ const TwinSpoolTurbojetResultsPanel = lazy(() => import("./components/TwinSpoolT
 const EngineComparison = lazy(() => import("./components/EngineComparison.jsx"));
 const WhichEngineWins = lazy(() => import("./components/WhichEngineWins.jsx"));
 const DesignTools = lazy(() => import("./components/DesignTools.jsx"));
+const Tour = lazy(() => import("./components/Tour.jsx"));
 
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
+const CHALLENGES_DONE_KEY = "thrustforge:challengesDone";
+const TOUR_SEEN_KEY = "thrustforge:tourSeen";
+
+// Browser storage can be missing or blocked (private windows, embeds):
+// every read/write falls back quietly to in-memory state.
+function readStored(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+function writeStored(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore — the value just isn't remembered next visit
+  }
+}
 
 const ENGINE_TYPES = [
   { value: "turbojet", label: "Turbojet" },
@@ -163,6 +186,15 @@ function App() {
   // width for the results column — separate from each section's own
   // individual disclosure toggle inside ConfigForm.
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Guided tour + "try this" challenges.
+  const [tourOpen, setTourOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(() => !readStored(TOUR_SEEN_KEY, false));
+  const [challengesOpen, setChallengesOpen] = useState(false);
+  const [activeChallengeId, setActiveChallengeId] = useState(null);
+  const [challengesDone, setChallengesDone] = useState(() => {
+    const v = readStored(CHALLENGES_DONE_KEY, []);
+    return Array.isArray(v) ? v : [];
+  });
 
   const patchConfig = (patch) => setConfig((prev) => ({ ...prev, ...patch }));
   const resetConfig = () => setConfig(startingTurbojetConfig());
@@ -235,6 +267,38 @@ function App() {
     setActivePreset({ key: presetKey(engineType, next), id: preset.id });
   };
 
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    writeStored(TOUR_SEEN_KEY, true);
+  };
+  const startTour = () => {
+    dismissWelcome();
+    setSidebarOpen(true);
+    setTourOpen(true);
+  };
+  const activeChallenge = CHALLENGES.find((c) => c.id === activeChallengeId) ?? null;
+  const startChallenge = (ch) => {
+    let next = { ...ENGINE_DEFAULTS[ch.engine](), ...ch.start };
+    if (ch.engine === "turbofan") {
+      next = { ...defaultTurbofanConfig(), ...TURBOFAN_LAYOUT_DEFAULTS[ch.layout], ...ch.start, layout: ch.layout };
+    }
+    setConfigFor[ch.engine](next);
+    setEngineType(ch.engine);
+    if (ch.engine === "turbojet" || ch.engine === "turbojet2") setTurbojetVariant(ch.engine);
+    setActivePreset(null);
+    setActiveChallengeId(ch.id);
+    setChallengesOpen(false);
+    setSidebarOpen(true);
+  };
+  const completeChallenge = useCallback((id) => {
+    setChallengesDone((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      writeStored(CHALLENGES_DONE_KEY, next);
+      return next;
+    });
+  }, []);
+
   const { result, error } = useMemo(() => {
     try {
       const solved =
@@ -287,6 +351,7 @@ function App() {
           Build a jet engine, one number at a time — change anything on the left and watch the whole
           cycle re-solve instantly.
         </p>
+        <div className="header-row">
         <div className="engine-type-tabs" role="tablist" aria-label="Engine type">
           {ENGINE_TYPES.map((t) => (
             <button
@@ -301,6 +366,13 @@ function App() {
               {t.label}
             </button>
           ))}
+        </div>
+          <div className="header-actions">
+            <button type="button" className="header-action" onClick={startTour}>Take the tour</button>
+            <button type="button" className="header-action header-challenges" onClick={() => setChallengesOpen(true)}>
+              🎯 Challenges <span className="header-action-count">{challengesDone.length}/{CHALLENGES.length}</span>
+            </button>
+          </div>
         </div>
         {tabGroup(engineType) === "turbojet" && (
           <div className="variant-tabs" role="group" aria-label="Turbojet variant">
@@ -436,6 +508,18 @@ function App() {
         )}
 
         <div className="results-area">
+          {activeChallenge && activeChallenge.engine === engineType && (
+            <ChallengeBanner
+              challenge={activeChallenge}
+              result={result}
+              config={currentConfig}
+              solve={ENGINE_BY_KEY[engineKey(engineType, currentConfig)].solve}
+              done={challengesDone.includes(activeChallenge.id)}
+              onComplete={completeChallenge}
+              onStop={() => setActiveChallengeId(null)}
+              onOpenList={() => setChallengesOpen(true)}
+            />
+          )}
           <ResultsErrorBoundary resetKey={engineType + JSON.stringify(result?.config ?? error)}>
           <Suspense fallback={<SectionSkeleton title="Loading results" />}>
           {error ? (
@@ -504,6 +588,29 @@ function App() {
           </ResultsErrorBoundary>
         </div>
       </main>
+
+      {challengesOpen && (
+        <ChallengesDialog
+          completed={challengesDone}
+          activeId={activeChallengeId}
+          onStart={startChallenge}
+          onClose={() => setChallengesOpen(false)}
+        />
+      )}
+      {tourOpen && (
+        <Suspense fallback={null}>
+          <Tour onClose={() => setTourOpen(false)} />
+        </Suspense>
+      )}
+      {showWelcome && !tourOpen && (
+        <div className="welcome-toast" role="region" aria-label="Welcome">
+          <p><strong>New to ThrustForge?</strong> A one-minute tour shows you around.</p>
+          <div className="welcome-toast-actions">
+            <button type="button" className="reset-button tour-next" onClick={startTour}>Start the tour</button>
+            <button type="button" className="reset-button" onClick={dismissWelcome}>No thanks</button>
+          </div>
+        </div>
+      )}
 
       <footer className="app-footer">
         <p>
