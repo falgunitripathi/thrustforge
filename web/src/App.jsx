@@ -12,6 +12,7 @@ import { buildShareUrl, configFromSearchParams, ENGINE_PARAM } from "./utils/sha
 import ConfigForm from "./components/ConfigForm.jsx";
 import PresetPicker from "./components/PresetPicker.jsx";
 import { PRESETS, presetKey } from "./utils/presets.js";
+import { TURBOFAN_LAYOUT_DEFAULTS, engineKey } from "./utils/engineRegistry.js";
 import ResultsPanel from "./components/ResultsPanel.jsx";
 import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
 import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
@@ -37,6 +38,7 @@ const ScramjetResultsPanel = lazy(() => import("./components/ScramjetResultsPane
 const RamjetResultsPanel = lazy(() => import("./components/RamjetResultsPanel.jsx"));
 const TurboramjetResultsPanel = lazy(() => import("./components/TurboramjetResultsPanel.jsx"));
 const TwinSpoolTurbojetResultsPanel = lazy(() => import("./components/TwinSpoolTurbojetResultsPanel.jsx"));
+const EngineComparison = lazy(() => import("./components/EngineComparison.jsx"));
 
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -64,16 +66,6 @@ const TURBOFAN_LAYOUTS = [
   { id: "geared", label: "Geared" },
   { id: "three_spool", label: "Three-spool" },
 ];
-// Starting values when switching turbofan layout (general-literature
-// figures for each type; the mixed-flow bypass ratio is solved).
-// Each is checked to solve across the envelope (sea-level take-off to
-// 11 km cruise); the geared one cruises ~5% leaner than the unmixed one.
-const TURBOFAN_LAYOUT_DEFAULTS = {
-  unmixed: { beta: 5.0, pi_f: 1.65, pi_LPC: 1.5, pi_HPC: 12.0, T05: 1500.0 },
-  mixed: { pi_f: 3.0, pi_LPC: 1.0, pi_HPC: 12.0, T05: 1500.0 },
-  geared: { beta: 11.0, pi_f: 1.45, pi_LPC: 1.6, pi_HPC: 15.0, T05: 1700.0, afterburner_on: false },
-  three_spool: { beta: 8.0, pi_f: 1.5, pi_LPC: 5.0, pi_HPC: 5.0, T05: 1650.0, afterburner_on: false },
-};
 function tabGroup(engineType) {
   return engineType === "turbojet2" ? "turbojet" : engineType;
 }
@@ -197,11 +189,12 @@ function App() {
   // Keep the address bar a live, shareable link to the open engine and its
   // settings — replaceState (not pushState) so tweaking a value doesn't
   // spam the back-button history. "Copy shareable link" copies this URL.
-  const currentConfig = {
+  const configsByType = useMemo(() => ({
     turbojet: config, turbojet2: twinSpoolConfig, turboprop: turbopropConfig,
     turboshaft: turboshaftConfig, turbofan: turbofanConfig, propfan: propfanConfig,
     turboramjet: turboramjetConfig, ramjet: ramjetConfig, scramjet: scramjetConfig,
-  }[engineType];
+  }), [config, twinSpoolConfig, turbopropConfig, turboshaftConfig, turbofanConfig, propfanConfig, turboramjetConfig, ramjetConfig, scramjetConfig]);
+  const currentConfig = configsByType[engineType];
   useEffect(() => {
     window.history.replaceState(null, "", buildShareUrl(currentConfig, {
       engineType, defaults: ENGINE_DEFAULTS[engineType](),
@@ -483,6 +476,12 @@ function App() {
               onRemoveConfig={removeConfig}
               onToggleAfterburner={(on) => patchConfig({ afterburner_on: on })}
             />
+          )}
+          {!error && (
+            <div className="results-panel results-panel-tools">
+              <h2>Compare engines</h2>
+              <EngineComparison currentKey={engineKey(engineType, currentConfig)} configs={configsByType} result={result} />
+            </div>
           )}
           </Suspense>
           </ResultsErrorBoundary>
