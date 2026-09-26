@@ -2382,11 +2382,16 @@ button.field-label.formula-trigger:focus-visible {
 
 /* --- Load a real engine (presets) --- */
 
-.preset-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
+.preset-picker > .field,
+.preset-picker > .preset-card {
+  margin-top: 10px;
+}
+
+.preset-optional {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
 }
 
 .preset-card {

@@ -16,8 +16,8 @@ const STEPS = [
   },
   {
     target: ".preset-picker",
-    title: "3. Load a real engine",
-    text: "Start from Concorde's Olympus 593, the SR-71's J58 or an airliner's CFM56, and see how close a textbook model gets to the published figures.",
+    title: "3. Optional: start from a real engine",
+    text: "You're building your own engine, but if you'd like a starting point, open this to load Concorde's Olympus 593, the SR-71's J58 or an airliner's CFM56 — and see how close the model gets to the real figures.",
   },
   {
     target: ".results-panel section",

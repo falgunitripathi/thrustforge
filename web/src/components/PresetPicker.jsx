@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { METRICS } from "../utils/presets.js";
 import { fmt } from "../utils/format.js";
 
@@ -5,25 +6,40 @@ import { fmt } from "../utils/format.js";
  * "Load a real engine" menu plus, once one is loaded, a live
  * published-vs-model card. The model column re-solves as settings change,
  * so students can see which inputs close (or open) the gap.
+ *
+ * Optional by design: the site is for building your own engine, so this
+ * sits collapsed and defaults to "My own design".
  */
 export default function PresetPicker({ presets, active, result, onLoad, onClear }) {
+  const [open, setOpen] = useState(false);
   if (!presets?.length) return null;
   const preset = presets.find((p) => p.id === active);
+  const expanded = open || !!preset;
 
   return (
-    <div className="preset-picker">
+    <fieldset className="config-section preset-picker">
+      <legend>
+        <button type="button" className="disclosure" aria-expanded={expanded} onClick={() => setOpen(!expanded)}>
+          {expanded ? "▾" : "▸"} Start from a real engine <span className="preset-optional">(optional)</span>
+        </button>
+      </legend>
+      {expanded && (
+      <>
+      <p className="section-note">
+        You&rsquo;re building your own engine — every setting below is yours to change. If you like, load a
+        real engine&rsquo;s settings as a starting point instead and see how close the model gets to it.
+      </p>
       <label className="field">
-        <span className="field-label">Load a real engine</span>
+        <span className="field-label">Starting point</span>
         <select
           value={preset ? preset.id : ""}
           onChange={(e) => {
             const next = presets.find((p) => p.id === e.target.value);
             if (next) onLoad(next);
+            else onClear();
           }}
         >
-          <option value="" disabled>
-            Choose one…
-          </option>
+          <option value="">My own design</option>
           {presets.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -100,6 +116,8 @@ export default function PresetPicker({ presets, active, result, onLoad, onClear 
           </p>
         </div>
       )}
-    </div>
+      </>
+      )}
+    </fieldset>
   );
 }
