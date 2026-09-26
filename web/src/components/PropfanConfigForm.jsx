@@ -20,7 +20,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * efficiency, and gas properties live in Advanced, same as the other
  * engines' shaft/nozzle efficiency terms.
  */
-export default function PropfanConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function PropfanConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -45,6 +45,8 @@ export default function PropfanConfigForm({ config, result, onChange, onReset, o
           )}
         </div>
       </div>
+
+      {presetPicker}
       <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={0.9} machNote="Open-rotor propfans are designed for about Mach 0.7-0.85 airliner cruise." />
       <PropfanFanSection config={config} onChange={onChange} />
       <PropfanCompressorsSection config={config} onChange={onChange} />

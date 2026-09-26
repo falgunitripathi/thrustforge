@@ -19,7 +19,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * nothing here depends on it except the combustor's guarded live M3
  * note, so the form always renders and stays usable to fix the input.
  */
-export default function ScramjetConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function ScramjetConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -44,6 +44,8 @@ export default function ScramjetConfigForm({ config, result, onChange, onReset, 
           )}
         </div>
       </div>
+
+      {presetPicker}
       <ScramjetFlightSection config={config} onChange={onChange} />
       <ScramjetIntakeSection config={config} onChange={onChange} />
       <ScramjetCombustorSection config={config} result={result} onChange={onChange} />

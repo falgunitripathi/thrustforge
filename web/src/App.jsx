@@ -10,6 +10,8 @@ import { defaultTurboramjetConfig, solveTurboramjet } from "./physics/turboramje
 import { defaultTwinSpoolTurbojetConfig, solveTwinSpoolTurbojet } from "./physics/twinSpoolTurbojet.js";
 import { buildShareUrl, configFromSearchParams, ENGINE_PARAM } from "./utils/shareLink.js";
 import ConfigForm from "./components/ConfigForm.jsx";
+import PresetPicker from "./components/PresetPicker.jsx";
+import { PRESETS, presetKey } from "./utils/presets.js";
 import ResultsPanel from "./components/ResultsPanel.jsx";
 import TurbopropConfigForm from "./components/TurbopropConfigForm.jsx";
 import TurboshaftConfigForm from "./components/TurboshaftConfigForm.jsx";
@@ -218,6 +220,26 @@ function App() {
     }
   }, [savedConfigs]);
 
+  // "Load a real engine": a preset replaces the whole config (defaults +
+  // its patch), and stays "active" — showing its published-vs-model card —
+  // until closed, reset, or another engine/layout is picked.
+  const [activePreset, setActivePreset] = useState(null);
+  const currentPresetKey = presetKey(engineType, currentConfig);
+  const setConfigFor = {
+    turbojet: setConfig, turbojet2: setTwinSpoolConfig, turboprop: setTurbopropConfig,
+    turboshaft: setTurboshaftConfig, turbofan: setTurbofanConfig, propfan: setPropfanConfig,
+    turboramjet: setTurboramjetConfig, ramjet: setRamjetConfig, scramjet: setScramjetConfig,
+  };
+  const loadPreset = (preset) => {
+    let next = { ...ENGINE_DEFAULTS[engineType](), ...preset.patch };
+    if (engineType === "turbofan") {
+      const layout = preset.patch.layout ?? currentConfig.layout;
+      next = { ...defaultTurbofanConfig(), ...TURBOFAN_LAYOUT_DEFAULTS[layout], ...preset.patch, layout };
+    }
+    setConfigFor[engineType](next);
+    setActivePreset({ key: presetKey(engineType, next), id: preset.id });
+  };
+
   const { result, error } = useMemo(() => {
     try {
       const solved =
@@ -249,6 +271,16 @@ function App() {
   const removeConfig = (id) => {
     setSavedConfigs((prev) => prev.filter((s) => s.id !== id));
   };
+
+  const presetPicker = (
+    <PresetPicker
+      presets={PRESETS[currentPresetKey]}
+      active={activePreset?.key === currentPresetKey ? activePreset.id : null}
+      result={result}
+      onLoad={loadPreset}
+      onClear={() => setActivePreset(null)}
+    />
+  );
 
   return (
     <div className="app-shell">
@@ -316,72 +348,81 @@ function App() {
               config={turbopropConfig}
               result={result}
               onChange={patchTurbopropConfig}
-              onReset={resetTurbopropConfig}
+              onReset={() => { resetTurbopropConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "turboshaft" ? (
             <TurboshaftConfigForm
               config={turboshaftConfig}
               result={result}
               onChange={patchTurboshaftConfig}
-              onReset={resetTurboshaftConfig}
+              onReset={() => { resetTurboshaftConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "turbofan" ? (
             <TurbofanConfigForm
               config={turbofanConfig}
               result={result}
               onChange={patchTurbofanConfig}
-              onReset={resetTurbofanConfig}
+              onReset={() => { resetTurbofanConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "propfan" ? (
             <PropfanConfigForm
               config={propfanConfig}
               result={result}
               onChange={patchPropfanConfig}
-              onReset={resetPropfanConfig}
+              onReset={() => { resetPropfanConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "scramjet" ? (
             <ScramjetConfigForm
               config={scramjetConfig}
               result={result}
               onChange={patchScramjetConfig}
-              onReset={resetScramjetConfig}
+              onReset={() => { resetScramjetConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "turbojet2" ? (
             <TwinSpoolTurbojetConfigForm
               config={twinSpoolConfig}
               result={result}
               onChange={patchTwinSpoolConfig}
-              onReset={resetTwinSpoolConfig}
+              onReset={() => { resetTwinSpoolConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "turboramjet" ? (
             <TurboramjetConfigForm
               config={turboramjetConfig}
               result={result}
               onChange={patchTurboramjetConfig}
-              onReset={resetTurboramjetConfig}
+              onReset={() => { resetTurboramjetConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : engineType === "ramjet" ? (
             <RamjetConfigForm
               config={ramjetConfig}
               result={result}
               onChange={patchRamjetConfig}
-              onReset={resetRamjetConfig}
+              onReset={() => { resetRamjetConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           ) : (
             <ConfigForm
               config={config}
               result={result}
               onChange={patchConfig}
-              onReset={resetConfig}
+              onReset={() => { resetConfig(); setActivePreset(null); }}
               onCollapse={() => setSidebarOpen(false)}
+              presetPicker={presetPicker}
             />
           )
         ) : (

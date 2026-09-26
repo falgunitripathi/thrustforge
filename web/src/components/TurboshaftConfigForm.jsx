@@ -19,7 +19,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * turbojet's). The Load section is new — no propeller, no nozzle here
  * at all, since every bit of the turbine's work goes to an output shaft.
  */
-export default function TurboshaftConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function TurboshaftConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -44,6 +44,8 @@ export default function TurboshaftConfigForm({ config, result, onChange, onReset
           )}
         </div>
       </div>
+
+      {presetPicker}
       <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={0.6} machNote="Turboshafts power helicopters, ships and tanks, which rarely move faster than about Mach 0.4." />
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />

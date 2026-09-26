@@ -22,7 +22,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * physics/engine.js `defaultEngineConfig`); `onChange` receives a partial
  * patch to merge in, mirroring the parent's state-update pattern.
  */
-export default function ConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function ConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
 
@@ -48,6 +48,8 @@ export default function ConfigForm({ config, result, onChange, onReset, onCollap
           )}
         </div>
       </div>
+
+      {presetPicker}
       <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={3.0} machNote="Turbojets reach about Mach 3 (the SR-71's J58 engines cruised near Mach 3.2); faster than that, ram heating leaves the turbine unable to drive the compressor." />
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />

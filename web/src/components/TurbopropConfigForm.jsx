@@ -22,7 +22,7 @@ import FormulasExport from "./FormulasExport.jsx";
  * separate section here since this model always treats the residual
  * jet as fully expanded (no choking, no C-D geometry option to expose).
  */
-export default function TurbopropConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function TurbopropConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const [massFlowOpen, setMassFlowOpen] = useState(false);
 
   return (
@@ -47,6 +47,8 @@ export default function TurbopropConfigForm({ config, result, onChange, onReset,
           )}
         </div>
       </div>
+
+      {presetPicker}
       <FlightConditionsSection config={config} onChange={onChange} machMin={0.05} machMax={0.8} machNote="A turboprop needs some forward speed (propeller thrust is computed from flight speed), and propellers lose efficiency fast above about Mach 0.7-0.8 as the blade tips go supersonic." />
       <CompressorSection config={config} onChange={onChange} />
       <CombustorSection config={config} onChange={onChange} />

@@ -23,7 +23,7 @@ function Section({ title, defaultOpen = false, advanced = false, children }) {
 }
 
 /** Configuration form for the two-spool turbojet (aeropropsim/twin_spool_turbojet.py). */
-export default function TwinSpoolTurbojetConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function TwinSpoolTurbojetConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const opr = config.pi_LPC * config.pi_HPC;
   return (
     <div className="config-form">
@@ -47,6 +47,8 @@ export default function TwinSpoolTurbojetConfigForm({ config, result, onChange, 
           )}
         </div>
       </div>
+
+      {presetPicker}
 
       <FlightConditionsSection config={config} onChange={onChange} machMin={0} machMax={3.0}
         machNote="Two-spool turbojets powered Concorde (Mach 2) and the B-52; like any turbojet they run out of turbine work above about Mach 3." />

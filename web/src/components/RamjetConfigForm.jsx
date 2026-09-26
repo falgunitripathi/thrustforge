@@ -28,7 +28,7 @@ function Section({ title, defaultOpen = false, children }) {
  * (aeropropsim/ramjet.py). `result` is null whenever the solve failed;
  * the live readouts below are guarded so the form stays usable.
  */
-export default function RamjetConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function RamjetConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const T02 = result?.intake?.T02;
   const ramPR = result?.intake?.ram_pressure_ratio;
   const choked = result?.nozzle?.choked;
@@ -55,6 +55,8 @@ export default function RamjetConfigForm({ config, result, onChange, onReset, on
           )}
         </div>
       </div>
+
+      {presetPicker}
 
       <Section title="Flight condition" defaultOpen>
         <NumberField

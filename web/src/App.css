@@ -2379,3 +2379,103 @@ button.field-label.formula-trigger:focus-visible {
   background: var(--accent-bg);
   color: var(--accent);
 }
+
+/* --- Load a real engine (presets) --- */
+
+.preset-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.preset-card {
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--accent-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.preset-card p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.preset-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.preset-card-head strong {
+  display: block;
+  color: var(--text-h);
+  font-size: 13px;
+}
+
+.preset-card-aircraft {
+  color: var(--text-muted);
+}
+
+.preset-card-close {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.preset-card-close:hover {
+  color: var(--text-h);
+}
+
+.preset-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.preset-table th,
+.preset-table td {
+  text-align: right;
+  padding: 3px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.preset-table th[scope="row"],
+.preset-table thead th:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.preset-table thead th {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.preset-unit {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.preset-diff {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.preset-diff-close {
+  color: var(--success-text);
+}
+
+.preset-note {
+  color: var(--text-muted);
+}

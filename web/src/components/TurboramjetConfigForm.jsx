@@ -34,7 +34,7 @@ const MODE_OPTIONS = [
  * leg's own settings, fuel, and engine quality. `result` is null whenever
  * the solve failed; readouts here are guarded so the form stays usable.
  */
-export default function TurboramjetConfigForm({ config, result, onChange, onReset, onCollapse }) {
+export default function TurboramjetConfigForm({ config, result, onChange, onReset, onCollapse, presetPicker }) {
   const active = result?.mode_active;
   const tj = result?.turbojet;
 
@@ -60,6 +60,8 @@ export default function TurboramjetConfigForm({ config, result, onChange, onRese
           )}
         </div>
       </div>
+
+      {presetPicker}
 
       <Section title="Flight condition" defaultOpen>
         <NumberField
