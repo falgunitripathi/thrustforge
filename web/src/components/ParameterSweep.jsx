@@ -6,9 +6,17 @@ import SweepChart from "./SweepChart.jsx";
 import ExpandableSection from "./ExpandableSection.jsx";
 import { downloadCsv } from "../utils/csv.js";
 import { tsfcPerHour } from "../utils/format.js";
+import { headline } from "../utils/engineRegistry.js";
 import { SWEEP_PARAMS, linspace } from "../utils/sweepParams.js";
 
 const POINT_COUNTS = [7, 11, 15, 21];
+
+// Engines whose own result has no overall efficiency fall back to the
+// shared definition, useful power ÷ fuel power.
+function headlineEta(r) {
+  const eta = headline(r).etaO;
+  return eta === null ? null : eta * 100;
+}
 
 /**
  * Phase 2 — parameter sweep: vary one input across a range, re-solving the
@@ -16,16 +24,25 @@ const POINT_COUNTS = [7, 11, 15, 21];
  * configured on the left), and chart how thrust, TSFC, and overall
  * efficiency respond. Small multiples, one single-hue chart per output —
  * never a shared/dual axis for measures in different units.
+ *
+ * Defaults to the single-spool turbojet; any other engine passes its own
+ * `solve` and `params` (utils/engineTools.js). `power` switches the
+ * outputs to shaft power and power-specific fuel use (the turboshaft).
  */
-export default function ParameterSweep({ config }) {
-  const [paramKey, setParamKey] = useState("pi_c");
-  const activeParam = SWEEP_PARAMS.find((p) => p.key === paramKey);
+export default function ParameterSweep({
+  config, solve = solveEngine, params = SWEEP_PARAMS, defaultParam = "pi_c", power = false,
+}) {
+  const [chosenKey, setParamKey] = useState(params.some((p) => p.key === defaultParam) ? defaultParam : params[0].key);
+  // A layout change can drop a parameter (the mixed turbofan's bypass
+  // ratio is solved, not set) — fall back to the first one then.
+  const activeParam = params.find((p) => p.key === chosenKey) ?? params[0];
+  const paramKey = activeParam.key;
   const [rangeMin, setRangeMin] = useState(activeParam.defaultMin);
   const [rangeMax, setRangeMax] = useState(activeParam.defaultMax);
   const [points, setPoints] = useState(11);
 
   const handleParamChange = (key) => {
-    const p = SWEEP_PARAMS.find((sp) => sp.key === key);
+    const p = params.find((sp) => sp.key === key);
     setParamKey(key);
     setRangeMin(p.defaultMin);
     setRangeMax(p.defaultMax);
@@ -41,10 +58,18 @@ export default function ParameterSweep({ config }) {
     let failed = 0;
     for (const x of xs) {
       try {
-        const r = solveEngine({ ...config, [paramKey]: x });
-        t.push(r.performance.thrust);
-        f.push(tsfcPerHour(r.performance.tsfc));
-        e.push(r.performance.eta_overall === null ? null : r.performance.eta_overall * 100);
+        const r = solve({ ...config, [paramKey]: x });
+        if (power) {
+          const h = headline(r);
+          t.push(h.power === null ? null : h.power / 1e3);
+          f.push(h.sfc);
+          e.push(h.etaO === null ? null : h.etaO * 100);
+        } else {
+          const own = r.performance.eta_overall;
+          t.push(r.performance.thrust);
+          f.push(r.performance.thrust > 0 ? tsfcPerHour(r.performance.tsfc) : null);
+          e.push(Number.isFinite(own) ? own * 100 : own === null ? null : headlineEta(r));
+        }
       } catch {
         t.push(null);
         f.push(null);
@@ -53,13 +78,13 @@ export default function ParameterSweep({ config }) {
       }
     }
     return { xValues: xs, thrust: t, tsfc: f, etaOverall: e, failedCount: failed };
-  }, [config, paramKey, rangeMin, rangeMax, points]);
+  }, [config, solve, power, paramKey, rangeMin, rangeMax, points]);
 
   const exportSweep = () => {
     const rows = xValues.map((x, i) => ({
       [`${activeParam.label} (${activeParam.unit})`]: x,
-      "Thrust (N)": thrust[i],
-      "TSFC (kg/(N·h))": tsfc[i],
+      [power ? "Shaft power (kW)" : "Thrust (N)"]: thrust[i],
+      [power ? "SFC (kg/kWh)" : "TSFC (kg/(N·h))"]: tsfc[i],
       "Overall efficiency (%)": etaOverall[i],
     }));
     downloadCsv(`thrustforge-sweep-${paramKey}.csv`, rows);
@@ -75,7 +100,7 @@ export default function ParameterSweep({ config }) {
         pressure ratio π_c&rdquo;), set a from/to range, and this re-solves
         the whole engine cycle at each point in that range — every other
         setting stays exactly as currently configured on the left — then
-        plots how thrust, TSFC, and overall efficiency respond across it.
+        plots how {power ? "shaft power, fuel use" : "thrust, TSFC"}, and overall efficiency respond across it.
         It&rsquo;s the fast way to answer &ldquo;what happens to
         performance if I dial this one number up or down?&rdquo; without
         changing it by hand and re-reading the results panel over and over.
@@ -85,7 +110,7 @@ export default function ParameterSweep({ config }) {
           label="Parameter to sweep"
           value={paramKey}
           onChange={handleParamChange}
-          options={SWEEP_PARAMS.map((p) => ({ value: p.key, label: p.label }))}
+          options={params.map((p) => ({ value: p.key, label: p.label }))}
         />
         <NumberField
           label="From"
@@ -123,20 +148,20 @@ export default function ParameterSweep({ config }) {
       )}
       <div className="sweep-charts">
         <SweepChart
-          title="Thrust"
+          title={power ? "Shaft power" : "Thrust"}
           xValues={xValues}
           yValues={thrust}
-          unit="N"
+          unit={power ? "kW" : "N"}
           color="#2a78d6"
           decimals={0}
           xUnit={activeParam.unit}
           xDecimals={activeParam.axisDecimals}
         />
         <SweepChart
-          title="TSFC"
+          title={power ? "Power-specific fuel use" : "TSFC"}
           xValues={xValues}
           yValues={tsfc}
-          unit="kg/(N·h)"
+          unit={power ? "kg/kWh" : "kg/(N·h)"}
           color="#eb6834"
           decimals={3}
           xUnit={activeParam.unit}

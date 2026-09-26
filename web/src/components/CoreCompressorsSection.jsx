@@ -25,7 +25,7 @@ export default function CoreCompressorsSection({ config, onChange }) {
             value={config.pi_LPC}
             onChange={(v) => onChange({ pi_LPC: v })}
             min={1.0}
-            max={3.0}
+            max={config.layout === "three_spool" ? 8.0 : 3.0}
             step={0.05}
             hint="LPC = Low-Pressure Compressor, a.k.a. the 'booster' — the compression stage right after the fan, on the same (slower) shaft as the fan. p03 = p010·π_LPC (§3)."
           />

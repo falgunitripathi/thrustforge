@@ -40,6 +40,7 @@ const TurboramjetResultsPanel = lazy(() => import("./components/TurboramjetResul
 const TwinSpoolTurbojetResultsPanel = lazy(() => import("./components/TwinSpoolTurbojetResultsPanel.jsx"));
 const EngineComparison = lazy(() => import("./components/EngineComparison.jsx"));
 const WhichEngineWins = lazy(() => import("./components/WhichEngineWins.jsx"));
+const DesignTools = lazy(() => import("./components/DesignTools.jsx"));
 
 
 const SAVED_CONFIGS_KEY = "thrustforge:savedConfigs";
@@ -254,14 +255,16 @@ function App() {
 
   // Phase 2 — save & compare: each snapshot freezes the config AND its
   // already-solved result at save time, so later tweaks to the live
-  // config never retroactively change a saved comparison row. Turbojet
-  // only for now — ConfigCompare's columns are built around EngineConfig's
-  // own fields, which don't apply to a turboprop.
+  // config never retroactively change a saved comparison row. Each save
+  // is tagged with its engine; every engine's table shows only its own.
   const saveConfig = (name) => {
-    if (!result || engineType !== "turbojet") return;
+    if (!result) return;
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setSavedConfigs((prev) => [...prev, { id, name, config, result }]);
+    setSavedConfigs((prev) => [...prev, { id, name, engine: engineType, config: currentConfig, result }]);
   };
+  // Saves from before every engine had this feature carry no `engine`:
+  // they were all turbojet designs.
+  const savedForEngine = savedConfigs.filter((s) => (s.engine ?? "turbojet") === engineType);
   const removeConfig = (id) => {
     setSavedConfigs((prev) => prev.filter((s) => s.id !== id));
   };
@@ -472,11 +475,23 @@ function App() {
             <ResultsPanel
               result={result}
               config={config}
-              savedConfigs={savedConfigs}
+              savedConfigs={savedForEngine}
               onSaveConfig={saveConfig}
               onRemoveConfig={removeConfig}
               onToggleAfterburner={(on) => patchConfig({ afterburner_on: on })}
             />
+          )}
+          {!error && engineType !== "turbojet" && (
+            <div className="results-panel results-panel-tools">
+              <h2>Design tools</h2>
+              <DesignTools
+                engineType={engineType}
+                config={currentConfig}
+                savedConfigs={savedForEngine}
+                onSave={saveConfig}
+                onRemove={removeConfig}
+              />
+            </div>
           )}
           {!error && (
             <div className="results-panel results-panel-tools">

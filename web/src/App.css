@@ -2486,7 +2486,7 @@ button.field-label.formula-trigger:focus-visible {
   margin-top: 34px;
 }
 
-.compare-controls {
+.vs-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -2494,11 +2494,11 @@ button.field-label.formula-trigger:focus-visible {
   margin-bottom: 14px;
 }
 
-.compare-controls .field {
+.vs-controls .field {
   min-width: 220px;
 }
 
-.compare-check {
+.vs-check {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2506,46 +2506,46 @@ button.field-label.formula-trigger:focus-visible {
   color: var(--text);
 }
 
-.compare-table-wrap {
+.vs-table-wrap {
   overflow-x: auto;
 }
 
-.compare-table {
+.vs-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
-.compare-table th,
-.compare-table td {
+.vs-table th,
+.vs-table td {
   padding: 7px 10px;
   border-bottom: 1px solid var(--border);
   text-align: right;
 }
 
-.compare-table th[scope="row"],
-.compare-table thead th:first-child {
+.vs-table th[scope="row"],
+.vs-table thead th:first-child {
   text-align: left;
   color: var(--text-h);
   font-weight: 600;
 }
 
-.compare-table thead th {
+.vs-table thead th {
   color: var(--text-h);
 }
 
-.compare-this {
+.vs-this {
   color: var(--text-muted);
   font-weight: 400;
 }
 
-.compare-best {
+.vs-best {
   color: var(--success-text);
   font-weight: 700;
 }
 
-.compare-verdict {
+.vs-verdict {
   margin: 14px 0 8px;
   font-size: 14px;
   color: var(--text-h);

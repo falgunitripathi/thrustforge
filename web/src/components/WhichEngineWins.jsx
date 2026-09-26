@@ -172,7 +172,7 @@ export default function WhichEngineWins({ configs }) {
         engines wins at each speed. The fuel-use axis is logarithmic, because TSFC spans more than ten times
         from a propfan to a ramjet.
       </p>
-      <div className="compare-controls">
+      <div className="vs-controls">
         <label className="field">
           <span className="field-label">Altitude</span>
           <select value={altitude} onChange={(e) => setAltitude(Number(e.target.value))}>

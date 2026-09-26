@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { fmt, tsfcPerHour } from "../utils/format.js";
 import { downloadCsv } from "../utils/csv.js";
+import { headline } from "../utils/engineRegistry.js";
 
 /** Name + "Save" — snapshots the config/result the parent currently holds. */
 function SaveConfigForm({ onSave }) {
@@ -44,7 +45,10 @@ function describeCompressor(cfg) {
  * `savedConfigs` is `[{ id, name, config, result }]`, owned by the parent
  * (App) so it survives the user tweaking the live config afterwards.
  */
-export default function ConfigCompare({ savedConfigs, onSave, onRemove }) {
+export default function ConfigCompare({ savedConfigs, onSave, onRemove, columns, power = false }) {
+  if (columns) {
+    return <GenericCompare savedConfigs={savedConfigs} onSave={onSave} onRemove={onRemove} columns={columns} power={power} />;
+  }
   const exportComparison = () => {
     const rows = savedConfigs.map((s) => ({
       Name: s.name,
@@ -130,3 +134,98 @@ export default function ConfigCompare({ savedConfigs, onSave, onRemove }) {
   );
 }
 
+
+/** Output columns shared by every engine's saved-design table. */
+function outputs(s, power) {
+  const h = headline(s.result);
+  const own = s.result.performance.eta_overall;
+  const eta = Number.isFinite(own) ? own : h.etaO;
+  return power
+    ? { main: h.power === null ? null : h.power / 1e3, fuel: h.sfc, eta }
+    : { main: h.thrust, fuel: tsfcPerHour(h.tsfc), eta };
+}
+
+/**
+ * The same save & compare table for any other engine: flight condition,
+ * the engine's own key inputs (`columns`, from utils/engineTools.js),
+ * then thrust (or shaft power), fuel use and overall efficiency.
+ */
+function GenericCompare({ savedConfigs, onSave, onRemove, columns, power }) {
+  const mainLabel = power ? "Shaft power (kW)" : "Thrust (N)";
+  const fuelLabel = power ? "SFC (kg/kWh)" : "TSFC (kg/(N·h))";
+  const exportComparison = () => {
+    const rows = savedConfigs.map((s) => {
+      const o = outputs(s, power);
+      return {
+        Name: s.name,
+        "Altitude (m)": s.config.altitude_m,
+        Mach: s.config.mach_flight,
+        ...Object.fromEntries(columns.map((c) => [c.label, c.csv(s.config, s.result)])),
+        [mainLabel]: o.main,
+        [fuelLabel]: o.fuel,
+        "Overall efficiency": o.eta,
+      };
+    });
+    downloadCsv("thrustforge-comparison.csv", rows);
+  };
+
+  return (
+    <div className="compare-wrap">
+      <SaveConfigForm onSave={onSave} />
+      {savedConfigs.length === 0 ? (
+        <p className="section-note">
+          No saved designs for this engine yet — save the current one above, tweak the settings on the
+          left, then save again to build a comparison.
+        </p>
+      ) : (
+        <>
+          <div className="table-scroll compare-table-scroll">
+            <table className="compare-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Altitude</th>
+                  <th>Mach</th>
+                  {columns.map((c) => <th key={c.label}>{c.label}</th>)}
+                  <th>{mainLabel}</th>
+                  <th>{fuelLabel}</th>
+                  <th>Overall η</th>
+                  <th aria-hidden="true"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {savedConfigs.map((s) => {
+                  const o = outputs(s, power);
+                  return (
+                    <tr key={s.id}>
+                      <td className="compare-name">{s.name}</td>
+                      <td>{fmt(s.config.altitude_m, 0)} m</td>
+                      <td>{fmt(s.config.mach_flight, 2)}</td>
+                      {columns.map((c) => <td key={c.label}>{c.get(s.config, s.result)}</td>)}
+                      <td>{fmt(o.main, power ? 0 : 1)}</td>
+                      <td>{fmt(o.fuel, 3)}</td>
+                      <td>{o.eta !== null && o.eta !== undefined ? `${fmt(o.eta * 100, 1)}%` : "—"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="compare-remove-button"
+                          onClick={() => onRemove(s.id)}
+                          aria-label={`Remove ${s.name}`}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" className="reset-button" onClick={exportComparison}>
+            Export comparison CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}

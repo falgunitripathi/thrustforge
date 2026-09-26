@@ -79,7 +79,7 @@ export default function EngineComparison({ currentKey, configs, result }) {
       title="Compare with another engine"
       summary="Put this engine next to any other — say a turbojet against a turbofan, or a ramjet against a scramjet — at the same altitude and flight Mach, and see which makes more thrust and which burns less fuel. Expand to view."
     >
-      <div className="compare-controls">
+      <div className="vs-controls">
         <label className="field">
           <span className="field-label">Compare with</span>
           <select value={rival.key} onChange={(e) => setRivalKey(e.target.value)}>
@@ -88,19 +88,19 @@ export default function EngineComparison({ currentKey, configs, result }) {
             ))}
           </select>
         </label>
-        <label className="compare-check">
+        <label className="vs-check">
           <input type="checkbox" checked={sameFlight} onChange={(e) => setSameFlight(e.target.checked)} />
           Fly both at this engine&rsquo;s condition ({fmt(cfg.altitude_m / 1000, 1)} km, Mach {fmt(cfg.mach_flight, 2)})
         </label>
       </div>
 
-      <div className="compare-table-wrap">
-        <table className="compare-table">
+      <div className="vs-table-wrap">
+        <table className="vs-table">
           <thead>
             <tr>
               <th scope="col"></th>
               {cols.map((c, i) => (
-                <th scope="col" key={c.entry.key}>{c.entry.label}{i === 0 && <span className="compare-this"> (this one)</span>}</th>
+                <th scope="col" key={c.entry.key}>{c.entry.label}{i === 0 && <span className="vs-this"> (this one)</span>}</th>
               ))}
             </tr>
           </thead>
@@ -123,7 +123,7 @@ export default function EngineComparison({ currentKey, configs, result }) {
                 <tr key={r.id}>
                   <th scope="row">{r.label}{r.unit && <span className="preset-unit"> {r.unit}</span>}</th>
                   {cols.map((c, i) => (
-                    <td key={c.entry.key} className={best !== null && vals[i] === best && vals[0] !== vals[1] ? "compare-best" : undefined}>
+                    <td key={c.entry.key} className={best !== null && vals[i] === best && vals[0] !== vals[1] ? "vs-best" : undefined}>
                       {c.error ? (i === 1 && r === rows[0] ? "Can't run here" : "") : fmt(vals[i], r.digits)}
                     </td>
                   ))}
@@ -134,7 +134,7 @@ export default function EngineComparison({ currentKey, configs, result }) {
         </table>
       </div>
 
-      {verdict && <p className="compare-verdict">{verdict}</p>}
+      {verdict && <p className="vs-verdict">{verdict}</p>}
       {outOfRange && !rivalSolved.error && (
         <p className="section-note">
           Mach {fmt(cfg.mach_flight, 2)} is outside the {rival.label.toLowerCase()}&rsquo;s usual range
