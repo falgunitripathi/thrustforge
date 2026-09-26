@@ -1,11 +1,12 @@
 /**
  * Shown under the headline numbers when the engine is standing still
- * (flight Mach 0, e.g. a sea-level take-off preset): explains why
+ * on the ground (flight Mach 0 at sea level, e.g. a take-off preset): explains why
  * propulsive and overall efficiency read 0% (or "—") rather than letting
  * it look like a bug.
  */
 export default function StandstillNote({ config }) {
-  if (config.mach_flight !== 0) return null;
+  // Only for the sea-level ground run it describes (take-off presets).
+  if (config.mach_flight !== 0 || config.altitude_m !== 0) return null;
   return (
     <p className="section-note standstill-note">
       <strong>Why propulsive and overall efficiency are 0 here:</strong> the engine is standing still
