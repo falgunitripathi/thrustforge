@@ -2932,3 +2932,11 @@ button.field-label.formula-trigger:focus-visible {
     max-width: none;
   }
 }
+
+.standstill-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+  border-radius: 0 8px 8px 0;
+}

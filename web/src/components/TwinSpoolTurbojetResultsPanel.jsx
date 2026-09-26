@@ -1,3 +1,4 @@
+import StandstillNote from "./StandstillNote.jsx";
 import EngineIntro from "./EngineIntro.jsx";
 import TwinSpoolTurbojetPerformanceSummary from "./TwinSpoolTurbojetPerformanceSummary.jsx";
 import TwinSpoolTurbojetEngineDiagram from "./TwinSpoolTurbojetEngineDiagram.jsx";
@@ -40,6 +41,7 @@ export default function TwinSpoolTurbojetResultsPanel({ result, config, onToggle
       <section>
         <h2>Overall performance</h2>
         <TwinSpoolTurbojetPerformanceSummary result={result} />
+        <StandstillNote config={config} />
       </section>
       <TwinSpoolTurbojetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>

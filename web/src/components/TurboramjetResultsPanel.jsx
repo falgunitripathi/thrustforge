@@ -1,3 +1,4 @@
+import StandstillNote from "./StandstillNote.jsx";
 import TurboramjetPerformanceSummary from "./TurboramjetPerformanceSummary.jsx";
 import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
@@ -47,6 +48,7 @@ export default function TurboramjetResultsPanel({ result, config, onToggleAfterb
       <section>
         <h2>Overall performance</h2>
         <TurboramjetPerformanceSummary result={result} />
+        <StandstillNote config={config} />
       </section>
       <TurboramjetEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>

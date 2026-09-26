@@ -1,3 +1,4 @@
+import StandstillNote from "./StandstillNote.jsx";
 import PropfanPerformanceSummary from "./PropfanPerformanceSummary.jsx";
 import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
@@ -73,6 +74,7 @@ export default function PropfanResultsPanel({ result, config }) {
       <section>
         <h2>Overall performance</h2>
         <PropfanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} />
+        <StandstillNote config={config} />
       </section>
       <PropfanEngineDiagram config={config} result={result} />
       <section>

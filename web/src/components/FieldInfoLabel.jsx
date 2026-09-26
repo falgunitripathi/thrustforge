@@ -1,6 +1,5 @@
 import { useState } from "react";
 import InfoModal from "./InfoModal.jsx";
-import { stripCitations } from "../utils/citations.js";
 
 /**
  * A field label that opens its explanatory hint (typical values, valid
@@ -21,7 +20,7 @@ export default function FieldInfoLabel({ label, hint }) {
         className="formula-trigger field-label"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        title={stripCitations(hint)}
+        title={`${label} — click for details`}
       >
         {label}
         <span className="formula-icon" aria-hidden="true">ⓘ</span>

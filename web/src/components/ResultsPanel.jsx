@@ -1,3 +1,4 @@
+import StandstillNote from "./StandstillNote.jsx";
 import { lazy, Suspense } from "react";
 import EngineIntro from "./EngineIntro.jsx";
 import PerformanceSummary from "./PerformanceSummary.jsx";
@@ -64,6 +65,7 @@ export default function ResultsPanel({ result, config, savedConfigs, onSaveConfi
       <section>
         <h2>Overall performance</h2>
         <PerformanceSummary performance={performance} nozzle={nozzle} ambientPressure={stations.a.p} />
+        <StandstillNote config={config} />
       </section>
       <Suspense fallback={<SectionSkeleton title="Live engine cutaway" />}>
         <EngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />

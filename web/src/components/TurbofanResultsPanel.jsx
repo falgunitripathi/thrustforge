@@ -1,3 +1,4 @@
+import StandstillNote from "./StandstillNote.jsx";
 import TurbofanPerformanceSummary from "./TurbofanPerformanceSummary.jsx";
 import EngineIntro from "./EngineIntro.jsx";
 import AtmosphereReadout from "./AtmosphereReadout.jsx";
@@ -65,6 +66,7 @@ export default function TurbofanResultsPanel({ result, config, onToggleAfterburn
       <section>
         <h2>Overall performance</h2>
         <TurbofanPerformanceSummary performance={performance} hotNozzle={hot_nozzle} coldNozzle={cold_nozzle} layout={layout} />
+        <StandstillNote config={config} />
       </section>
       <TurbofanEngineDiagram config={config} result={result} onToggleAfterburner={onToggleAfterburner} />
       <section>
