@@ -16,5 +16,10 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Visitor counting (GoatCounter: no cookies, no personal data). Every
+         settings change rewrites the query string, so count the bare page
+         path only, not one "page" per configuration. -->
+    <script>window.goatcounter = { path: function () { return location.pathname; } };</script>
+    <script data-goatcounter="https://falguni.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
   </body>
 </html>
